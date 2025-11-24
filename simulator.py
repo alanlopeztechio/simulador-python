@@ -27,7 +27,12 @@ class LogGeneratorInput:
     end_lat: float
     end_lng: float
     number_of_stops: int
-    distribution_type: Literal["normal", "beta"] = "normal"
+    distribution_type: Literal["normal", "beta", "truncnorm", "uniform"] = "normal"
+    # Lista opcional de puntos de ruta (lat, lng) incluyendo origen y último destino.
+    # Si se proporciona, tiene prioridad sobre start/end.
+    waypoints: Optional[List[Tuple[float, float]]] = None
+    # Modo de transporte para la ruta real
+    transport_mode: Literal["driving-car", "foot-walking", "cycling-regular"] = "driving-car"
     # Parámetros para distribución normal
     mean_temp: float = None  # Si es None, se usa el promedio de lower y upper
     std_dev: float = 5.0
@@ -37,6 +42,23 @@ class LogGeneratorInput:
     # Ruta real usando OpenStreetMap
     use_real_route: bool = False
     route_name: str = "Custom Route"
+    # Per-segment temperature/distribution profiles. One entry per leg between waypoints.
+    # If provided, overrides global lower/upper/distribution for the corresponding samples.
+    segment_profiles: Optional[List["TempProfile"]] = None
+
+
+@dataclass
+class TempProfile:
+    """Per-segment temperature profile configuration."""
+    lower_temp: float
+    upper_temp: float
+    distribution_type: Literal["normal", "beta", "truncnorm", "uniform"] = "normal"
+    mean_temp: Optional[float] = None
+    std_dev: float = 5.0
+    beta_alpha: float = 2.0
+    beta_beta: float = 5.0
+    # Smoothing (exponential/AR(1)-like) toggle per segment (simple, no extra params)
+    apply_ar1: bool = False
 
 
 @dataclass
@@ -51,7 +73,7 @@ class UseCaseConfig:
     expected_duration_hours: float  # Duración esperada del viaje
     lower_temp: float
     upper_temp: float
-    distribution_type: Literal["normal", "beta"]
+    distribution_type: Literal["normal", "beta", "truncnorm", "uniform"]
     transport_mode: Literal["driving-car", "foot-walking", "cycling-regular"] = "driving-car"
     # Parámetros específicos del caso
     temperature_profile: str = "stable"  # stable, increasing, decreasing, fluctuating
@@ -91,17 +113,13 @@ class OpenStreetMapRouter:
             return self._get_simple_route(start, end)
         
         try:
-            url = f"{self.base_url}/{mode}"
+            url = f"{self.base_url}/{mode}?api_key={self.api_key}&start={start[1]},{start[0]}&end={end[1]},{end[0]}"
+            print(f"🌐 Obteniendo ruta: {url}")
             headers = {
-                'Authorization': self.api_key,
                 'Content-Type': 'application/json'
             }
-            body = {
-                "coordinates": [[start[1], start[0]], [end[1], end[0]]],  # lng, lat
-                "format": "geojson"
-            }
             
-            response = requests.post(url, json=body, headers=headers, timeout=10)
+            response = requests.get(url, headers=headers, timeout=100)
             
             if response.status_code == 200:
                 data = response.json()
@@ -119,6 +137,116 @@ class OpenStreetMapRouter:
         except Exception as e:
             print(f"⚠️  Error obteniendo ruta: {e}")
             return self._get_simple_route(start, end)
+
+    def get_route_multi(self, points: List[Tuple[float, float]], mode: str = "driving-car") -> Optional[Dict[str, Any]]:
+        """Obtiene una ruta real pasando múltiples puntos usando POST API.
+        
+        Para múltiples waypoints, OpenRouteService requiere usar la API POST con JSON body.
+        El formato GET solo soporta origen y destino (2 puntos).
+        
+        Fallback: genera una ruta simple segmentando entre puntos consecutivos.
+        """
+        if not points or len(points) < 2:
+            return None
+
+        if not self.api_key:
+            return self._get_simple_route_multi(points)
+
+        try:
+            # Para múltiples waypoints, usar POST API
+            url = f"{self.base_url}/{mode}/geojson"
+            headers = {
+                'Authorization': self.api_key,
+                'Content-Type': 'application/json; charset=utf-8',
+                'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
+            }
+            
+            # Body con todas las coordenadas en formato [lng, lat]
+            body = {
+                "coordinates": [[lng, lat] for (lat, lng) in points]
+            }
+            
+            print(f"🌐 Obteniendo ruta multi-punto (POST): {url}")
+            print(f"   Puntos: {len(points)}")
+            
+            response = requests.post(url, json=body, headers=headers, timeout=100)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'features' in data and len(data['features']) > 0:
+                    feature = data['features'][0]
+                    coords = [(c[1], c[0]) for c in feature['geometry']['coordinates']]
+                    distance_km = feature['properties']['summary']['distance'] / 1000
+                    duration_hours = feature['properties']['summary']['duration'] / 3600
+                    
+                    print(f"   ✓ Ruta obtenida: {distance_km:.2f} km, {duration_hours:.2f} hrs")
+                    
+                    return {
+                        'coordinates': coords,
+                        'distance_km': distance_km,
+                        'duration_hours': duration_hours
+                    }
+            else:
+                print(f"⚠️  Error en API OpenRouteService (multi-POST): {response.status_code}")
+                # Mostrar parte del cuerpo para diagnóstico
+                try:
+                    print(f"     Respuesta: {response.text[:300]}")
+                except Exception:
+                    pass
+
+                # Fallback alternativo: intentar endpoint sin '/geojson'
+                if response.status_code in (404, 405):
+                    alt_url = f"{self.base_url}/{mode}"
+                    print(f"   ↪️ Reintentando en endpoint alternativo: {alt_url}")
+                    alt_headers = headers.copy()
+                    alt_headers['Accept'] = 'application/json'
+                    alt_resp = requests.post(alt_url, json=body, headers=alt_headers, timeout=100)
+                    if alt_resp.status_code == 200:
+                        data = alt_resp.json()
+                        # Formato alternativo: routes[0].geometry.coordinates (lng, lat)
+                        # Cubrimos ambos posibles formatos
+                        coords = None
+                        distance_km = None
+                        duration_hours = None
+                        if isinstance(data, dict):
+                            if 'routes' in data and data['routes']:
+                                r0 = data['routes'][0]
+                                if 'geometry' in r0 and 'coordinates' in r0['geometry']:
+                                    coords = [(c[1], c[0]) for c in r0['geometry']['coordinates']]
+                                if 'summary' in r0:
+                                    if 'distance' in r0['summary']:
+                                        distance_km = r0['summary']['distance'] / 1000
+                                    if 'duration' in r0['summary']:
+                                        duration_hours = r0['summary']['duration'] / 3600
+                            elif 'features' in data and data['features']:
+                                feature = data['features'][0]
+                                if 'geometry' in feature:
+                                    coords = [(c[1], c[0]) for c in feature['geometry']['coordinates']]
+                                if 'properties' in feature and 'summary' in feature['properties']:
+                                    distance_km = feature['properties']['summary'].get('distance', 0) / 1000
+                                    duration_hours = feature['properties']['summary'].get('duration', 0) / 3600
+                        if coords:
+                            distance_km = distance_km if distance_km is not None else 0.0
+                            duration_hours = duration_hours if duration_hours is not None else 0.0
+                            print(f"   ✓ Ruta obtenida (ALT): {distance_km:.2f} km, {duration_hours:.2f} hrs")
+                            return {
+                                'coordinates': coords,
+                                'distance_km': distance_km,
+                                'duration_hours': duration_hours
+                            }
+                        else:
+                            print("   ⚠️ Formato de respuesta alternativo no reconocido")
+                    else:
+                        print(f"   ⚠️ Endpoint alternativo también falló: {alt_resp.status_code}")
+                        try:
+                            print(f"     Respuesta: {alt_resp.text[:300]}")
+                        except Exception:
+                            pass
+
+                return self._get_simple_route_multi(points)
+        except Exception as e:
+            print(f"⚠️  Error obteniendo ruta (multi): {e}")
+            return self._get_simple_route_multi(points)
     
     def _get_simple_route(self, start: Tuple[float, float], end: Tuple[float, float]) -> Dict[str, Any]:
         """Genera una ruta lineal simple entre dos puntos"""
@@ -139,6 +267,26 @@ class OpenStreetMapRouter:
         return {
             'coordinates': coordinates,
             'distance_km': distance_km,
+            'duration_hours': duration_hours
+        }
+
+    def _get_simple_route_multi(self, points: List[Tuple[float, float]]) -> Dict[str, Any]:
+        """Genera una ruta simple uniéndo líneas rectas entre puntos consecutivos"""
+        all_coords: List[Tuple[float, float]] = []
+        total_distance_km = 0.0
+        for i in range(len(points) - 1):
+            seg = self._get_simple_route(points[i], points[i + 1])
+            if i > 0 and seg['coordinates']:
+                # evitar duplicar el nodo de unión
+                all_coords.extend(seg['coordinates'][1:])
+            else:
+                all_coords.extend(seg['coordinates'])
+            total_distance_km += geodesic(points[i], points[i + 1]).kilometers
+        # Asumir 60 km/h
+        duration_hours = total_distance_km / 60.0 if total_distance_km > 0 else 0
+        return {
+            'coordinates': all_coords,
+            'distance_km': total_distance_km,
             'duration_hours': duration_hours
         }
     
@@ -280,10 +428,84 @@ class LogSimulator:
         )
         
         return cls(config)
+
+    @classmethod
+    def from_waypoints(
+        cls,
+        epc: str,
+        tid: str,
+        waypoints: List[Tuple[float, float]],
+        *,
+        start_timestamp: Optional[str] = None,
+        lower_temp: float = 0.0,
+        upper_temp: float = 10.0,
+    distribution_type: Literal["normal", "beta", "truncnorm", "uniform"] = "normal",
+        mean_temp: Optional[float] = None,
+        std_dev: float = 5.0,
+        beta_alpha: float = 2.0,
+        beta_beta: float = 5.0,
+        log_interval_in_seconds: int = 300,
+        number_of_samples: Optional[int] = None,
+        use_real_route: bool = False,
+        transport_mode: Literal["driving-car", "foot-walking", "cycling-regular"] = "driving-car",
+        route_name: str = "Ruta Personalizada",
+        segment_profiles: Optional[List["TempProfile"]] = None,
+    ):
+        """Crea un LogSimulator a partir de una lista de puntos (origen + paradas + destino final).
+
+        Si number_of_samples no se proporciona, se estima con base en la duración de la ruta
+        (real si use_real_route=True, o asumida a 60 km/h) y el log_interval_in_seconds.
+        """
+        if not waypoints or len(waypoints) < 2:
+            raise ValueError("Se requieren al menos 2 puntos: origen y un destino/parada")
+
+        if start_timestamp is None:
+            start_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        # Estimar duración para definir muestras si no fue especificado
+        est_number_of_samples = number_of_samples
+        if number_of_samples is None:
+            router = OpenStreetMapRouter()
+            if use_real_route:
+                info = router.get_route_multi(waypoints, mode=transport_mode)
+            else:
+                info = router._get_simple_route_multi(waypoints)
+            duration_hours = (info['duration_hours'] if info else 0) or 1.0
+            duration_seconds = max(1, int(duration_hours * 3600))
+            # Asegurar al menos 2 muestras (inicio y fin)
+            est_number_of_samples = max(2, int(duration_seconds / log_interval_in_seconds) + 1)
+
+        config = LogGeneratorInput(
+            epc=epc,
+            tid=tid,
+            log_interval_in_seconds=log_interval_in_seconds,
+            number_of_samples=est_number_of_samples,
+            start_timestamp=start_timestamp,
+            lower_temp=lower_temp,
+            upper_temp=upper_temp,
+            start_lat=waypoints[0][0],
+            start_lng=waypoints[0][1],
+            end_lat=waypoints[-1][0],
+            end_lng=waypoints[-1][1],
+            number_of_stops=max(0, len(waypoints) - 2),
+            distribution_type=distribution_type,
+            waypoints=waypoints,
+            transport_mode=transport_mode,
+            mean_temp=mean_temp,
+            std_dev=std_dev,
+            beta_alpha=beta_alpha,
+            beta_beta=beta_beta,
+            use_real_route=use_real_route,
+            route_name=route_name,
+            segment_profiles=segment_profiles,
+        )
+
+        return cls(config)
     
     def _parse_timestamp(self, timestamp_str: str) -> datetime:
         """Parsea timestamp ISO a datetime"""
         return datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+    
     
     def _generate_temperatures_normal(self) -> List[float]:
         """Genera temperaturas usando distribución normal"""
@@ -312,39 +534,255 @@ class LogSimulator:
             temps.append(round(float(temp), 1))
         
         return temps
+
+    def _generate_temperatures_truncnorm(self) -> List[float]:
+        """Genera temperaturas con Normal truncada en [lower, upper]."""
+        lower = self.config.lower_temp
+        upper = self.config.upper_temp
+        mean = self.config.mean_temp if self.config.mean_temp is not None else (lower + upper) / 2
+        std = max(1e-6, self.config.std_dev)
+        a = (lower - mean) / std
+        b = (upper - mean) / std
+        vals = stats.truncnorm.rvs(a, b, loc=mean, scale=std, size=self.config.number_of_samples)
+        return [round(float(v), 1) for v in vals]
+
+    def _generate_temperatures_uniform(self) -> List[float]:
+        """Genera temperaturas uniformes en [lower, upper]."""
+        lower = self.config.lower_temp
+        upper = self.config.upper_temp
+        vals = np.random.uniform(lower, upper, size=self.config.number_of_samples)
+        return [round(float(v), 1) for v in vals]
     
     def _generate_temperatures(self) -> List[float]:
-        """Genera temperaturas según el tipo de distribución seleccionado"""
+        """Genera temperaturas según configuración global o por segmentos si está disponible."""
+        # Si hay perfiles por segmento y hay waypoints, usar generación segmentada
+        if (
+            self.config.segment_profiles
+            and self.config.waypoints
+            and len(self.config.waypoints) >= 2
+            and self.coordinates
+            and len(self.coordinates) == self.config.number_of_samples
+        ):
+            return self._generate_temperatures_segmented()
+
         if self.config.distribution_type == "normal":
             return self._generate_temperatures_normal()
         elif self.config.distribution_type == "beta":
             return self._generate_temperatures_beta()
+        elif self.config.distribution_type == "truncnorm":
+            return self._generate_temperatures_truncnorm()
+        elif self.config.distribution_type == "uniform":
+            return self._generate_temperatures_uniform()
         else:
             raise ValueError(f"Tipo de distribución no soportado: {self.config.distribution_type}")
+
+    def _generate_temperatures_segmented(self) -> List[float]:
+        """Genera temperaturas por tramos (entre waypoints) usando perfiles específicos por segmento.
+
+        Mapea los índices de muestras a segmentos encontrando, sobre las coordenadas interpoladas,
+        los índices más cercanos a cada waypoint y asignando los rangos consecutivos.
+        """
+        num_samples = self.config.number_of_samples
+        coords = self.coordinates
+        waypoints = self.config.waypoints or []
+        num_segments = max(0, len(waypoints) - 1)
+
+        # Normalizar perfiles: si faltan, completar con configuración global
+        profiles: List[TempProfile] = []
+        for i in range(num_segments):
+            if self.config.segment_profiles and i < len(self.config.segment_profiles) and self.config.segment_profiles[i]:
+                profiles.append(self.config.segment_profiles[i])
+            else:
+                profiles.append(TempProfile(
+                    lower_temp=self.config.lower_temp,
+                    upper_temp=self.config.upper_temp,
+                    distribution_type=self.config.distribution_type,
+                    mean_temp=self.config.mean_temp,
+                    std_dev=self.config.std_dev,
+                    beta_alpha=self.config.beta_alpha,
+                    beta_beta=self.config.beta_beta,
+                ))
+
+        # Obtener mapeo muestras->segmento
+        mapping = self._compute_sample_segment_mapping()
+        sample_to_seg = mapping["sample_to_segment"] if mapping else None
+
+        temps: List[float] = [0.0] * num_samples
+
+        # Generador auxiliar por perfil
+        def _smooth(vals: List[float], phi: float = 0.8) -> List[float]:
+            if not vals:
+                return vals
+            out = [vals[0]]
+            alpha = 1.0 - phi
+            for v in vals[1:]:
+                out.append(phi * out[-1] + alpha * v)
+            return [round(float(x), 1) for x in out]
+
+        def gen_for_profile(n: int, prof: TempProfile) -> List[float]:
+            if n <= 0:
+                return []
+            if prof.distribution_type == "normal":
+                mean = prof.mean_temp if prof.mean_temp is not None else (prof.lower_temp + prof.upper_temp) / 2
+                vals = np.random.normal(mean, prof.std_dev, size=n)
+                vals = np.clip(vals, prof.lower_temp - 10, prof.upper_temp + 10)
+                out = [round(float(v), 1) for v in vals]
+                return _smooth(out) if prof.apply_ar1 else out
+            elif prof.distribution_type == "beta":
+                temp_range = prof.upper_temp - prof.lower_temp + 20
+                beta_vals = np.random.beta(prof.beta_alpha, prof.beta_beta, size=n)
+                vals = prof.lower_temp - 10 + (beta_vals * temp_range)
+                out = [round(float(v), 1) for v in vals]
+                return _smooth(out) if prof.apply_ar1 else out
+            elif prof.distribution_type == "truncnorm":
+                mean = prof.mean_temp if prof.mean_temp is not None else (prof.lower_temp + prof.upper_temp) / 2
+                std = max(1e-6, prof.std_dev)
+                a = (prof.lower_temp - mean) / std
+                b = (prof.upper_temp - mean) / std
+                vals = stats.truncnorm.rvs(a, b, loc=mean, scale=std, size=n)
+                out = [round(float(v), 1) for v in vals]
+                return _smooth(out) if prof.apply_ar1 else out
+            elif prof.distribution_type == "uniform":
+                vals = np.random.uniform(prof.lower_temp, prof.upper_temp, size=n)
+                out = [round(float(v), 1) for v in vals]
+                return _smooth(out) if prof.apply_ar1 else out
+            else:
+                raise ValueError(f"Tipo de distribución no soportado en segmento: {prof.distribution_type}")
+
+        # Asignar por segmentos usando el mapeo de muestras
+        if sample_to_seg is not None:
+            # Construir índices por segmento
+            seg_indices: List[List[int]] = [[] for _ in range(num_segments)]
+            for i, seg in enumerate(sample_to_seg):
+                if seg is not None and 0 <= seg < num_segments:
+                    seg_indices[seg].append(i)
+            # Generar y asignar
+            for seg in range(num_segments):
+                idxs = seg_indices[seg]
+                if not idxs:
+                    continue
+                seg_temps = gen_for_profile(len(idxs), profiles[seg])
+                for k, idx in enumerate(idxs):
+                    temps[idx] = seg_temps[k]
+        else:
+            # Fallback al corte por distancia si no hay mapeo
+            # Encontrar índices aproximados de cada waypoint dentro de las coordenadas interpoladas
+            def nearest_index(target: Tuple[float, float]) -> int:
+                min_d = float('inf')
+                min_i = 0
+                for i, c in enumerate(coords):
+                    d = geodesic((c[0], c[1]), (target[0], target[1])).meters
+                    if d < min_d:
+                        min_d = d
+                        min_i = i
+                return min_i
+
+            wp_indices = [nearest_index(wp) for wp in waypoints]
+            # Asegurar orden no decreciente y cubrir extremos
+            wp_indices[0] = 0
+            wp_indices[-1] = num_samples - 1
+            for i in range(1, len(wp_indices)):
+                if wp_indices[i] <= wp_indices[i-1]:
+                    wp_indices[i] = min(num_samples - 1, wp_indices[i-1] + 1)
+
+            for seg in range(num_segments):
+                start_i = wp_indices[seg]
+                end_i = wp_indices[seg + 1]
+                length = max(1, end_i - start_i + (1 if seg == num_segments - 1 else 0))
+                seg_temps = gen_for_profile(length, profiles[seg])
+                for k, val in enumerate(seg_temps):
+                    idx = start_i + k
+                    if idx >= num_samples:
+                        break
+                    temps[idx] = val
+
+        # Rellenar posibles huecos por redondeos
+        for i in range(num_samples):
+            if temps[i] == 0.0:
+                # Usar valor vecino más cercano si existe, o global normal
+                if i > 0 and temps[i-1] != 0.0:
+                    temps[i] = temps[i-1]
+                else:
+                    mean = self.config.mean_temp if self.config.mean_temp is not None else (
+                        self.config.lower_temp + self.config.upper_temp) / 2
+                    temps[i] = round(float(np.random.normal(mean, self.config.std_dev)), 1)
+
+        return temps
+
+    def _compute_sample_segment_mapping(self) -> Optional[Dict[str, Any]]:
+        """Calcula indices de waypoints y mapeo de cada muestra a su segmento.
+
+        Devuelve dict con:
+        - 'wp_indices': lista de índices de muestra más cercanos a cada waypoint
+        - 'sample_to_segment': lista de tamaño num_samples con índice de segmento por muestra
+        """
+        if not (self.config.waypoints and len(self.config.waypoints) >= 2 and self.coordinates):
+            return None
+        num_samples = self.config.number_of_samples
+        waypoints = self.config.waypoints
+        coords = self.coordinates
+        num_segments = len(waypoints) - 1
+
+        # Encontrar índices aproximados de cada waypoint 
+        def nearest_index(target: Tuple[float, float]) -> int:
+            min_d = float('inf')
+            min_i = 0
+            for i, c in enumerate(coords):
+                d = geodesic((c[0], c[1]), (target[0], target[1])).meters
+                if d < min_d:
+                    min_d = d
+                    min_i = i
+            return min_i
+
+        wp_indices = [nearest_index(wp) for wp in waypoints]
+        wp_indices[0] = 0
+        wp_indices[-1] = num_samples - 1
+        for i in range(1, len(wp_indices)):
+            if wp_indices[i] <= wp_indices[i-1]:
+                wp_indices[i] = min(num_samples - 1, wp_indices[i-1] + 1)
+
+        # Construir mapeo muestras->segmento
+        sample_to_seg: List[Optional[int]] = [None] * num_samples
+        for seg in range(num_segments):
+            start_i = wp_indices[seg]
+            end_i = wp_indices[seg + 1]
+            last_inclusive = end_i if seg == num_segments - 1 else end_i - 1
+            for idx in range(start_i, last_inclusive + 1):
+                if 0 <= idx < num_samples:
+                    sample_to_seg[idx] = seg
+
+        # Guardar en instancia para reutilizar
+        self._wp_indices = wp_indices
+        self._sample_segment_idx = sample_to_seg
+        return {"wp_indices": wp_indices, "sample_to_segment": sample_to_seg}
     
     def _interpolate_coordinates(self) -> List[tuple]:
-        """Interpola coordenadas entre inicio y fin con paradas"""
+        # Interpola coordenadas para N muestras usando ruta real o simple
+        # Si hay waypoints definidos, se priorizan
+        if self.config.waypoints and len(self.config.waypoints) >= 2:
+            if self.config.use_real_route:
+                route = self.osm_router.get_route_multi(self.config.waypoints, mode=self.config.transport_mode)
+            else:
+                route = self.osm_router._get_simple_route_multi(self.config.waypoints)
+
+            if route:
+                self.route_info = route
+                route_coords = route['coordinates']
+                return self._interpolate_route_points(route_coords, self.config.number_of_samples)
+
+        # Sin waypoints explícitos, usar start/end
         if self.config.use_real_route:
-            # Intentar obtener ruta real de OpenStreetMap
             route = self.osm_router.get_route(
                 (self.config.start_lat, self.config.start_lng),
                 (self.config.end_lat, self.config.end_lng),
-                mode="driving-car"
+                mode=self.config.transport_mode,
             )
-            
             if route:
                 self.route_info = route
-                # Interpolar para obtener exactamente number_of_samples puntos
                 route_coords = route['coordinates']
-                if len(route_coords) >= self.config.number_of_samples:
-                    # Tomar muestras equidistantes
-                    indices = np.linspace(0, len(route_coords) - 1, self.config.number_of_samples, dtype=int)
-                    return [route_coords[i] for i in indices]
-                else:
-                    # Interpolar linealmente entre puntos de ruta
-                    return self._interpolate_route_points(route_coords, self.config.number_of_samples)
+                return self._interpolate_route_points(route_coords, self.config.number_of_samples)
         
-        # Ruta lineal simple (fallback)
+        # Ruta lineal simple (fallback) entre start/end
         coordinates = []
         total_points = self.config.number_of_samples
         
@@ -369,7 +807,7 @@ class LogSimulator:
     
     def _interpolate_route_points(self, route_points: List[Tuple[float, float]], 
                                  num_samples: int) -> List[Tuple[float, float]]:
-        """Interpola puntos de una ruta para obtener el número deseado de muestras"""
+        # Interpola puntos de una ruta para obtener el número deseado de muestras
         if len(route_points) == num_samples:
             return route_points
         
@@ -399,7 +837,7 @@ class LogSimulator:
         return interpolated if interpolated else route_points
     
     def _generate_inventories(self, num_inventories: int = 2) -> List[Dict[str, Any]]:
-        """Genera lecturas de inventario RFID"""
+        # Genera lecturas de inventario RFID
         inventories = []
         start_dt = self._parse_timestamp(self.config.start_timestamp)
         
@@ -430,18 +868,36 @@ class LogSimulator:
         return inventories
     
     def _check_alarms(self, temperatures: List[float]) -> Dict[str, Any]:
-        """Determina si hay alarmas basadas en temperaturas"""
-        has_low = any(t < self.config.lower_temp for t in temperatures)
-        has_high = any(t > self.config.upper_temp for t in temperatures)
+        # Determina si hay alarmas basadas en temperaturas
+        # Si hay perfiles por segmento, evaluar cada muestra con su perfil
+        sample_to_seg = getattr(self, "_sample_segment_idx", None)
+        profiles = self.config.segment_profiles if self.config.segment_profiles else None
+
+        def bounds_for_sample(i: int) -> Tuple[float, float]:
+            if profiles and sample_to_seg is not None and i < len(sample_to_seg):
+                seg = sample_to_seg[i]
+                if seg is not None and 0 <= seg < len(profiles) and profiles[seg]:
+                    return profiles[seg].lower_temp, profiles[seg].upper_temp
+            return self.config.lower_temp, self.config.upper_temp
+
+        has_low = False
+        has_high = False
+        for i, t in enumerate(temperatures):
+            low_b, high_b = bounds_for_sample(i)
+            if t < low_b:
+                has_low = True
+            if t > high_b:
+                has_high = True
         has_temp_alarm = has_low or has_high
         
         alarm_temp_value = None
         alarm_timestamp = None
         
         if has_temp_alarm:
-            # Encontrar primera temperatura fuera de rango
+            # Encontrar primera temperatura fuera de rango con límites por segmento
             for i, temp in enumerate(temperatures):
-                if temp < self.config.lower_temp or temp > self.config.upper_temp:
+                low_b, high_b = bounds_for_sample(i)
+                if temp < low_b or temp > high_b:
                     alarm_temp_value = temp
                     start_dt = self._parse_timestamp(self.config.start_timestamp)
                     alarm_timestamp = (start_dt + timedelta(seconds=i * self.config.log_interval_in_seconds)).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
@@ -462,10 +918,11 @@ class LogSimulator:
         }
     
     def generate(self) -> Dict[str, Any]:
-        """Genera el JSON completo de simulación"""
+        # Genera el JSON completo de simulación
         start_dt = self._parse_timestamp(self.config.start_timestamp)
-        self.temperatures = self._generate_temperatures()
+        # Primero calcular coordenadas, luego temperaturas (algunas configuraciones dependen de segmentos)
         self.coordinates = self._interpolate_coordinates()
+        self.temperatures = self._generate_temperatures()
         
         # Generar timestamps y loggedData
         logged_data = []
@@ -474,10 +931,14 @@ class LogSimulator:
         for i in range(self.config.number_of_samples):
             timestamp = start_dt + timedelta(seconds=i * self.config.log_interval_in_seconds)
             self.timestamps.append(timestamp)
+            temp_val = self.temperatures[i]
+            # Tamper por muestra: True si excede límites (por tramo si aplica), False en caso contrario
+            low_b, high_b = self._bounds_for_sample(i)
+            tamper_flag = True if (temp_val < low_b or temp_val > high_b) else False
             logged_data.append({
                 "timestamp": timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "tempInC": self.temperatures[i],
-                "tamper": False
+                "tempInC": temp_val,
+                "tamper": tamper_flag
             })
         
         # Generar estructura completa
@@ -517,16 +978,114 @@ class LogSimulator:
         return result
     
     def generate_json_string(self, indent: int = 2) -> str:
-        """Genera el JSON como string formateado"""
+        # Genera el JSON como string formateado
         return json.dumps(self.generate(), indent=indent)
     
     def save_to_file(self, filename: str, indent: int = 2):
-        """Guarda el JSON en un archivo"""
+        # Guarda el JSON en un archivo
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(self.generate(), f, indent=indent)
+
+    def compute_segment_stats(self) -> List[Dict[str, Any]]:
+        """Calcula estadísticas observadas por tramo (entre waypoints) sobre las temperaturas generadas.
+
+        Retorna una lista de dicts con:
+        - segment (int): índice del tramo
+        - from_waypoint / to_waypoint: coordenadas (lat, lng)
+        - sample_start / sample_end: rango de índices de muestra asignados al tramo
+        - sample_count (int)
+        - observed_min / observed_max / observed_mean / observed_std (float)
+        - configured: límites y distribución configurados para el tramo
+        """
+        stats_list: List[Dict[str, Any]] = []
+        # Asegurar que existan datos
+        if not self.temperatures:
+            return stats_list
+        # Asegurar mapeo de muestras a segmento
+        mapping = getattr(self, "_sample_segment_idx", None)
+        if mapping is None:
+            m = self._compute_sample_segment_mapping()
+            mapping = m["sample_to_segment"] if m else None
+        sample_to_seg = mapping
+        waypoints = self.config.waypoints or [(self.config.start_lat, self.config.start_lng), (self.config.end_lat, self.config.end_lng)]
+        num_segments = max(0, len(waypoints) - 1)
+
+        # Normalizar perfiles: si no hay, usar global
+        profiles: List[TempProfile] = []
+        for i in range(num_segments):
+            if self.config.segment_profiles and i < len(self.config.segment_profiles) and self.config.segment_profiles[i]:
+                profiles.append(self.config.segment_profiles[i])
+            else:
+                profiles.append(TempProfile(
+                    lower_temp=self.config.lower_temp,
+                    upper_temp=self.config.upper_temp,
+                    distribution_type=self.config.distribution_type,
+                    mean_temp=self.config.mean_temp,
+                    std_dev=self.config.std_dev,
+                    beta_alpha=self.config.beta_alpha,
+                    beta_beta=self.config.beta_beta,
+                ))
+
+        # Construir índices por segmento
+        seg_indices: List[List[int]] = [[] for _ in range(num_segments)]
+        if sample_to_seg is not None:
+            for i, seg in enumerate(sample_to_seg):
+                if seg is not None and 0 <= seg < num_segments:
+                    seg_indices[seg].append(i)
+        else:
+            # si no hay mapeo, asignar todo al único tramo (si existe)
+            if num_segments == 1:
+                seg_indices[0] = list(range(len(self.temperatures)))
+
+        # Calcular estadísticas
+        for seg in range(num_segments):
+            idxs = seg_indices[seg]
+            temps = [self.temperatures[i] for i in idxs] if idxs else []
+            observed_min = float(min(temps)) if temps else None
+            observed_max = float(max(temps)) if temps else None
+            observed_mean = float(np.mean(temps)) if temps else None
+            observed_std = float(np.std(temps)) if temps else None
+            sample_start = int(min(idxs)) if idxs else None
+            sample_end = int(max(idxs)) if idxs else None
+            from_wp = waypoints[seg]
+            to_wp = waypoints[seg + 1]
+            prof = profiles[seg]
+            stats_list.append({
+                "segment": seg,
+                "from_waypoint": {"lat": from_wp[0], "lng": from_wp[1]},
+                "to_waypoint": {"lat": to_wp[0], "lng": to_wp[1]},
+                "sample_start": sample_start,
+                "sample_end": sample_end,
+                "sample_count": len(idxs),
+                "observed_min": observed_min,
+                "observed_max": observed_max,
+                "observed_mean": observed_mean,
+                "observed_std": observed_std,
+                "configured": {
+                    "lower_temp": prof.lower_temp,
+                    "upper_temp": prof.upper_temp,
+                    "distribution_type": prof.distribution_type,
+                    "mean_temp": prof.mean_temp,
+                    "std_dev": prof.std_dev,
+                    "beta_alpha": prof.beta_alpha,
+                    "beta_beta": prof.beta_beta,
+                }
+            })
+
+        return stats_list
     
+    def _bounds_for_sample(self, i: int) -> Tuple[float, float]:
+        """Obtiene límites inferior/superior aplicables a la muestra i, usando perfiles por tramo si existen."""
+        sample_to_seg = getattr(self, "_sample_segment_idx", None)
+        profiles = self.config.segment_profiles if self.config.segment_profiles else None
+        if profiles and sample_to_seg is not None and i < len(sample_to_seg):
+            seg = sample_to_seg[i]
+            if seg is not None and 0 <= seg < len(profiles) and profiles[seg]:
+                return profiles[seg].lower_temp, profiles[seg].upper_temp
+        return self.config.lower_temp, self.config.upper_temp
+
     def generate_map(self, output_file: str = "route_map.html"):
-        """Genera un mapa interactivo de la ruta con OpenStreetMap"""
+        # Genera un mapa interactivo de la ruta con OpenStreetMap
         if not self.coordinates or not self.temperatures:
             raise ValueError("Primero debe generar los datos usando generate()")
         
@@ -536,30 +1095,59 @@ class LogSimulator:
         
         m = folium.Map(location=[center_lat, center_lng], zoom_start=7)
         
-        # Agregar marcadores de inicio y fin
-        folium.Marker(
-            [self.config.start_lat, self.config.start_lng],
-            popup=f"<b>Inicio</b><br>{self.config.route_name}",
-            icon=folium.Icon(color='green', icon='play')
-        ).add_to(m)
+        # Marcadores inteligentes según waypoints
+        if self.config.waypoints and len(self.config.waypoints) >= 2:
+            # Marcador de ORIGEN (primer waypoint) - Verde
+            folium.Marker(
+                [self.config.waypoints[0][0], self.config.waypoints[0][1]],
+                popup=f"<b>🟢 Origen</b><br>{self.config.route_name}",
+                icon=folium.Icon(color='green', icon='play')
+            ).add_to(m)
+            
+            # Marcadores de PARADAS INTERMEDIAS (waypoints del medio) - Azul
+            if len(self.config.waypoints) > 2:
+                for idx, (lat, lng) in enumerate(self.config.waypoints[1:-1], start=1):
+                    folium.Marker(
+                        [lat, lng],
+                        popup=f"<b>🔵 Parada {idx}</b>",
+                        icon=folium.Icon(color='blue', icon='flag')
+                    ).add_to(m)
+            
+            # Marcador de DESTINO (último waypoint) - Rojo
+            folium.Marker(
+                [self.config.waypoints[-1][0], self.config.waypoints[-1][1]],
+                popup=f"<b>🔴 Destino Final</b><br>{self.config.route_name}",
+                icon=folium.Icon(color='red', icon='stop')
+            ).add_to(m)
+        else:
+            # Fallback si no hay waypoints definidos (usar start/end)
+            folium.Marker(
+                [self.config.start_lat, self.config.start_lng],
+                popup=f"<b>Inicio</b><br>{self.config.route_name}",
+                icon=folium.Icon(color='green', icon='play')
+            ).add_to(m)
+            
+            folium.Marker(
+                [self.config.end_lat, self.config.end_lng],
+                popup=f"<b>Fin</b><br>{self.config.route_name}",
+                icon=folium.Icon(color='red', icon='stop')
+            ).add_to(m)
+
         
-        folium.Marker(
-            [self.config.end_lat, self.config.end_lng],
-            popup=f"<b>Fin</b><br>{self.config.route_name}",
-            icon=folium.Icon(color='red', icon='stop')
-        ).add_to(m)
-        
-        # Agregar línea de ruta con colores según temperatura
+        # Asegurar mapeo de segmentos para coloreo por tramo si aplica
+        if not hasattr(self, "_sample_segment_idx"):
+            self._compute_sample_segment_mapping()
+
+        # Agregar línea de ruta con colores según temperatura y límites por tramo
         for i in range(len(self.coordinates) - 1):
             temp = self.temperatures[i]
-            
-            # Determinar color según temperatura
-            if temp < self.config.lower_temp:
+            low_b, high_b = self._bounds_for_sample(i)
+            # Determinar color según temperatura vs límites del tramo
+            color = 'green'
+            if temp < low_b:
                 color = 'blue'
-            elif temp > self.config.upper_temp:
+            elif temp > high_b:
                 color = 'red'
-            else:
-                color = 'green'
             
             folium.PolyLine(
                 [self.coordinates[i], self.coordinates[i + 1]],
@@ -574,7 +1162,12 @@ class LogSimulator:
         for i in range(0, len(self.coordinates), sample_interval):
             if i > 0 and i < len(self.coordinates) - 1:
                 temp = self.temperatures[i]
-                color = 'blue' if temp < self.config.lower_temp else ('red' if temp > self.config.upper_temp else 'green')
+                low_b, high_b = self._bounds_for_sample(i)
+                color = 'green'
+                if temp < low_b:
+                    color = 'blue'
+                elif temp > high_b:
+                    color = 'red'
                 
                 folium.CircleMarker(
                     location=self.coordinates[i],
@@ -592,7 +1185,7 @@ class LogSimulator:
         return m
     
     def plot_results(self, save_path: str = None):
-        """Genera gráficas completas de los resultados"""
+        # Genera gráficas completas de los resultados
         if not self.temperatures or not self.timestamps:
             raise ValueError("Primero debe generar los datos usando generate()")
         
@@ -727,46 +1320,51 @@ class LogSimulator:
         
         violations_count = len(violations_low) + len(violations_high)
         compliance_rate = ((len(self.temperatures) - violations_count) / len(self.temperatures)) * 100
-        
-        stats_text = f"""
-        {'='*70}
-        REPORTE DE SIMULACIÓN - {self.config.route_name}
-        {'='*70}
-        
-        CONFIGURACIÓN
-        {'─'*70}
-        Distribución: {self.config.distribution_type.upper()}
-        Muestras totales: {self.config.number_of_samples}
-        Intervalo de muestreo: {self.config.log_interval_in_seconds}s ({self.config.log_interval_in_seconds/60:.1f} min)
-        Duración total: {duration_hours:.2f} horas
-        Distancia aproximada: {total_distance:.2f} km
-        
-        TEMPERATURAS
-        {'─'*70}
-        Media: {np.mean(self.temperatures):.2f}°C
-        Mediana: {np.median(self.temperatures):.2f}°C
-        Desviación Estándar: {np.std(self.temperatures):.2f}°C
-        Mínima: {min(self.temperatures):.2f}°C
-        Máxima: {max(self.temperatures):.2f}°C
-        Rango permitido: [{self.config.lower_temp}°C, {self.config.upper_temp}°C]
-        
-        ALARMAS Y CUMPLIMIENTO
-        {'─'*70}
-        ⚠️  Violaciones totales: {violations_count} ({(violations_count/len(self.temperatures)*100):.1f}%)
-        ❄️  Temperaturas bajo límite: {len(violations_low)}
-        🔥 Temperaturas sobre límite: {len(violations_high)}
-        ✓  Tasa de cumplimiento: {compliance_rate:.1f}%
-        
-        RUTA
-        {'─'*70}
-        Origen: ({self.config.start_lat:.4f}, {self.config.start_lng:.4f})
-        Destino: ({self.config.end_lat:.4f}, {self.config.end_lng:.4f})
-        Paradas programadas: {self.config.number_of_stops}
-        
-        EPC: {self.config.epc}
-        TID: {self.config.tid}
-        {'='*70}
-        """
+
+        # Texto formateado (evitar f-string triple comillas para mayor compatibilidad)
+        interval_line = f"Intervalo de muestreo: {self.config.log_interval_in_seconds}s ({self.config.log_interval_in_seconds/60:.1f} min)"
+        sep = "=" * 70
+        line_sep = "─" * 70
+        lines = [
+            sep,
+            f"REPORTE DE SIMULACIÓN - {self.config.route_name}",
+            sep,
+            "",
+            "CONFIGURACIÓN",
+            line_sep,
+            f"Distribución: {self.config.distribution_type.upper()}",
+            f"Muestras totales: {self.config.number_of_samples}",
+            interval_line,
+            f"Duración total: {duration_hours:.2f} horas",
+            f"Distancia aproximada: {total_distance:.2f} km",
+            "",
+            "TEMPERATURAS",
+            line_sep,
+            f"Media: {np.mean(self.temperatures):.2f}°C",
+            f"Mediana: {np.median(self.temperatures):.2f}°C",
+            f"Desviación Estándar: {np.std(self.temperatures):.2f}°C",
+            f"Mínima: {min(self.temperatures):.2f}°C",
+            f"Máxima: {max(self.temperatures):.2f}°C",
+            f"Rango permitido: [{self.config.lower_temp}°C, {self.config.upper_temp}°C]",
+            "",
+            "ALARMAS Y CUMPLIMIENTO",
+            line_sep,
+            f"⚠️  Violaciones totales: {violations_count} ({(violations_count/len(self.temperatures)*100):.1f}%)",
+            f"❄️  Temperaturas bajo límite: {len(violations_low)}",
+            f"🔥 Temperaturas sobre límite: {len(violations_high)}",
+            f"✓  Tasa de cumplimiento: {compliance_rate:.1f}%",
+            "",
+            "RUTA",
+            line_sep,
+            f"Origen: ({self.config.start_lat:.4f}, {self.config.start_lng:.4f})",
+            f"Destino: ({self.config.end_lat:.4f}, {self.config.end_lng:.4f})",
+            f"Paradas programadas: {self.config.number_of_stops}",
+            "",
+            f"EPC: {self.config.epc}",
+            f"TID: {self.config.tid}",
+            sep,
+        ]
+        stats_text = "\n".join(lines)
         
         ax6.text(0.05, 0.95, stats_text, transform=ax6.transAxes, 
                 fontsize=9, verticalalignment='top', fontfamily='monospace',
@@ -783,13 +1381,13 @@ class LogSimulator:
 
 
 class BatchSimulator:
-    """Clase para generar múltiples JSONs en lote"""
+    # Clase para generar múltiples JSONs en lote
     
     @staticmethod
     def generate_all_use_cases(output_dir: str = "use_cases_output", 
                               use_real_routes: bool = False,
                               plot_individual: bool = True) -> List[Dict[str, Any]]:
-        """Genera simulaciones para todos los casos de uso predefinidos"""
+        # Genera simulaciones para todos los casos de uso predefinidos
         
         os.makedirs(output_dir, exist_ok=True)
         
