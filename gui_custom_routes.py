@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from simulator import LogSimulator, TempProfile
 
 class RouteDefinitionTab(tk.Frame):
-    """Tab 1: Definición de Ruta (Geometría)"""
+    """Tab 1: Route Definition (Geometry)"""
     def __init__(self, parent):
         super().__init__(parent)
         
@@ -30,18 +30,18 @@ class RouteDefinitionTab(tk.Frame):
         
         # --- Content ---
         
-        # 1. Origen
-        self.origin_frame = tk.LabelFrame(self.scrollable_frame, text="🟢 Origen", font=("Arial", 10, "bold"), padx=10, pady=10)
+        # 1. Origin
+        self.origin_frame = tk.LabelFrame(self.scrollable_frame, text="🟢 Origin", font=("Arial", 10, "bold"), padx=10, pady=10)
         self.origin_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.origin_name = tk.StringVar(value="CDMX - Almacén")
+        self.origin_name = tk.StringVar(value="CDMX - Warehouse")
         self.origin_lat = tk.DoubleVar(value=19.4326)
         self.origin_lng = tk.DoubleVar(value=-99.1332)
         
         self._create_point_inputs(self.origin_frame, self.origin_name, self.origin_lat, self.origin_lng)
         
-        # 2. Paradas Intermedias
-        self.stops_frame = tk.LabelFrame(self.scrollable_frame, text="🛑 Paradas Intermedias", font=("Arial", 10, "bold"), padx=10, pady=10)
+        # 2. Intermediate Stops
+        self.stops_frame = tk.LabelFrame(self.scrollable_frame, text="🛑 Intermediate Stops", font=("Arial", 10, "bold"), padx=10, pady=10)
         self.stops_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
         self.stops_container = tk.Frame(self.stops_frame)
@@ -49,20 +49,20 @@ class RouteDefinitionTab(tk.Frame):
         
         self.stop_entries = []
         
-        tk.Button(self.stops_frame, text="➕ Agregar Parada", command=self._add_stop, bg="#4CAF50", fg="white").pack(pady=5)
+        tk.Button(self.stops_frame, text="➕ Add Stop", command=self._add_stop, bg="#4CAF50", fg="white").pack(pady=5)
         
-        # 3. Destino Final
-        self.dest_frame = tk.LabelFrame(self.scrollable_frame, text="🏁 Destino Final", font=("Arial", 10, "bold"), padx=10, pady=10)
+        # 3. Final Destination
+        self.dest_frame = tk.LabelFrame(self.scrollable_frame, text="🏁 Final Destination", font=("Arial", 10, "bold"), padx=10, pady=10)
         self.dest_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.dest_name = tk.StringVar(value="Guadalajara - Centro")
+        self.dest_name = tk.StringVar(value="Guadalajara - Downtown")
         self.dest_lat = tk.DoubleVar(value=20.6597)
         self.dest_lng = tk.DoubleVar(value=-103.3496)
         
         self._create_point_inputs(self.dest_frame, self.dest_name, self.dest_lat, self.dest_lng)
 
     def _create_point_inputs(self, parent, name_var, lat_var, lng_var):
-        tk.Label(parent, text="Nombre:").grid(row=0, column=0, sticky=tk.E)
+        tk.Label(parent, text="Name:").grid(row=0, column=0, sticky=tk.E)
         tk.Entry(parent, textvariable=name_var, width=30).grid(row=0, column=1, columnspan=3, sticky=tk.W, padx=5)
         
         tk.Label(parent, text="Lat:").grid(row=1, column=0, sticky=tk.E)
@@ -76,7 +76,7 @@ class RouteDefinitionTab(tk.Frame):
         frame = tk.Frame(self.stops_container, relief=tk.GROOVE, borderwidth=1, padx=5, pady=5)
         frame.pack(fill=tk.X, pady=2)
         
-        name_var = tk.StringVar(value=f"Parada {index}")
+        name_var = tk.StringVar(value=f"Stop {index}")
         lat_var = tk.DoubleVar(value=0.0)
         lng_var = tk.DoubleVar(value=0.0)
         
@@ -108,7 +108,7 @@ class RouteDefinitionTab(tk.Frame):
                     widget.config(text=f"#{i+1}")
 
     def get_route_points(self):
-        """Retorna lista de diccionarios con info de cada punto ordenado"""
+        """Returns list of dictionaries with info for each ordered point"""
         points = []
         # Origen
         points.append({
@@ -136,7 +136,7 @@ class RouteDefinitionTab(tk.Frame):
 
 
 class SegmentProfileTab(tk.Frame):
-    """Tab 2: Perfil de Segmentos (Configuración Térmica)"""
+    """Tab 2: Segment Profile (Thermal Configuration)"""
     def __init__(self, parent, route_tab, generate_callback):
         super().__init__(parent)
         self.route_tab = route_tab
@@ -147,7 +147,7 @@ class SegmentProfileTab(tk.Frame):
         top_frame = tk.Frame(self, pady=10)
         top_frame.pack(fill=tk.X, padx=10)
         
-        tk.Button(top_frame, text="🔄 Cargar Tramos de Ruta", command=self.load_segments, bg="#2196F3", fg="white", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
+        tk.Button(top_frame, text="🔄 Load Route Segments", command=self.load_segments, bg="#2196F3", fg="white", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
         
         # Scrollable area for segments
         self.canvas = tk.Canvas(self)
@@ -169,15 +169,15 @@ class SegmentProfileTab(tk.Frame):
         bottom_frame = tk.Frame(self, pady=10, bg="#f0f0f0")
         bottom_frame.pack(fill=tk.X, side=tk.BOTTOM)
         
-        # Configuración global extra
+        # Global extra configuration
         self.num_samples = tk.IntVar(value=1)
-        tk.Label(bottom_frame, text="Muestras (JSONs):").pack(side=tk.LEFT, padx=5)
+        tk.Label(bottom_frame, text="Samples (JSONs):").pack(side=tk.LEFT, padx=5)
         tk.Spinbox(bottom_frame, from_=1, to=50, textvariable=self.num_samples, width=5).pack(side=tk.LEFT, padx=5)
         
         self.use_real_routes = tk.BooleanVar(value=False)
-        tk.Checkbutton(bottom_frame, text="Usar Rutas Reales (OSM)", variable=self.use_real_routes).pack(side=tk.LEFT, padx=10)
+        tk.Checkbutton(bottom_frame, text="Use Real Routes (OSM)", variable=self.use_real_routes).pack(side=tk.LEFT, padx=10)
         
-        tk.Button(bottom_frame, text="🚀 GENERAR SIMULACIÓN", command=self._on_generate, bg="#FF5722", fg="white", font=("Arial", 12, "bold")).pack(side=tk.RIGHT, padx=10)
+        tk.Button(bottom_frame, text="🚀 GENERATE SIMULATION", command=self._on_generate, bg="#FF5722", fg="white", font=("Arial", 12, "bold")).pack(side=tk.RIGHT, padx=10)
 
     def load_segments(self):
         # Clear existing
@@ -187,7 +187,7 @@ class SegmentProfileTab(tk.Frame):
         
         points = self.route_tab.get_route_points()
         if len(points) < 2:
-            messagebox.showwarning("Aviso", "Defina al menos Origen y Destino en el Tab 1.")
+            messagebox.showwarning("Warning", "Define at least Origin and Destination in Tab 1.")
             return
             
         # Create segments (Point i -> Point i+1)
@@ -195,7 +195,7 @@ class SegmentProfileTab(tk.Frame):
             p_start = points[i]
             p_end = points[i+1]
             
-            frame = tk.LabelFrame(self.scrollable_frame, text=f"Tramo {i+1}: {p_start['name']} ➡ {p_end['name']}", font=("Arial", 9, "bold"), padx=10, pady=10)
+            frame = tk.LabelFrame(self.scrollable_frame, text=f"Segment {i+1}: {p_start['name']} ➡ {p_end['name']}", font=("Arial", 9, "bold"), padx=10, pady=10)
             frame.pack(fill=tk.X, pady=5)
             
             min_var = tk.DoubleVar(value=0.0)
@@ -208,7 +208,7 @@ class SegmentProfileTab(tk.Frame):
             tk.Label(frame, text="Temp Max:").grid(row=0, column=2, padx=5)
             tk.Entry(frame, textvariable=max_var, width=8).grid(row=0, column=3, padx=5)
             
-            tk.Label(frame, text="Distribución:").grid(row=0, column=4, padx=5)
+            tk.Label(frame, text="Distribution:").grid(row=0, column=4, padx=5)
             ttk.Combobox(frame, textvariable=dist_var, values=["normal", "beta", "truncnorm", "uniform"], state="readonly", width=10).grid(row=0, column=5, padx=5)
             
             self.segment_widgets.append({
@@ -230,13 +230,13 @@ class SegmentProfileTab(tk.Frame):
 
     def _on_generate(self):
         if not self.segment_widgets:
-            messagebox.showwarning("Aviso", "No hay tramos cargados. Por favor presione 'Cargar Tramos de Ruta'.")
+            messagebox.showwarning("Warning", "No segments loaded. Please press 'Load Route Segments'.")
             return
         self.generate_callback()
 
 
 class ResultsViewerTab(tk.Frame):
-    """Tab 3: Visor de Resultados"""
+    """Tab 3: Results Viewer"""
     def __init__(self, parent, output_dir):
         super().__init__(parent)
         self.output_dir = output_dir
@@ -246,26 +246,26 @@ class ResultsViewerTab(tk.Frame):
         ctrl_frame = tk.Frame(self, pady=10)
         ctrl_frame.pack(fill=tk.X, padx=10)
         
-        tk.Label(ctrl_frame, text="Caso:").pack(side=tk.LEFT)
+        tk.Label(ctrl_frame, text="Case:").pack(side=tk.LEFT)
         self.case_cb = ttk.Combobox(ctrl_frame, state="readonly", width=30)
         self.case_cb.pack(side=tk.LEFT, padx=5)
         self.case_cb.bind("<<ComboboxSelected>>", self._on_case_selected)
         
-        tk.Label(ctrl_frame, text="Muestra:").pack(side=tk.LEFT, padx=(10,0))
+        tk.Label(ctrl_frame, text="Sample:").pack(side=tk.LEFT, padx=(10,0))
         self.sample_cb = ttk.Combobox(ctrl_frame, state="readonly", width=30)
         self.sample_cb.pack(side=tk.LEFT, padx=5)
         self.sample_cb.bind("<<ComboboxSelected>>", self._on_sample_selected)
         
-        tk.Button(ctrl_frame, text="🔄 Actualizar", command=self.load_files).pack(side=tk.LEFT, padx=10)
+        tk.Button(ctrl_frame, text="🔄 Refresh", command=self.load_files).pack(side=tk.LEFT, padx=10)
         
         # Actions
         btn_frame = tk.Frame(self, pady=5)
         btn_frame.pack(fill=tk.X, padx=10)
         
-        tk.Button(btn_frame, text="📄 Ver JSON", command=self._open_json).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="🗺️ Ver Mapa", command=self._open_map).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="📊 Ver Gráfica", command=self._open_plot).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="📂 Abrir Carpeta", command=self._open_folder).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="📄 View JSON", command=self._open_json).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="🗺️ View Map", command=self._open_map).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="📊 View Chart", command=self._open_plot).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="📂 Open Folder", command=self._open_folder).pack(side=tk.LEFT, padx=5)
         
         # Info Text
         self.info_text = tk.Text(self, height=15, bg="#f5f5f5", font=("Courier", 9))
@@ -326,11 +326,11 @@ class ResultsViewerTab(tk.Frame):
                 
                 txt = f"EPC: {data.get('EPC')}\n"
                 txt += f"TID: {data.get('TID')}\n"
-                txt += f"Puntos: {len(data.get('loggedData', []))}\n"
-                txt += f"Ruta: {sample['path']}\n"
+                txt += f"Points: {len(data.get('loggedData', []))}\n"
+                txt += f"Route: {sample['path']}\n"
                 self.info_text.insert(tk.END, txt)
             except Exception as e:
-                self.info_text.insert(tk.END, f"Error leyendo JSON: {e}")
+                self.info_text.insert(tk.END, f"Error reading JSON: {e}")
 
     def _get_current_sample(self):
         case = self.case_cb.get()
@@ -361,7 +361,7 @@ class ResultsViewerTab(tk.Frame):
 class SimulatorGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Simulador de Rutas Personalizadas")
+        self.root.title("Custom Routes Simulator")
         self.root.geometry("1000x800")
         
         self.output_dir = "use_cases_output"
@@ -372,13 +372,13 @@ class SimulatorGUI:
         
         # Tabs
         self.tab1 = RouteDefinitionTab(self.notebook)
-        self.notebook.add(self.tab1, text="1. Definición de Ruta")
+        self.notebook.add(self.tab1, text="1. Route Definition")
         
         self.tab2 = SegmentProfileTab(self.notebook, self.tab1, self.start_generation)
-        self.notebook.add(self.tab2, text="2. Perfil de Segmentos")
+        self.notebook.add(self.tab2, text="2. Segment Profile")
         
         self.tab3 = ResultsViewerTab(self.notebook, self.output_dir)
-        self.notebook.add(self.tab3, text="3. Resultados")
+        self.notebook.add(self.tab3, text="3. Results")
         
         # Bind tab change to auto-load segments if switching to tab 2
         self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
@@ -442,7 +442,7 @@ class SimulatorGUI:
                 sim.plot_results(save_path=os.path.join(sample_dir, "plot.png"))
                 plt.close()
                 
-            messagebox.showinfo("Éxito", f"Se generaron {num_samples} simulaciones en:\n{case_dir}")
+            messagebox.showinfo("Success", f"{num_samples} simulations generated in:\n{case_dir}")
             
             # Refresh viewer
             self.root.after(0, self.tab3.load_files)

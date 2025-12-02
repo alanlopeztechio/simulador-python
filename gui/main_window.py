@@ -1,0 +1,203 @@
+"""
+Main GUI window for the Cold Chain Simulator.
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+import threading
+import sys
+import os
+
+# Add parent directory to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from gui.stops_tab import StopsTab
+from gui.distributions_tab import DistributionsTab
+from gui.config_tab import ConfigTab
+from gui.results_tab import ResultsTab
+
+
+class SimulatorGUI:
+    """Main application window for the Cold Chain Simulator."""
+    
+    def __init__(self, root):
+        self.root = root
+        self.root.title("COLD CHAIN SIMULATOR - CUSTOM ROUTES")
+        self.root.geometry("1200x800")
+        
+        # Create main notebook (tabs)
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Create tabs
+        self.stops_tab = StopsTab(self.notebook)
+        self.distributions_tab = DistributionsTab(self.notebook, self.stops_tab)
+        self.results_tab = ResultsTab(self.notebook, output_dir="simulation_outputs")
+        self.config_tab = ConfigTab(self.notebook, self.stops_tab, self.distributions_tab)
+        
+        # Add tabs to notebook
+        self.notebook.add(self.stops_tab, text="Stops")
+        self.notebook.add(self.distributions_tab, text="Distribution Parameters")
+        self.notebook.add(self.results_tab, text="Results")
+        self.notebook.add(self.config_tab, text="Save Configurations")
+        
+        # Bottom action bar
+        self._create_action_bar()
+        
+        # Status bar
+        self._create_status_bar()
+        
+        # Bind tab change event
+        self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
+    
+    def _create_action_bar(self):
+        """Create bottom action bar with generate button."""
+        action_frame = tk.Frame(self.root, bg="#f0f0f0", pady=10)
+        action_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        # Generation controls
+        control_frame = tk.Frame(action_frame, bg="#f0f0f0")
+        control_frame.pack(side=tk.LEFT, padx=20)
+        
+        tk.Label(control_frame, text="Samples (JSONs):", bg="#f0f0f0", 
+                font=("Arial", 9)).pack(side=tk.LEFT, padx=5)
+        self.num_samples_var = tk.IntVar(value=1)
+        tk.Spinbox(control_frame, from_=1, to=50, textvariable=self.num_samples_var, 
+                  width=5, font=("Arial", 9)).pack(side=tk.LEFT, padx=5)
+        
+        self.use_real_routes_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(control_frame, text="Use Real Routes (OSM)", 
+                      variable=self.use_real_routes_var, bg="#f0f0f0",
+                      font=("Arial", 9)).pack(side=tk.LEFT, padx=10)
+        
+        # Generate button
+        tk.Button(action_frame, text="🚀 GENERATE SIMULATION", 
+                 command=self.start_generation,
+                 bg="#FF5722", fg="white", 
+                 font=("Arial", 14, "bold"),
+                 padx=20, pady=10).pack(side=tk.RIGHT, padx=20)
+    
+    def _create_status_bar(self):
+        """Create status bar at bottom."""
+        self.status_var = tk.StringVar(value="Ready")
+        status_bar = tk.Label(self.root, textvariable=self.status_var, 
+                             bd=1, relief=tk.SUNKEN, anchor=tk.W,
+                             font=("Arial", 9))
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+    
+    def _on_tab_changed(self, event):
+        """Handle tab change events."""
+        current_tab = self.notebook.index(self.notebook.select())
+        
+        # Update status based on active tab
+        tab_names = ["Stops", "Distribution Parameters", "Results", "Save Configurations"]
+        if current_tab < len(tab_names):
+            self.status_var.set(f"Active Tab: {tab_names[current_tab]}")
+    
+    def start_generation(self):
+        """Start simulation generation process."""
+        # Validate route configuration
+        route_config = self.stops_tab.get_route_config()
+        if not route_config:
+            return
+        
+        # Apply distributions to route
+        if not self.distributions_tab.apply_distributions_to_route(route_config):
+            return
+        
+        # Confirm generation
+        num_samples = self.num_samples_var.get()
+        use_real = self.use_real_routes_var.get()
+        
+        msg = (f"Generate simulation with:\n\n"
+               f"Route: {route_config.route_name}\n"
+               f"Segments: {len(route_config.segments)}\n"
+               f"Sensors: {len(route_config.sensors)}\n"
+               f"Samples: {num_samples}\n"
+               f"Real Routes: {'Yes' if use_real else 'No'}\n\n"
+               f"This will create {num_samples * len(route_config.sensors)} JSON file(s).")
+        
+        if not messagebox.askyesno("Confirm Generation", msg):
+            return
+        
+        # Run generation in background thread
+        self.status_var.set("Generating simulation...")
+        self.root.config(cursor="wait")
+        
+        thread = threading.Thread(target=self._run_simulation, 
+                                 args=(route_config, num_samples, use_real),
+                                 daemon=True)
+        thread.start()
+    
+    def _run_simulation(self, route_config, num_samples, use_real_routes):
+        """Run simulation in background thread.
+        
+        Generates complete RFID tag JSON files using the simulator.
+        """
+        try:
+            # Import adapter
+            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from simulator_adapter import SimulatorAdapter
+            
+            output_dir = "simulation_outputs"
+            
+            # Generate simulations using the adapter
+            generated_files = SimulatorAdapter.generate_simulations(
+                route_config=route_config,
+                num_samples=num_samples,
+                use_real_routes=use_real_routes,
+                output_dir=output_dir
+            )
+            
+            # Update UI on main thread
+            self.root.after(0, self._generation_complete, generated_files)
+            
+        except Exception as e:
+            import traceback
+            error_details = f"{str(e)}\n\n{traceback.format_exc()}"
+            self.root.after(0, self._generation_error, error_details)
+    
+    def _generation_complete(self, generated_files):
+        """Called when generation completes successfully."""
+        self.root.config(cursor="")
+        self.status_var.set("Generation complete")
+        
+        if isinstance(generated_files, list):
+            files_list = "\n".join([f"  • {os.path.basename(f)}" for f in generated_files[:10]])
+            if len(generated_files) > 10:
+                files_list += f"\n  ... and {len(generated_files) - 10} more"
+            
+            messagebox.showinfo("Success", 
+                              f"✓ Generated {len(generated_files)} simulation file(s):\n\n{files_list}\n\n"
+                              f"Saved to: simulation_outputs/")
+        else:
+            messagebox.showinfo("Success", f"Simulation complete:\n{generated_files}")
+        
+        # Refresh results tab
+        self.results_tab.refresh()
+    
+    def _generation_error(self, error_msg):
+        """Called when generation encounters an error."""
+        self.root.config(cursor="")
+        self.status_var.set("Generation failed")
+        messagebox.showerror("Generation Error", f"An error occurred:\n\n{error_msg}")
+
+
+def main():
+    """Main entry point."""
+    root = tk.Tk()
+    app = SimulatorGUI(root)
+    
+    # Center window
+    root.update_idletasks()
+    width = root.winfo_width()
+    height = root.winfo_height()
+    x = (root.winfo_screenwidth() // 2) - (width // 2)
+    y = (root.winfo_screenheight() // 2) - (height // 2)
+    root.geometry(f'{width}x{height}+{x}+{y}')
+    
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

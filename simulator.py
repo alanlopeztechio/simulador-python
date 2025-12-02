@@ -63,7 +63,7 @@ class TempProfile:
 
 @dataclass
 class UseCaseConfig:
-    """Configuración para un caso de uso específico"""
+    """Configuration for a specific use case"""
     name: str
     description: str
     start_location: Tuple[float, float]  # (lat, lng)
@@ -88,7 +88,7 @@ class OpenStreetMapRouter:
     """Cliente para obtener rutas reales usando OpenStreetMap / OpenRouteService"""
     
     def __init__(self):
-        # API pública de OpenRouteService (límite: 40 requests/min, 2000 requests/day)
+        # Public OpenRouteService API (limit: 40 requests/min, 2000 requests/day)
         # Para producción, registrarse en https://openrouteservice.org/ para obtener una API key
         self.base_url = "https://api.openrouteservice.org/v2/directions"
         # Nota: Usar API key personal para mejor rate limit
@@ -1095,41 +1095,41 @@ class LogSimulator:
         
         m = folium.Map(location=[center_lat, center_lng], zoom_start=7)
         
-        # Marcadores inteligentes según waypoints
+        # Intelligent markers based on waypoints
         if self.config.waypoints and len(self.config.waypoints) >= 2:
-            # Marcador de ORIGEN (primer waypoint) - Verde
+            # ORIGIN marker (first waypoint) - Green
             folium.Marker(
                 [self.config.waypoints[0][0], self.config.waypoints[0][1]],
-                popup=f"<b>🟢 Origen</b><br>{self.config.route_name}",
+                popup=f"<b>🟢 Origin</b><br>{self.config.route_name}",
                 icon=folium.Icon(color='green', icon='play')
             ).add_to(m)
             
-            # Marcadores de PARADAS INTERMEDIAS (waypoints del medio) - Azul
+            # INTERMEDIATE STOPS markers (middle waypoints) - Blue
             if len(self.config.waypoints) > 2:
                 for idx, (lat, lng) in enumerate(self.config.waypoints[1:-1], start=1):
                     folium.Marker(
                         [lat, lng],
-                        popup=f"<b>🔵 Parada {idx}</b>",
+                        popup=f"<b>🔵 Stop {idx}</b>",
                         icon=folium.Icon(color='blue', icon='flag')
                     ).add_to(m)
             
-            # Marcador de DESTINO (último waypoint) - Rojo
+            # DESTINATION marker (last waypoint) - Red
             folium.Marker(
                 [self.config.waypoints[-1][0], self.config.waypoints[-1][1]],
-                popup=f"<b>🔴 Destino Final</b><br>{self.config.route_name}",
+                popup=f"<b>🔴 Final Destination</b><br>{self.config.route_name}",
                 icon=folium.Icon(color='red', icon='stop')
             ).add_to(m)
         else:
-            # Fallback si no hay waypoints definidos (usar start/end)
+            # Fallback if no waypoints defined (use start/end)
             folium.Marker(
                 [self.config.start_lat, self.config.start_lng],
-                popup=f"<b>Inicio</b><br>{self.config.route_name}",
+                popup=f"<b>Start</b><br>{self.config.route_name}",
                 icon=folium.Icon(color='green', icon='play')
             ).add_to(m)
             
             folium.Marker(
                 [self.config.end_lat, self.config.end_lng],
-                popup=f"<b>Fin</b><br>{self.config.route_name}",
+                popup=f"<b>End</b><br>{self.config.route_name}",
                 icon=folium.Icon(color='red', icon='stop')
             ).add_to(m)
 
@@ -1172,7 +1172,7 @@ class LogSimulator:
                 folium.CircleMarker(
                     location=self.coordinates[i],
                     radius=5,
-                    popup=f"<b>Muestra {i}</b><br>Temp: {temp}°C<br>Hora: {self.timestamps[i].strftime('%H:%M:%S')}",
+                    popup=f"<b>Sample {i}</b><br>Temp: {temp}°C<br>Time: {self.timestamps[i].strftime('%H:%M:%S')}",
                     color=color,
                     fill=True,
                     fillColor=color
@@ -1195,9 +1195,9 @@ class LogSimulator:
         # 1. Temperatura vs Tiempo
         ax1 = fig.add_subplot(gs[0, :])
         ax1.plot(self.timestamps, self.temperatures, marker='o', linestyle='-', linewidth=2, markersize=4, color='#2E86AB')
-        ax1.axhline(y=self.config.lower_temp, color='blue', linestyle='--', linewidth=2, label=f'Límite inferior ({self.config.lower_temp}°C)', alpha=0.7)
-        ax1.axhline(y=self.config.upper_temp, color='red', linestyle='--', linewidth=2, label=f'Límite superior ({self.config.upper_temp}°C)', alpha=0.7)
-        ax1.fill_between(self.timestamps, self.config.lower_temp, self.config.upper_temp, alpha=0.2, color='green', label='Rango seguro')
+        ax1.axhline(y=self.config.lower_temp, color='blue', linestyle='--', linewidth=2, label=f'Lower limit ({self.config.lower_temp}°C)', alpha=0.7)
+        ax1.axhline(y=self.config.upper_temp, color='red', linestyle='--', linewidth=2, label=f'Upper limit ({self.config.upper_temp}°C)', alpha=0.7)
+        ax1.fill_between(self.timestamps, self.config.lower_temp, self.config.upper_temp, alpha=0.2, color='green', label='Safe range')
         
         # Marcar violaciones
         violations_low = [(self.timestamps[i], self.temperatures[i]) for i in range(len(self.temperatures)) if self.temperatures[i] < self.config.lower_temp]
@@ -1205,14 +1205,14 @@ class LogSimulator:
         
         if violations_low:
             ax1.scatter([v[0] for v in violations_low], [v[1] for v in violations_low], 
-                       color='blue', s=100, marker='v', zorder=5, label='Violación baja')
+                       color='blue', s=100, marker='v', zorder=5, label='Low violation')
         if violations_high:
             ax1.scatter([v[0] for v in violations_high], [v[1] for v in violations_high], 
-                       color='red', s=100, marker='^', zorder=5, label='Violación alta')
+                       color='red', s=100, marker='^', zorder=5, label='High violation')
         
-        ax1.set_xlabel('Tiempo', fontsize=12, fontweight='bold')
-        ax1.set_ylabel('Temperatura (°C)', fontsize=12, fontweight='bold')
-        ax1.set_title(f'Monitoreo de Temperatura - {self.config.route_name}\nEPC: {self.config.epc}', 
+        ax1.set_xlabel('Time', fontsize=12, fontweight='bold')
+        ax1.set_ylabel('Temperature (°C)', fontsize=12, fontweight='bold')
+        ax1.set_title(f'Temperature Monitoring - {self.config.route_name}\nEPC: {self.config.epc}', 
                      fontsize=14, fontweight='bold')
         ax1.grid(True, alpha=0.3, linestyle='--')
         ax1.legend(loc='best')
@@ -1252,9 +1252,9 @@ class LogSimulator:
         
         ax2.axvline(x=self.config.lower_temp, color='blue', linestyle='--', linewidth=2, alpha=0.7)
         ax2.axvline(x=self.config.upper_temp, color='red', linestyle='--', linewidth=2, alpha=0.7)
-        ax2.set_xlabel('Temperatura (°C)', fontsize=11, fontweight='bold')
-        ax2.set_ylabel('Densidad', fontsize=11, fontweight='bold')
-        ax2.set_title('Distribución de Temperaturas', fontsize=12, fontweight='bold')
+        ax2.set_xlabel('Temperature (°C)', fontsize=11, fontweight='bold')
+        ax2.set_ylabel('Density', fontsize=11, fontweight='bold')
+        ax2.set_title('Temperature Distribution', fontsize=12, fontweight='bold')
         ax2.legend()
         ax2.grid(True, alpha=0.3, linestyle='--')
         
@@ -1265,10 +1265,10 @@ class LogSimulator:
                          whiskerprops=dict(linewidth=2),
                          capprops=dict(linewidth=2),
                          medianprops=dict(color='darkblue', linewidth=2))
-        ax3.axhline(y=self.config.lower_temp, color='blue', linestyle='--', linewidth=2, label='Límite inferior', alpha=0.7)
-        ax3.axhline(y=self.config.upper_temp, color='red', linestyle='--', linewidth=2, label='Límite superior', alpha=0.7)
-        ax3.set_ylabel('Temperatura (°C)', fontsize=11, fontweight='bold')
-        ax3.set_title('Box Plot de Temperaturas', fontsize=12, fontweight='bold')
+        ax3.axhline(y=self.config.lower_temp, color='blue', linestyle='--', linewidth=2, label='Lower limit', alpha=0.7)
+        ax3.axhline(y=self.config.upper_temp, color='red', linestyle='--', linewidth=2, label='Upper limit', alpha=0.7)
+        ax3.set_ylabel('Temperature (°C)', fontsize=11, fontweight='bold')
+        ax3.set_title('Temperature Box Plot', fontsize=12, fontweight='bold')
         ax3.legend()
         ax3.grid(True, alpha=0.3, axis='y', linestyle='--')
         
@@ -1295,13 +1295,13 @@ class LogSimulator:
         scatter = ax5.scatter(lngs, lats, c=self.temperatures, cmap='RdYlBu_r', s=80, 
                             edgecolors='black', linewidth=0.5, norm=norm, zorder=3)
         ax5.plot(lngs, lats, 'k--', alpha=0.3, linewidth=1.5, zorder=1)
-        ax5.plot(lngs[0], lats[0], 'go', markersize=18, label='Inicio', 
+        ax5.plot(lngs[0], lats[0], 'go', markersize=18, label='Start', 
                 markeredgecolor='black', markeredgewidth=2, zorder=4)
-        ax5.plot(lngs[-1], lats[-1], 'rs', markersize=18, label='Fin', 
+        ax5.plot(lngs[-1], lats[-1], 'rs', markersize=18, label='End', 
                 markeredgecolor='black', markeredgewidth=2, zorder=4)
-        ax5.set_xlabel('Longitud', fontsize=11, fontweight='bold')
-        ax5.set_ylabel('Latitud', fontsize=11, fontweight='bold')
-        ax5.set_title('Ruta y Temperaturas', fontsize=12, fontweight='bold')
+        ax5.set_xlabel('Longitude', fontsize=11, fontweight='bold')
+        ax5.set_ylabel('Latitude', fontsize=11, fontweight='bold')
+        ax5.set_title('Route and Temperatures', fontsize=12, fontweight='bold')
         ax5.legend()
         ax5.grid(True, alpha=0.3, linestyle='--')
         cbar = plt.colorbar(scatter, ax=ax5)
@@ -1321,44 +1321,44 @@ class LogSimulator:
         violations_count = len(violations_low) + len(violations_high)
         compliance_rate = ((len(self.temperatures) - violations_count) / len(self.temperatures)) * 100
 
-        # Texto formateado (evitar f-string triple comillas para mayor compatibilidad)
-        interval_line = f"Intervalo de muestreo: {self.config.log_interval_in_seconds}s ({self.config.log_interval_in_seconds/60:.1f} min)"
+        # Formatted text (avoid triple-quoted f-strings for better compatibility)
+        interval_line = f"Sampling interval: {self.config.log_interval_in_seconds}s ({self.config.log_interval_in_seconds/60:.1f} min)"
         sep = "=" * 70
         line_sep = "─" * 70
         lines = [
             sep,
-            f"REPORTE DE SIMULACIÓN - {self.config.route_name}",
+            f"SIMULATION REPORT - {self.config.route_name}",
             sep,
             "",
-            "CONFIGURACIÓN",
+            "CONFIGURATION",
             line_sep,
-            f"Distribución: {self.config.distribution_type.upper()}",
-            f"Muestras totales: {self.config.number_of_samples}",
+            f"Distribution: {self.config.distribution_type.upper()}",
+            f"Total samples: {self.config.number_of_samples}",
             interval_line,
-            f"Duración total: {duration_hours:.2f} horas",
-            f"Distancia aproximada: {total_distance:.2f} km",
+            f"Total duration: {duration_hours:.2f} hours",
+            f"Approximate distance: {total_distance:.2f} km",
             "",
-            "TEMPERATURAS",
+            "TEMPERATURES",
             line_sep,
-            f"Media: {np.mean(self.temperatures):.2f}°C",
-            f"Mediana: {np.median(self.temperatures):.2f}°C",
-            f"Desviación Estándar: {np.std(self.temperatures):.2f}°C",
-            f"Mínima: {min(self.temperatures):.2f}°C",
-            f"Máxima: {max(self.temperatures):.2f}°C",
-            f"Rango permitido: [{self.config.lower_temp}°C, {self.config.upper_temp}°C]",
+            f"Mean: {np.mean(self.temperatures):.2f}°C",
+            f"Median: {np.median(self.temperatures):.2f}°C",
+            f"Standard Deviation: {np.std(self.temperatures):.2f}°C",
+            f"Minimum: {min(self.temperatures):.2f}°C",
+            f"Maximum: {max(self.temperatures):.2f}°C",
+            f"Allowed range: [{self.config.lower_temp}°C, {self.config.upper_temp}°C]",
             "",
-            "ALARMAS Y CUMPLIMIENTO",
+            "ALARMS AND COMPLIANCE",
             line_sep,
-            f"⚠️  Violaciones totales: {violations_count} ({(violations_count/len(self.temperatures)*100):.1f}%)",
-            f"❄️  Temperaturas bajo límite: {len(violations_low)}",
-            f"🔥 Temperaturas sobre límite: {len(violations_high)}",
-            f"✓  Tasa de cumplimiento: {compliance_rate:.1f}%",
+            f"⚠️  Total violations: {violations_count} ({(violations_count/len(self.temperatures)*100):.1f}%)",
+            f"❄️  Temperatures below limit: {len(violations_low)}",
+            f"🔥 Temperatures above limit: {len(violations_high)}",
+            f"✓  Compliance rate: {compliance_rate:.1f}%",
             "",
-            "RUTA",
+            "ROUTE",
             line_sep,
-            f"Origen: ({self.config.start_lat:.4f}, {self.config.start_lng:.4f})",
-            f"Destino: ({self.config.end_lat:.4f}, {self.config.end_lng:.4f})",
-            f"Paradas programadas: {self.config.number_of_stops}",
+            f"Origin: ({self.config.start_lat:.4f}, {self.config.start_lng:.4f})",
+            f"Destination: ({self.config.end_lat:.4f}, {self.config.end_lng:.4f})",
+            f"Scheduled stops: {self.config.number_of_stops}",
             "",
             f"EPC: {self.config.epc}",
             f"TID: {self.config.tid}",
@@ -1370,7 +1370,7 @@ class LogSimulator:
                 fontsize=9, verticalalignment='top', fontfamily='monospace',
                 bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.6, pad=1))
         
-        plt.suptitle(f'ANÁLISIS COMPLETO - {self.config.route_name.upper()}', 
+        plt.suptitle(f'COMPLETE ANALYSIS - {self.config.route_name.upper()}', 
                     fontsize=16, fontweight='bold', y=0.995)
         
         if save_path:
