@@ -88,25 +88,18 @@ class StopsTab(tk.Frame):
                                      font=("Arial", 10, "bold"), padx=10, pady=10)
         origin_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        # self.origin_lat_var = tk.DoubleVar(value=34.0522)
-        # self.origin_lng_var = tk.DoubleVar(value=-118.2437)
-        self.combo_route_origin = tk.StringVar()
+        self.origin_lat_var = tk.DoubleVar(value=34.0522)
+        self.origin_lng_var = tk.DoubleVar(value=-118.2437)
         self.origin_time_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d %H:%M"))
-        
+
+        def set_origin_coords(lat, lon):
+            self.origin_lat_var.set(lat)
+            self.origin_lng_var.set(lon)
+            print(f"Origen actualizado: {lat}, {lon}")
+
+        self.origin_search = LocationSearchWidget(origin_frame, on_select_callback=set_origin_coords)
+        self.origin_search.grid(row=0, column=1, columnspan=3, sticky="w")
         tk.Label(origin_frame, text="Location :").grid(row=0, column=0, sticky=tk.E)
-        #tk.Entry(origin_frame, textvariable=self.origin_lat_var, width=15).grid(row=0, column=1, padx=5)
-        self.search_box = ttk.Combobox(origin_frame,textvariable=self.combo_route_origin, width=30)
-        self.search_box.grid(row=0, column=1, padx=5)
-
-        self.search_button = ttk.Button(origin_frame, text="Search", command=self._search_button_clicked)
-        self.search_button.grid(row=0, column=2, padx=5)
-
-        self.status_label = tk.Label(origin_frame, text="Listo para buscar", fg="grey",
-                                     font=("Consolas", 9))
-        self.status_label.grid(row=0, column=3, padx=5)
-        
-        # tk.Label(origin_frame, text="Longitude:").grid(row=0, column=2, sticky=tk.E)
-        # tk.Entry(origin_frame, textvariable=self.origin_lng_var, width=15).grid(row=0, column=3, padx=5)
         
         tk.Label(origin_frame, text="Departure Time:").grid(row=1, column=0, sticky=tk.E)
         tk.Entry(origin_frame, textvariable=self.origin_time_var, width=20).grid(row=1, column=1, columnspan=2, sticky=tk.W, padx=5)
@@ -120,12 +113,22 @@ class StopsTab(tk.Frame):
         self.dest_lat_var = tk.DoubleVar(value=36.7783)
         self.dest_lng_var = tk.DoubleVar(value=-119.4179)
         self.dest_time_var = tk.StringVar(value="")
+
+
+        def set_origin_coords(lat, lon):
+            self.origin_lat_var.set(lat)
+            self.origin_lng_var.set(lon)
+            print(f"Origen actualizado: {lat}, {lon}")
+
+        self.destination_search = LocationSearchWidget(dest_frame, on_select_callback=set_origin_coords)
+        self.destination_search.grid(row=0, column=1, columnspan=3, sticky="w")
+        tk.Label(dest_frame, text="Location :").grid(row=0, column=0, sticky=tk.E)
         
-        tk.Label(dest_frame, text="Latitude:").grid(row=0, column=0, sticky=tk.E)
-        tk.Entry(dest_frame, textvariable=self.dest_lat_var, width=15).grid(row=0, column=1, padx=5)
+        # tk.Label(dest_frame, text="Latitude:").grid(row=0, column=0, sticky=tk.E)
+        # tk.Entry(dest_frame, textvariable=self.dest_lat_var, width=15).grid(row=0, column=1, padx=5)
         
-        tk.Label(dest_frame, text="Longitude:").grid(row=0, column=2, sticky=tk.E)
-        tk.Entry(dest_frame, textvariable=self.dest_lng_var, width=15).grid(row=0, column=3, padx=5)
+        # tk.Label(dest_frame, text="Longitude:").grid(row=0, column=2, sticky=tk.E)
+        # tk.Entry(dest_frame, textvariable=self.dest_lng_var, width=15).grid(row=0, column=3, padx=5)
         
         tk.Label(dest_frame, text="Estimated Transit Time (minutes):").grid(row=1, column=0, sticky=tk.E)
         self.est_transit_var = tk.IntVar(value=60)
@@ -464,6 +467,96 @@ class StopsTab(tk.Frame):
         
         return config
 
+
+class LocationSearchWidget(tk.Frame):
+    def __init__(self, parent, on_select_callback=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.on_select_callback = on_select_callback # Función a llamar al elegir una opción
+        self._results_map = {} # Para guardar coordenadas ocultas: {"Dirección": [lat, lon]}
+        
+        # UI Components
+        self.combo_var = tk.StringVar()
+        self.search_box = ttk.Combobox(self, textvariable=self.combo_var, width=30)
+        self.search_box.grid(row=0, column=0, padx=5, sticky="ew")
+        self.search_box.bind("<<ComboboxSelected>>", self._on_selection_made)
+
+        self.search_button = ttk.Button(self, text="🔍", width=4, command=self._start_search)
+        self.search_button.grid(row=0, column=1, padx=2)
+
+        self.status_label = tk.Label(self, text="", fg="grey", font=("Consolas", 8), width=15)
+        self.status_label.grid(row=0, column=2, padx=5)
+
+        # Configuración de Spinner
+        self.spinner_cycle = itertools.cycle(["|", "/", "-", "\\"])
+        self.loading = False
+
+    def get_text(self):
+        return self.combo_var.get()
+
+    def set_text(self, text):
+        self.combo_var.set(text)
+
+    def _start_search(self):
+        query = self.combo_var.get().strip()
+        if not query: return
+        
+        self.loading = True
+        self._animate_spinner()
+        # Iniciar hilo
+        threading.Thread(target=self._fetch_api, args=(query,), daemon=True).start()
+
+    def _animate_spinner(self):
+        if self.loading:
+            self.status_label.config(text=f"Loading {next(self.spinner_cycle)}", fg="blue")
+            self.after(100, self._animate_spinner)
+        else:
+            self.status_label.config(text="Ready", fg="green")
+
+    def _fetch_api(self, query):
+        try:
+            # TU API KEY (Te recomiendo moverla a variables de entorno)
+            api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjMwYWY3NzRhN2U1YjRkMWRhMDdhNDRmYzM4ZDBkMmYwIiwiaCI6Im11cm11cjY0In0=" 
+            url = "https://api.openrouteservice.org/geocode/search"
+            params = {"api_key": api_key, "text": query, "size": 10}
+
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            suggestions = []
+            self._results_map = {} # Limpiar mapa anterior
+
+            for f in data.get("features", []):
+                props = f.get("properties", {})
+                geometry = f.get("geometry", {})
+                label = props.get("label")
+                coords = geometry.get("coordinates") # [lon, lat] ojo con el orden
+                
+                if label and coords:
+                    suggestions.append(label)
+                    # Guardamos lat/lon para usarlo después (OpenRouteService devuelve [lon, lat])
+                    self._results_map[label] = (coords[1], coords[0]) 
+
+            self.after(0, lambda: self._update_ui(suggestions))
+
+        except Exception as e:
+            print(f"Error API: {e}")
+            self.after(0, lambda: self.status_label.config(text="Error", fg="red"))
+        finally:
+            self.loading = False
+
+    def _update_ui(self, values):
+        self.search_box["values"] = values
+        if values:
+            self.search_box.event_generate('<Down>') # Desplegar lista automáticamente
+
+    def _on_selection_made(self, event):
+        selected_text = self.combo_var.get()
+        coords = self._results_map.get(selected_text)
+        
+        if coords and self.on_select_callback:
+            # Llamamos a la función del padre pasándole (lat, lon)
+            self.on_select_callback(coords[0], coords[1])
 
 if __name__ == "__main__":
     # Test the tab
