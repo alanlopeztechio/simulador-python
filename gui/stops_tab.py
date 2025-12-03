@@ -114,13 +114,12 @@ class StopsTab(tk.Frame):
         self.dest_lng_var = tk.DoubleVar(value=-119.4179)
         self.dest_time_var = tk.StringVar(value="")
 
-
-        def set_origin_coords(lat, lon):
-            self.origin_lat_var.set(lat)
-            self.origin_lng_var.set(lon)
-            print(f"Origen actualizado: {lat}, {lon}")
-
-        self.destination_search = LocationSearchWidget(dest_frame, on_select_callback=set_origin_coords)
+        def set_destination_coords(lat, lon):
+            self.dest_lat_var.set(lat)
+            self.dest_lng_var.set(lon)
+            print(f"Destino actualizado: {lat}, {lon}")
+        
+        self.destination_search = LocationSearchWidget(dest_frame, on_select_callback=set_destination_coords)
         self.destination_search.grid(row=0, column=1, columnspan=3, sticky="w")
         tk.Label(dest_frame, text="Location :").grid(row=0, column=0, sticky=tk.E)
         
