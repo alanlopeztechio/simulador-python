@@ -6,8 +6,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import List, Optional
+import threading
+import requests
 import sys
 import os
+import itertools
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -55,10 +58,13 @@ class StopsTab(tk.Frame):
         self.available_sensors = []  # List of SensorConfig objects
         
         self._build_ui()
-    
+
     def _build_ui(self):
         """Build the complete UI layout."""
         container = self.scrollable_frame
+
+        self.loading = False
+        self.spinner_cycle = itertools.cycle(["|", "/", "-", "\\"])
         
         # === ROUTE METADATA ===
         metadata_frame = tk.LabelFrame(container, text="Route Metadata", 
@@ -82,15 +88,25 @@ class StopsTab(tk.Frame):
                                      font=("Arial", 10, "bold"), padx=10, pady=10)
         origin_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.origin_lat_var = tk.DoubleVar(value=34.0522)
-        self.origin_lng_var = tk.DoubleVar(value=-118.2437)
+        # self.origin_lat_var = tk.DoubleVar(value=34.0522)
+        # self.origin_lng_var = tk.DoubleVar(value=-118.2437)
+        self.combo_route_origin = tk.StringVar()
         self.origin_time_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d %H:%M"))
         
-        tk.Label(origin_frame, text="Latitude:").grid(row=0, column=0, sticky=tk.E)
-        tk.Entry(origin_frame, textvariable=self.origin_lat_var, width=15).grid(row=0, column=1, padx=5)
+        tk.Label(origin_frame, text="Location :").grid(row=0, column=0, sticky=tk.E)
+        #tk.Entry(origin_frame, textvariable=self.origin_lat_var, width=15).grid(row=0, column=1, padx=5)
+        self.search_box = ttk.Combobox(origin_frame,textvariable=self.combo_route_origin, width=30)
+        self.search_box.grid(row=0, column=1, padx=5)
+
+        self.search_button = ttk.Button(origin_frame, text="Search", command=self._search_button_clicked)
+        self.search_button.grid(row=0, column=2, padx=5)
+
+        self.status_label = tk.Label(origin_frame, text="Listo para buscar", fg="grey",
+                                     font=("Consolas", 9))
+        self.status_label.grid(row=0, column=3, padx=5)
         
-        tk.Label(origin_frame, text="Longitude:").grid(row=0, column=2, sticky=tk.E)
-        tk.Entry(origin_frame, textvariable=self.origin_lng_var, width=15).grid(row=0, column=3, padx=5)
+        # tk.Label(origin_frame, text="Longitude:").grid(row=0, column=2, sticky=tk.E)
+        # tk.Entry(origin_frame, textvariable=self.origin_lng_var, width=15).grid(row=0, column=3, padx=5)
         
         tk.Label(origin_frame, text="Departure Time:").grid(row=1, column=0, sticky=tk.E)
         tk.Entry(origin_frame, textvariable=self.origin_time_var, width=20).grid(row=1, column=1, columnspan=2, sticky=tk.W, padx=5)
@@ -144,6 +160,66 @@ class StopsTab(tk.Frame):
         
         # Add default sensor
         self._add_sensor()
+
+    def start_spinner(self):
+        self.loading = True
+        self.animate_spinner()
+
+    def animate_spinner(self):
+        if self.loading:
+            frame = next(self.spinner_cycle)
+            self.status_label.config(text=f"Loading... {frame}", fg="blue")
+            self.after(120, self.animate_spinner)
+
+    def stop_spinner(self):
+        self.loading = False
+        self.status_label.config(text="Listo", fg="grey")
+
+    def _search_button_clicked(self):
+        query = self.combo_route_origin.get().strip()
+        if query:
+            self._start_search_thread(query)
+    
+    def _start_search_thread(self, query):
+        self.start_spinner()
+        threading.Thread(target=self._fetch_directions, args=(query,), daemon=True).start()
+
+
+    def _fetch_directions(self, query):
+        try:
+            api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjMwYWY3NzRhN2U1YjRkMWRhMDdhNDRmYzM4ZDBkMmYwIiwiaCI6Im11cm11cjY0In0="  # <-- pon aquí tu API KEY real
+            url = "https://api.openrouteservice.org/geocode/search"
+            params = {
+            "api_key": api_key,
+            "text": query,
+            "size": 10
+            }
+
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+
+            data = response.json()
+            features = data.get("features", [])
+
+            suggestions = []
+            for f in features:
+                props = f.get("properties", {})
+                label = props.get("label")
+                if label:
+                    suggestions.append(label)
+            self.after(0, self._update_combobox_values, suggestions)
+
+        except Exception as e:
+            self.after(0, messagebox.showerror, "Error", f"Failed to fetch directions: {e}")
+
+        finally:
+            self.after(0, self.stop_spinner)
+    
+    def _update_combobox_values(self, values):
+        self.search_box["values"] = values
+        if values:
+            self.search_box.set(values[0])
+
     
     def _add_segment(self):
         """Add a new segment to the route."""
