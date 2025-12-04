@@ -1,0 +1,146 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030000001",
+  "TID": "E2C245002000056680000001",
+  "inventories": [
+    {
+      "readerTimestamp": "2025-12-04T14:01:00.000Z",
+      "readerHost": "FX96002DF46",
+      "readerMAC": "6C:DB:1A:0D:24:66",
+      "readerLatitude": 19.41,
+      "readerLongitude": -99.2,
+      "readerAccuracyInMeters": 17.1,
+      "readerChannel": 915250,
+      "readerRSSI": -52.4,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 4.4,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.11,
+      "tagSensorCode": 112,
+      "tagOnChipRSSI": 17,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-04T14:00:45Z",
+      "loggerNextSample": 13
+    },
+    {
+      "readerTimestamp": "2025-12-04T14:01:05.000Z",
+      "readerHost": "FX9600F3C94",
+      "readerMAC": "B5:4F:24:E0:E8:23",
+      "readerLatitude": 19.41,
+      "readerLongitude": -99.2,
+      "readerAccuracyInMeters": 12.3,
+      "readerChannel": 915250,
+      "readerRSSI": -59.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 3.5,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.09,
+      "tagSensorCode": 119,
+      "tagOnChipRSSI": 12,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-04T14:00:41Z",
+      "loggerNextSample": 11
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 12,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2025-12-04T14:01:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": true,
+    "alarmTemperature": true,
+    "alarmLowTemperature": true,
+    "alarmHighTemperature": false,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": "2025-12-04T14:26:00.000Z",
+    "alarmTemperatureValue": -4.6,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2025-12-04T14:01:00Z",
+      "tempInC": 6.6,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:06:00Z",
+      "tempInC": 9.3,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:11:00Z",
+      "tempInC": 5.3,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:16:00Z",
+      "tempInC": 2.8,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:21:00Z",
+      "tempInC": 0.1,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:26:00Z",
+      "tempInC": -4.6,
+      "tamper": true
+    },
+    {
+      "timestamp": "2025-12-04T14:31:00Z",
+      "tempInC": 4.9,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:36:00Z",
+      "tempInC": -0.1,
+      "tamper": true
+    },
+    {
+      "timestamp": "2025-12-04T14:41:00Z",
+      "tempInC": 2.6,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:46:00Z",
+      "tempInC": 8.0,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:51:00Z",
+      "tempInC": 1.1,
+      "tamper": false
+    },
+    {
+      "timestamp": "2025-12-04T14:56:00Z",
+      "tempInC": 5.2,
+      "tamper": false
+    }
+  ]
+}
