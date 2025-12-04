@@ -24,6 +24,8 @@ class SimulatorAdapter:
     def generate_simulations(route_config: RouteConfig, 
                             num_samples: int = 1,
                             use_real_routes: bool = False,
+                            use_secondary_routes: bool = False,
+                            secondary_routes_count: int = 0,
                             output_dir: str = "simulation_outputs") -> List[str]:
         """Generate simulation JSONs from RouteConfig.
         
@@ -31,6 +33,8 @@ class SimulatorAdapter:
             route_config: Complete route configuration
             num_samples: Number of JSON samples to generate
             use_real_routes: Whether to use OpenStreetMap routes
+            use_secondary_routes: Whether to generate secondary/alternative routes
+            secondary_routes_count: Number of secondary routes to generate (1-3)
             output_dir: Directory to save outputs
             
         Returns:
@@ -72,46 +76,116 @@ class SimulatorAdapter:
             # No sensors defined, use default
             route_config.sensors = [SensorConfig.generate_default(1)]
         
+        # Get alternative routes if requested
+        routes_to_generate = []
+        if use_real_routes and use_secondary_routes and secondary_routes_count > 0:
+            # Get alternative routes from OpenRouteService
+            # El API retorna la ruta principal + las alternativas, por lo que solicitamos
+            # secondary_routes_count rutas alternativas (el API agregará la principal automáticamente)
+            router = OpenStreetMapRouter()
+            alternative_routes = router.get_alternative_routes(
+                start=coordinates[0],
+                end=coordinates[-1],
+                mode=route_config.transport_mode,
+                num_alternatives=secondary_routes_count
+            )
+            
+            # Verificar que obtuvimos rutas
+            if alternative_routes and len(alternative_routes) > 0:
+                routes_to_generate = alternative_routes
+                num_secondary = len(alternative_routes) - 1
+                print(f"✓ Se obtuvieron {len(alternative_routes)} rutas (1 principal + {num_secondary} secundarias)")
+                
+                # Si se solicitaron rutas secundarias pero solo se obtuvo la principal
+                if len(alternative_routes) == 1 and secondary_routes_count > 0:
+                    print(f"")
+                    print(f"⚠️  ADVERTENCIA: Rutas alternativas no disponibles")
+                    print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    print(f"   Se solicitaron {secondary_routes_count} ruta(s) secundaria(s)")
+                    print(f"   pero OpenRouteService solo retornó la ruta principal.")
+                    print(f"   ")
+                    print(f"   Posibles razones:")
+                    print(f"   • La región tiene pocas carreteras alternativas")
+                    print(f"   • La distancia es muy corta (< 50 km)")
+                    print(f"   • No existen rutas suficientemente diferentes")
+                    print(f"   ")
+                    print(f"   💡 Sugerencia: Prueba con una ruta más larga o")
+                    print(f"      entre ciudades con más opciones de carreteras.")
+                    print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    print(f"")
+            else:
+                # Fallback: usar solo ruta principal
+                print("⚠️ No se pudieron obtener rutas alternativas, usando solo ruta principal")
+                routes_to_generate = [{
+                    'route_type': 'principal',
+                    'coordinates': coordinates,
+                    'distance_km': 0,
+                    'duration_hours': total_duration_hours
+                }]
+        else:
+            # Only generate main route
+            routes_to_generate = [{
+                'route_type': 'principal',
+                'coordinates': coordinates,
+                'distance_km': 0,
+                'duration_hours': total_duration_hours
+            }]
+        
         for sensor_idx, sensor in enumerate(route_config.sensors):
-            for sample_idx in range(num_samples):
-                # Create LogGeneratorInput
-                config = LogGeneratorInput(
-                    epc=sensor.epc,
-                    tid=sensor.tid,
-                    log_interval_in_seconds=log_interval,
-                    number_of_samples=num_temp_samples,
-                    start_timestamp=start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    lower_temp=segment_profiles[0].lower_temp if segment_profiles else 0.0,
-                    upper_temp=segment_profiles[0].upper_temp if segment_profiles else 10.0,
-                    start_lat=coordinates[0][0],
-                    start_lng=coordinates[0][1],
-                    end_lat=coordinates[-1][0],
-                    end_lng=coordinates[-1][1],
-                    number_of_stops=len(coordinates) - 2,
-                    distribution_type=segment_profiles[0].distribution_type if segment_profiles else "normal",
-                    waypoints=coordinates,
-                    transport_mode=route_config.transport_mode,
-                    use_real_route=use_real_routes,
-                    route_name=route_config.route_name,
-                    segment_profiles=segment_profiles,
-                )
+            for route_idx, route_info in enumerate(routes_to_generate):
+                route_type = route_info.get('route_type', 'principal')
+                route_coords = route_info.get('coordinates', coordinates)
                 
-                # Create simulator
-                simulator = LogSimulator(config)
+                # Si la ruta no tiene coordenadas (geometría codificada), usar coordenadas originales
+                if not route_coords:
+                    route_coords = coordinates
                 
-                # Generate simulation data
-                data = simulator.generate()
-                
-                # Save to file
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"{route_config.route_name.replace(' ', '_')}_{sensor.epc[-6:]}_{sample_idx+1}_{timestamp}.json"
-                filepath = os.path.join(output_dir, filename)
-                
-                with open(filepath, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=2)
-                
-                generated_files.append(filepath)
-                print(f"✓ Generated: {filename}")
+                for sample_idx in range(num_samples):
+                    # Create LogGeneratorInput
+                    config = LogGeneratorInput(
+                        epc=sensor.epc,
+                        tid=sensor.tid,
+                        log_interval_in_seconds=log_interval,
+                        number_of_samples=num_temp_samples,
+                        start_timestamp=start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        lower_temp=segment_profiles[0].lower_temp if segment_profiles else 0.0,
+                        upper_temp=segment_profiles[0].upper_temp if segment_profiles else 10.0,
+                        start_lat=route_coords[0][0],
+                        start_lng=route_coords[0][1],
+                        end_lat=route_coords[-1][0],
+                        end_lng=route_coords[-1][1],
+                        number_of_stops=len(route_coords) - 2,
+                        distribution_type=segment_profiles[0].distribution_type if segment_profiles else "normal",
+                        waypoints=route_coords,
+                        transport_mode=route_config.transport_mode,
+                        use_real_route=use_real_routes,
+                        route_name=route_config.route_name,
+                        segment_profiles=segment_profiles,
+                    )
+                    
+                    # Create simulator
+                    simulator = LogSimulator(config)
+                    
+                    # Generate simulation data
+                    data = simulator.generate()
+                    
+                    # Save to file with appropriate naming
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    
+                    if route_type == 'principal':
+                        filename = f"{route_config.route_name.replace(' ', '_')}_{sensor.epc[-6:]}_{sample_idx+1}_{timestamp}.json"
+                    else:
+                        # Secondary route naming: Dgo-secondary-1, Dgo-secondary-2, etc.
+                        secondary_num = route_type.split('-')[-1] if '-' in route_type else route_idx
+                        filename = f"{route_config.route_name.replace(' ', '_')}-secondary-{secondary_num}_{sensor.epc[-6:]}_{sample_idx+1}_{timestamp}.json"
+                    
+                    filepath = os.path.join(output_dir, filename)
+                    
+                    with open(filepath, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2)
+                    
+                    generated_files.append(filepath)
+                    print(f"✓ Generated: {filename}")
         
         return generated_files
     

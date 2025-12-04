@@ -162,9 +162,19 @@ class OpenStreetMapRouter:
             }
             
             # Body con todas las coordenadas en formato [lng, lat]
-            body = {
-                "coordinates": [[lng, lat] for (lat, lng) in points]
-            }
+            # Límite de OpenRouteService: 70 waypoints máximo
+            if len(points) > 70:
+                print(f"   ⚠️ Demasiados waypoints ({len(points)}), reduciendo a 70...")
+                # Tomar muestras equidistantes
+                indices = np.linspace(0, len(points) - 1, 70, dtype=int)
+                sampled_points = [points[i] for i in indices]
+                body = {
+                    "coordinates": [[lng, lat] for (lat, lng) in sampled_points]
+                }
+            else:
+                body = {
+                    "coordinates": [[lng, lat] for (lat, lng) in points]
+                }
             
             print(f"🌐 Obteniendo ruta multi-punto (POST): {url}")
             print(f"   Puntos: {len(points)}")
@@ -290,9 +300,171 @@ class OpenStreetMapRouter:
             'duration_hours': duration_hours
         }
     
+    def _decode_polyline(self, encoded: str, precision: int = 5) -> List[Tuple[float, float]]:
+        """Decodifica una polyline codificada en formato Google/OpenRouteService.
+        
+        Args:
+            encoded: String de polyline codificada
+            precision: Precisión (5 para ORS, 6 para Google)
+            
+        Returns:
+            Lista de tuplas (lat, lng)
+        """
+        coordinates = []
+        index = 0
+        lat = 0
+        lng = 0
+        
+        while index < len(encoded):
+            # Decodificar latitud
+            result = 0
+            shift = 0
+            while True:
+                b = ord(encoded[index]) - 63
+                index += 1
+                result |= (b & 0x1f) << shift
+                shift += 5
+                if b < 0x20:
+                    break
+            dlat = ~(result >> 1) if result & 1 else result >> 1
+            lat += dlat
+            
+            # Decodificar longitud
+            result = 0
+            shift = 0
+            while True:
+                b = ord(encoded[index]) - 63
+                index += 1
+                result |= (b & 0x1f) << shift
+                shift += 5
+                if b < 0x20:
+                    break
+            dlng = ~(result >> 1) if result & 1 else result >> 1
+            lng += dlng
+            
+            # Convertir a coordenadas
+            coordinates.append((lat / 10**precision, lng / 10**precision))
+        
+        return coordinates
+    
     def set_api_key(self, api_key: str):
         """Configura la API key de OpenRouteService"""
         self.api_key = api_key
+    
+    def get_alternative_routes(self, start: Tuple[float, float], end: Tuple[float, float], 
+                              mode: str = "driving-car", num_alternatives: int = 3) -> List[Dict[str, Any]]:
+        """
+        Obtiene rutas alternativas usando el parámetro alternative_routes de OpenRouteService
+        
+        Args:
+            start: (lat, lng) punto de inicio
+            end: (lat, lng) punto de destino
+            mode: driving-car, foot-walking, cycling-regular
+            num_alternatives: número de rutas alternativas ADICIONALES a solicitar (1-3 recomendado)
+                             El API siempre retorna la ruta principal como la primera ruta,
+                             más las alternativas solicitadas. Total = 1 + num_alternatives
+            
+        Returns:
+            Lista de diccionarios con información de rutas alternativas
+            La primera ruta es la principal, las siguientes son alternativas
+            Ejemplo: Si num_alternatives=2, retorna [principal, secondary-1, secondary-2]
+        """
+        if not self.api_key:
+            print("⚠️  No se configuró API key de OpenRouteService. Retornando solo ruta principal.")
+            main_route = self._get_simple_route(start, end)
+            return [main_route] if main_route else []
+        
+        try:
+            url = f"{self.base_url}/{mode}/json"
+            headers = {
+                'Authorization': self.api_key,
+                'Content-Type': 'application/json'
+            }
+            
+            # Body con coordenadas y parámetro alternative_routes
+            # Nota: OpenRouteService requiere mínimo 2 rutas alternativas, sino da error 2018
+            actual_alternatives = max(2, num_alternatives)
+            body = {
+                "coordinates": [[start[1], start[0]], [end[1], end[0]]],  # lng, lat
+                "alternative_routes": {
+                    "target_count": actual_alternatives,
+                    "share_factor": 0.5,  # Rutas deben diferir al menos 50% (más flexible)
+                    "weight_factor": 1.8   # Rutas pueden ser hasta 80% más largas (más flexible)
+                },
+                "geometry_simplify": False,  # No simplificar geometría
+                "continue_straight": False
+            }
+            
+            print(f"🌐 Solicitando ruta principal + {num_alternatives} rutas alternativas: {url}")
+            
+            response = requests.post(url, json=body, headers=headers, timeout=100)
+            
+            if response.status_code == 200:
+                data = response.json()
+                routes = []
+                
+                if 'routes' in data and len(data['routes']) > 0:
+                    print(f"   ✓ API retornó {len(data['routes'])} ruta(s)")
+                    
+                    for idx, route in enumerate(data['routes']):
+                        route_type = "principal" if idx == 0 else f"secondary-{idx}"
+                        
+                        # Extraer coordenadas (pueden venir codificadas)
+                        coords = []
+                        if 'geometry' in route:
+                            # La geometría puede estar codificada en polyline
+                            if isinstance(route['geometry'], str):
+                                # Geometría codificada - decodificar polyline
+                                print(f"   ⚠️ Geometría codificada para ruta {route_type}, decodificando...")
+                                try:
+                                    coords = self._decode_polyline(route['geometry'])
+                                    print(f"   ✓ Decodificados {len(coords)} puntos")
+                                except Exception as e:
+                                    print(f"   ❌ Error decodificando: {e}")
+                                    coords = []
+                            elif isinstance(route['geometry'], dict) and 'coordinates' in route['geometry']:
+                                coords = [(c[1], c[0]) for c in route['geometry']['coordinates']]
+                            else:
+                                coords = []
+                        
+                        # Si no hay coordenadas, usar coordenadas simples
+                        if not coords:
+                            coords = [start, end]
+                        
+                        route_info = {
+                            'route_type': route_type,
+                            'coordinates': coords,
+                            'distance_km': route.get('summary', {}).get('distance', 0) / 1000,
+                            'duration_hours': route.get('summary', {}).get('duration', 0) / 3600
+                        }
+                        
+                        routes.append(route_info)
+                        print(f"   ✓ Ruta {route_type}: {route_info['distance_km']:.2f} km, {route_info['duration_hours']:.2f} hrs")
+                    
+                    print(f"   📊 Total de rutas procesadas: {len(routes)}")
+                
+                if routes:
+                    return routes
+                else:
+                    print("   ⚠️ No se encontraron rutas en la respuesta")
+                    
+            else:
+                print(f"⚠️  Error en API OpenRouteService: {response.status_code}")
+                try:
+                    error_data = response.json()
+                    print(f"   Error: {error_data}")
+                except:
+                    print(f"   Response: {response.text[:300]}")
+                    
+        except Exception as e:
+            print(f"⚠️  Error obteniendo rutas alternativas: {e}")
+        
+        # Fallback: retornar solo la ruta principal
+        main_route = self.get_route(start, end, mode)
+        if main_route:
+            main_route['route_type'] = 'principal'
+            return [main_route]
+        return []
 
 
 class PredefinedUseCases:

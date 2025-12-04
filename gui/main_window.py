@@ -70,6 +70,27 @@ class SimulatorGUI:
                       variable=self.use_real_routes_var, bg="#f0f0f0",
                       font=("Arial", 9)).pack(side=tk.LEFT, padx=10)
         
+        # Secondary routes checkbox
+        self.use_secondary_routes_var = tk.BooleanVar(value=False)
+        secondary_check = tk.Checkbutton(control_frame, text="Secondary Routes?", 
+                                        variable=self.use_secondary_routes_var, 
+                                        bg="#f0f0f0",
+                                        font=("Arial", 9),
+                                        command=self._toggle_secondary_routes)
+        secondary_check.pack(side=tk.LEFT, padx=10)
+        
+        # Secondary routes count dropdown
+        tk.Label(control_frame, text="Count:", bg="#f0f0f0", 
+                font=("Arial", 9)).pack(side=tk.LEFT, padx=(0, 5))
+        self.secondary_routes_count_var = tk.IntVar(value=1)
+        self.secondary_routes_dropdown = ttk.Combobox(control_frame, 
+                                                      textvariable=self.secondary_routes_count_var,
+                                                      values=[1, 2, 3],
+                                                      width=5,
+                                                      state="disabled",
+                                                      font=("Arial", 9))
+        self.secondary_routes_dropdown.pack(side=tk.LEFT, padx=5)
+        
         # Generate button
         tk.Button(action_frame, text="🚀 GENERATE SIMULATION", 
                  command=self.start_generation,
@@ -84,6 +105,13 @@ class SimulatorGUI:
                              bd=1, relief=tk.SUNKEN, anchor=tk.W,
                              font=("Arial", 9))
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+    
+    def _toggle_secondary_routes(self):
+        """Enable/disable secondary routes dropdown."""
+        if self.use_secondary_routes_var.get():
+            self.secondary_routes_dropdown.config(state="readonly")
+        else:
+            self.secondary_routes_dropdown.config(state="disabled")
     
     def _on_tab_changed(self, event):
         """Handle tab change events."""
@@ -108,14 +136,21 @@ class SimulatorGUI:
         # Confirm generation
         num_samples = self.num_samples_var.get()
         use_real = self.use_real_routes_var.get()
+        use_secondary = self.use_secondary_routes_var.get()
+        secondary_count = self.secondary_routes_count_var.get() if use_secondary else 0
+        
+        total_files = num_samples * len(route_config.sensors)
+        if use_secondary:
+            total_files += (num_samples * len(route_config.sensors) * secondary_count)
         
         msg = (f"Generate simulation with:\n\n"
                f"Route: {route_config.route_name}\n"
                f"Segments: {len(route_config.segments)}\n"
                f"Sensors: {len(route_config.sensors)}\n"
                f"Samples: {num_samples}\n"
-               f"Real Routes: {'Yes' if use_real else 'No'}\n\n"
-               f"This will create {num_samples * len(route_config.sensors)} JSON file(s).")
+               f"Real Routes: {'Yes' if use_real else 'No'}\n"
+               f"Secondary Routes: {secondary_count if use_secondary else 'No'}\n\n"
+               f"This will create {total_files} JSON file(s).")
         
         if not messagebox.askyesno("Confirm Generation", msg):
             return
@@ -125,11 +160,11 @@ class SimulatorGUI:
         self.root.config(cursor="wait")
         
         thread = threading.Thread(target=self._run_simulation, 
-                                 args=(route_config, num_samples, use_real),
+                                 args=(route_config, num_samples, use_real, use_secondary, secondary_count),
                                  daemon=True)
         thread.start()
     
-    def _run_simulation(self, route_config, num_samples, use_real_routes):
+    def _run_simulation(self, route_config, num_samples, use_real_routes, use_secondary_routes=False, secondary_routes_count=0):
         """Run simulation in background thread.
         
         Generates complete RFID tag JSON files using the simulator.
@@ -146,6 +181,8 @@ class SimulatorGUI:
                 route_config=route_config,
                 num_samples=num_samples,
                 use_real_routes=use_real_routes,
+                use_secondary_routes=use_secondary_routes,
+                secondary_routes_count=secondary_routes_count,
                 output_dir=output_dir
             )
             
