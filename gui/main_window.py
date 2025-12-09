@@ -66,9 +66,33 @@ class SimulatorGUI:
                   width=5, font=("Arial", 9)).pack(side=tk.LEFT, padx=5)
         
         self.use_real_routes_var = tk.BooleanVar(value=False)
-        tk.Checkbutton(control_frame, text="Use Real Routes (OSM)", 
+        real_routes_check = tk.Checkbutton(control_frame, text="Use Real Routes (OSM)", 
                       variable=self.use_real_routes_var, bg="#f0f0f0",
-                      font=("Arial", 9)).pack(side=tk.LEFT, padx=10)
+                      font=("Arial", 9))
+        real_routes_check.pack(side=tk.LEFT, padx=10)
+        
+        # Add tooltip/warning for real routes
+        def create_tooltip(widget, text):
+            def on_enter(event):
+                tooltip = tk.Toplevel()
+                tooltip.wm_overrideredirect(True)
+                tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+                label = tk.Label(tooltip, text=text, background="#ffffe0", 
+                               relief=tk.SOLID, borderwidth=1, font=("Arial", 8))
+                label.pack()
+                widget.tooltip = tooltip
+            
+            def on_leave(event):
+                if hasattr(widget, 'tooltip'):
+                    widget.tooltip.destroy()
+            
+            widget.bind('<Enter>', on_enter)
+            widget.bind('<Leave>', on_leave)
+        
+        create_tooltip(real_routes_check, 
+                      "⚠️ Real Routes require locations near roads.\n"
+                      "Use the location search for best results.\n"
+                      "Avoid generic coordinates far from streets.")
         
         # Secondary routes checkbox
         self.use_secondary_routes_var = tk.BooleanVar(value=False)

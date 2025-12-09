@@ -132,6 +132,15 @@ class OpenStreetMapRouter:
                     }
             else:
                 print(f"⚠️  Error en API OpenRouteService: {response.status_code}")
+                try:
+                    error_text = response.text
+                    if "Could not find routable point" in error_text:
+                        print()
+                        print("   ⚠️  PROBLEMA: Coordenada no enrutable (muy lejos de carreteras)")
+                        print("   💡 Usa el buscador de ubicaciones y selecciona direcciones específicas")
+                        print()
+                except Exception:
+                    pass
                 return self._get_simple_route(start, end)
                 
         except Exception as e:
@@ -200,7 +209,23 @@ class OpenStreetMapRouter:
                 print(f"⚠️  Error en API OpenRouteService (multi-POST): {response.status_code}")
                 # Mostrar parte del cuerpo para diagnóstico
                 try:
-                    print(f"     Respuesta: {response.text[:300]}")
+                    error_text = response.text
+                    print(f"     Respuesta: {error_text[:300]}")
+                    
+                    # Detectar error específico de coordenadas no enrutables
+                    if "Could not find routable point" in error_text:
+                        print()
+                        print("   ⚠️  PROBLEMA DETECTADO: Coordenada no enrutable")
+                        print("   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                        print("   Una o más ubicaciones están demasiado lejos de")
+                        print("   carreteras transitables (> 350m).")
+                        print()
+                        print("   💡 Soluciones:")
+                        print("   • Selecciona ubicaciones en ciudades o cerca de carreteras")
+                        print("   • Busca direcciones específicas en lugar de coordenadas genéricas")
+                        print("   • Usa el buscador de ubicaciones en lugar de coordenadas manuales")
+                        print("   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                        print()
                 except Exception:
                     pass
 

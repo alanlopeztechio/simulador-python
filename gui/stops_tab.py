@@ -11,6 +11,7 @@ import requests
 import sys
 import os
 import itertools
+import tkintermapview
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,9 +37,17 @@ class StopsTab(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         
-        # Scrollable canvas
-        self.canvas = tk.Canvas(self)
-        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        # Create main container with left and right panels
+        main_container = tk.Frame(self)
+        main_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Left panel: Scrollable content (origin, destination, segments, sensors)
+        left_panel = tk.Frame(main_container)
+        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Scrollable canvas for left panel
+        self.canvas = tk.Canvas(left_panel)
+        self.scrollbar = tk.Scrollbar(left_panel, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = tk.Frame(self.canvas)
         
         self.scrollable_frame.bind(
@@ -52,10 +61,28 @@ class StopsTab(tk.Frame):
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
+        # Right panel: Map widget
+        right_panel = tk.Frame(main_container, width=400, relief=tk.SUNKEN, borderwidth=2)
+        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, padx=5, pady=5)
+        right_panel.pack_propagate(False)
+        
+        # Map widget
+        self.map_widget = tkintermapview.TkinterMapView(right_panel, corner_radius=0)
+        self.map_widget.pack(fill=tk.BOTH, expand=True)
+        
+        # Set initial position (Los Angeles area)
+        self.map_widget.set_position(34.0522, -118.2437)
+        self.map_widget.set_zoom(10)
+        
         # Data storage
         self.segment_frames = []
         self.sensor_checkboxes = []
         self.available_sensors = []  # List of SensorConfig objects
+        
+        # Map markers
+        self.origin_marker = None
+        self.destination_marker = None
+        self.segment_markers = []  # List of markers for segments/waypoints
         
         self._build_ui()
 
@@ -95,6 +122,7 @@ class StopsTab(tk.Frame):
         def set_origin_coords(lat, lon):
             self.origin_lat_var.set(lat)
             self.origin_lng_var.set(lon)
+            self._update_map_markers()
             print(f"Origen actualizado: {lat}, {lon}")
 
         self.origin_search = LocationSearchWidget(origin_frame, on_select_callback=set_origin_coords)
@@ -117,6 +145,7 @@ class StopsTab(tk.Frame):
         def set_destination_coords(lat, lon):
             self.dest_lat_var.set(lat)
             self.dest_lng_var.set(lon)
+            self._update_map_markers()
             print(f"Destino actualizado: {lat}, {lon}")
         
         self.destination_search = LocationSearchWidget(dest_frame, on_select_callback=set_destination_coords)
@@ -156,9 +185,6 @@ class StopsTab(tk.Frame):
         
         self.sensors_list_frame = tk.Frame(sensors_frame)
         self.sensors_list_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Add one default segment
-        self._add_segment()
         
         # Add default sensor
         self._add_sensor()
@@ -222,6 +248,92 @@ class StopsTab(tk.Frame):
         if values:
             self.search_box.set(values[0])
 
+    def _update_map_markers(self):
+        """Update map markers for origin, destination, and segments."""
+        try:
+            origin_lat = self.origin_lat_var.get()
+            origin_lng = self.origin_lng_var.get()
+            dest_lat = self.dest_lat_var.get()
+            dest_lng = self.dest_lng_var.get()
+            
+            # Remove existing markers
+            if self.origin_marker:
+                self.origin_marker.delete()
+            if self.destination_marker:
+                self.destination_marker.delete()
+            for marker in self.segment_markers:
+                marker.delete()
+            self.segment_markers.clear()
+            
+            # Collect all points for center calculation
+            all_lats = [origin_lat, dest_lat]
+            all_lngs = [origin_lng, dest_lng]
+            
+            # Add origin marker (green)
+            self.origin_marker = self.map_widget.set_marker(
+                origin_lat, origin_lng, 
+                text="Origin",
+                marker_color_circle="green",
+                marker_color_outside="darkgreen"
+            )
+            
+            # Add destination marker (red)
+            self.destination_marker = self.map_widget.set_marker(
+                dest_lat, dest_lng,
+                text="Destination", 
+                marker_color_circle="red",
+                marker_color_outside="darkred"
+            )
+            
+            # Add segment markers (blue/orange)
+            for i, segment_data in enumerate(self.segment_frames, start=1):
+                seg_lat = segment_data["latitude"].get()
+                seg_lng = segment_data["longitude"].get()
+                seg_desc = segment_data["description"].get()
+                
+                all_lats.append(seg_lat)
+                all_lngs.append(seg_lng)
+                
+                # Create marker for segment (blue)
+                marker = self.map_widget.set_marker(
+                    seg_lat, seg_lng,
+                    text=f"Waypoint {i}",
+                    marker_color_circle="blue",
+                    marker_color_outside="darkblue"
+                )
+                self.segment_markers.append(marker)
+            
+            # Calculate center point from all markers
+            center_lat = sum(all_lats) / len(all_lats)
+            center_lng = sum(all_lngs) / len(all_lngs)
+            
+            # Set map position to center
+            self.map_widget.set_position(center_lat, center_lng)
+            
+            # Adjust zoom to fit all markers
+            lat_diff = max(all_lats) - min(all_lats)
+            lng_diff = max(all_lngs) - min(all_lngs)
+            max_diff = max(lat_diff, lng_diff)
+            
+            if max_diff < 0.1:
+                zoom_level = 12
+            elif max_diff < 0.5:
+                zoom_level = 10
+            elif max_diff < 1:
+                zoom_level = 9
+            elif max_diff < 2:
+                zoom_level = 8
+            elif max_diff < 5:
+                zoom_level = 7
+            else:
+                zoom_level = 6
+                
+            self.map_widget.set_zoom(zoom_level)
+            
+        except Exception as e:
+            print(f"Error updating map markers: {e}")
+
+
     
     def _add_segment(self):
         """Add a new segment to the route."""
@@ -243,17 +355,22 @@ class StopsTab(tk.Frame):
         
         # Row 0: Description
         tk.Label(data_frame, text="Segment Description:").grid(row=0, column=0, sticky=tk.W)
-        desc_var = tk.StringVar(value=f"First leg of the journey")
+        desc_var = tk.StringVar(value=f"Waypoint {index}")
         tk.Entry(data_frame, textvariable=desc_var, width=50).grid(row=0, column=1, columnspan=3, sticky=tk.W, padx=5)
         
-        # Row 1: Coordinates
-        tk.Label(data_frame, text="Latitude:").grid(row=1, column=0, sticky=tk.E)
+        # Row 1: Location Search
+        tk.Label(data_frame, text="Location:").grid(row=1, column=0, sticky=tk.E)
         lat_var = tk.DoubleVar(value=34.0522)
-        tk.Entry(data_frame, textvariable=lat_var, width=12).grid(row=1, column=1, padx=5)
-        
-        tk.Label(data_frame, text="Longitude:").grid(row=1, column=2, sticky=tk.E)
         lng_var = tk.DoubleVar(value=-118.2437)
-        tk.Entry(data_frame, textvariable=lng_var, width=12).grid(row=1, column=3, padx=5)
+        
+        def set_segment_coords(lat, lon):
+            lat_var.set(lat)
+            lng_var.set(lon)
+            self._update_map_markers()
+            print(f"Segment {index} updated: {lat}, {lon}")
+        
+        location_search = LocationSearchWidget(data_frame, on_select_callback=set_segment_coords)
+        location_search.grid(row=1, column=1, columnspan=3, sticky="w", padx=5)
         
         # Row 2: Segment Type
         tk.Label(data_frame, text="Segment Type:").grid(row=2, column=0, sticky=tk.E)
@@ -275,6 +392,7 @@ class StopsTab(tk.Frame):
             "longitude": lng_var,
             "type": type_var,
             "stop_time": stop_time_var,
+            "location_search": location_search,
         }
         self.segment_frames.append(segment_data)
         
@@ -288,6 +406,7 @@ class StopsTab(tk.Frame):
                 self.segment_frames.remove(segment_data)
                 break
         self._renumber_segments()
+        self._update_map_markers()
     
     def _renumber_segments(self):
         """Update segment numbering after add/remove."""
@@ -400,10 +519,6 @@ class StopsTab(tk.Frame):
         
         if not self.route_desc_var.get().strip():
             messagebox.showerror("Validation Error", "Route Description is required")
-            return None
-        
-        if len(self.segment_frames) == 0:
-            messagebox.showerror("Validation Error", "At least one segment is required")
             return None
         
         # Parse origin timestamp
