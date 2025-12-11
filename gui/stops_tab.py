@@ -118,10 +118,15 @@ class StopsTab(tk.Frame):
         self.origin_lat_var = tk.DoubleVar(value=34.0522)
         self.origin_lng_var = tk.DoubleVar(value=-118.2437)
         self.origin_time_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d %H:%M"))
+        self.origin_name_var = tk.StringVar(value="Origin")
 
         def set_origin_coords(lat, lon):
             self.origin_lat_var.set(lat)
             self.origin_lng_var.set(lon)
+            # Guardar el nombre de la ubicación seleccionada
+            selected_text = self.origin_search.get_text()
+            if selected_text:
+                self.origin_name_var.set(selected_text)
             self._update_map_markers()
             print(f"Origen actualizado: {lat}, {lon}")
 
@@ -141,10 +146,15 @@ class StopsTab(tk.Frame):
         self.dest_lat_var = tk.DoubleVar(value=36.7783)
         self.dest_lng_var = tk.DoubleVar(value=-119.4179)
         self.dest_time_var = tk.StringVar(value="")
+        self.dest_name_var = tk.StringVar(value="Destination")
 
         def set_destination_coords(lat, lon):
             self.dest_lat_var.set(lat)
             self.dest_lng_var.set(lon)
+            # Guardar el nombre de la ubicación seleccionada
+            selected_text = self.destination_search.get_text()
+            if selected_text:
+                self.dest_name_var.set(selected_text)
             self._update_map_markers()
             print(f"Destino actualizado: {lat}, {lon}")
         
@@ -362,10 +372,16 @@ class StopsTab(tk.Frame):
         tk.Label(data_frame, text="Location:").grid(row=1, column=0, sticky=tk.E)
         lat_var = tk.DoubleVar(value=34.0522)
         lng_var = tk.DoubleVar(value=-118.2437)
+        name_var = tk.StringVar(value=f"Waypoint {index}")
         
         def set_segment_coords(lat, lon):
             lat_var.set(lat)
             lng_var.set(lon)
+            # Guardar el nombre de la ubicación seleccionada
+            selected_text = location_search.get_text()
+            if selected_text:
+                name_var.set(selected_text)
+                desc_var.set(selected_text)  # También actualizar la descripción
             self._update_map_markers()
             print(f"Segment {index} updated: {lat}, {lon}")
         
@@ -393,6 +409,7 @@ class StopsTab(tk.Frame):
             "type": type_var,
             "stop_time": stop_time_var,
             "location_search": location_search,
+            "name": name_var,
         }
         self.segment_frames.append(segment_data)
         
@@ -536,7 +553,7 @@ class StopsTab(tk.Frame):
         
         # Origin
         config.origin = RoutePoint(
-            name="Origin",
+            name=self.origin_name_var.get(),
             latitude=self.origin_lat_var.get(),
             longitude=self.origin_lng_var.get(),
             point_type="origin",
@@ -547,7 +564,7 @@ class StopsTab(tk.Frame):
         from datetime import timedelta
         arrival_time = origin_time + timedelta(minutes=self.est_transit_var.get())
         config.destination = RoutePoint(
-            name="Destination",
+            name=self.dest_name_var.get(),
             latitude=self.dest_lat_var.get(),
             longitude=self.dest_lng_var.get(),
             point_type="destination",
@@ -558,7 +575,7 @@ class StopsTab(tk.Frame):
         for segment_data in self.segment_frames:
             # Create waypoint for this segment
             waypoint = RoutePoint(
-                name=segment_data["description"].get(),
+                name=segment_data["name"].get(),
                 latitude=segment_data["latitude"].get(),
                 longitude=segment_data["longitude"].get(),
                 point_type="waypoint",

@@ -26,7 +26,8 @@ class SimulatorAdapter:
                             use_real_routes: bool = False,
                             use_secondary_routes: bool = False,
                             secondary_routes_count: int = 0,
-                            output_dir: str = "simulation_outputs") -> List[str]:
+                            output_dir: str = "simulation_outputs",
+                            include_location_names: bool = False) -> List[str]:
         """Generate simulation JSONs from RouteConfig.
         
         Args:
@@ -36,6 +37,7 @@ class SimulatorAdapter:
             use_secondary_routes: Whether to generate secondary/alternative routes
             secondary_routes_count: Number of secondary routes to generate (1-3)
             output_dir: Directory to save outputs
+            include_location_names: Whether to include location names via reverse geocoding
             
         Returns:
             List of generated file paths
@@ -50,6 +52,26 @@ class SimulatorAdapter:
         coordinates = route_config.get_coordinates()
         if len(coordinates) < 2:
             raise ValueError("Route must have at least origin and destination")
+        
+        # Extract location names from RouteConfig if include_location_names is enabled
+        location_names_map = {}
+        if include_location_names:
+            # Add origin name
+            if route_config.origin:
+                coord_key = f"{round(route_config.origin.latitude, 4)},{round(route_config.origin.longitude, 4)}"
+                location_names_map[coord_key] = route_config.origin.name
+            
+            # Add destination name
+            if route_config.destination:
+                coord_key = f"{round(route_config.destination.latitude, 4)},{round(route_config.destination.longitude, 4)}"
+                location_names_map[coord_key] = route_config.destination.name
+            
+            # Add waypoint names from segments
+            for waypoint in route_config.waypoints:
+                coord_key = f"{round(waypoint.latitude, 4)},{round(waypoint.longitude, 4)}"
+                location_names_map[coord_key] = waypoint.name
+            
+            print(f"   📍 Preparando {len(location_names_map)} nombres de ubicaciones del UI")
         
         # Calculate time parameters
         if route_config.origin and route_config.origin.timestamp:
@@ -166,8 +188,11 @@ class SimulatorAdapter:
                     # Create simulator
                     simulator = LogSimulator(config)
                     
-                    # Generate simulation data
-                    data = simulator.generate()
+                    # Generate simulation data with location names
+                    data = simulator.generate(
+                        include_location_names=include_location_names,
+                        location_names=location_names_map if include_location_names else None
+                    )
                     
                     # Save to file with appropriate naming
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

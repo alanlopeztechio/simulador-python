@@ -491,6 +491,51 @@ class OpenStreetMapRouter:
             return [main_route]
         return []
 
+    def reverse_geocode(self, lat: float, lng: float) -> Optional[str]:
+        """
+        Obtiene el nombre de una ubicación dadas sus coordenadas (reverse geocoding)
+        
+        Args:
+            lat: Latitud
+            lng: Longitud
+            
+        Returns:
+            Nombre de la ubicación (ciudad, calle, etc.) o None si falla
+        """
+        if not self.api_key:
+            return None
+            
+        try:
+            url = "https://api.openrouteservice.org/geocode/reverse"
+            params = {
+                "api_key": self.api_key,
+                "point.lon": lng,
+                "point.lat": lat,
+                "size": 1
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                features = data.get("features", [])
+                if features:
+                    # Obtener el nombre más descriptivo disponible
+                    props = features[0].get("properties", {})
+                    # Priorizar: name, locality, region, country
+                    location_name = (props.get("name") or 
+                                   props.get("locality") or 
+                                   props.get("region") or 
+                                   props.get("country") or
+                                   props.get("label"))
+                    return location_name
+            
+            return None
+            
+        except Exception as e:
+            print(f"   ⚠️ Error en reverse geocoding: {e}")
+            return None
+
 
 class PredefinedUseCases:
     """Casos de uso predefinidos con rutas y escenarios dramatizados"""
@@ -1114,12 +1159,22 @@ class LogSimulator:
             "alarmBatteryTimestamp": None
         }
     
-    def generate(self) -> Dict[str, Any]:
+    def generate(self, include_location_names: bool = False, location_names: dict = None) -> Dict[str, Any]:
         # Genera el JSON completo de simulación
         start_dt = self._parse_timestamp(self.config.start_timestamp)
         # Primero calcular coordenadas, luego temperaturas (algunas configuraciones dependen de segmentos)
         self.coordinates = self._interpolate_coordinates()
         self.temperatures = self._generate_temperatures()
+        
+        # Usar nombres de ubicaciones proporcionados (ya obtenidos del buscador)
+        location_names_cache = {}
+        if include_location_names and location_names:
+            # Los nombres ya vienen del UI, simplemente usarlos
+            location_names_cache = location_names
+            print(f"   📍 Usando {len(location_names_cache)} nombres de ubicaciones del UI")
+            print(f"   📍 Keys en caché: {list(location_names_cache.keys())}")
+        elif include_location_names:
+            print(f"   ⚠️  include_location_names=True pero location_names está vacío")
         
         # Generar timestamps y loggedData
         logged_data = []
@@ -1132,11 +1187,42 @@ class LogSimulator:
             # Tamper por muestra: True si excede límites (por tramo si aplica), False en caso contrario
             low_b, high_b = self._bounds_for_sample(i)
             tamper_flag = True if (temp_val < low_b or temp_val > high_b) else False
-            logged_data.append({
+            
+            # Obtener coordenadas para este punto
+            coord = self.coordinates[i] if i < len(self.coordinates) else (self.config.start_lat, self.config.start_lng)
+            
+            log_entry = {
                 "timestamp": timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "tempInC": temp_val,
-                "tamper": tamper_flag
-            })
+                "tamper": tamper_flag,
+                "latitude": round(coord[0], 6),
+                "longitude": round(coord[1], 6)
+            }
+            
+            # Agregar nombre de ubicación si está disponible
+            if include_location_names and location_names_cache:
+                # Buscar la ubicación más cercana en el caché
+                min_distance = float('inf')
+                closest_name = None
+                
+                for key, name in location_names_cache.items():
+                    try:
+                        # Parse key: "lat,lng"
+                        cached_lat, cached_lng = map(float, key.split(','))
+                        # Calcular distancia simple (euclidiana)
+                        distance = ((coord[0] - cached_lat) ** 2 + (coord[1] - cached_lng) ** 2) ** 0.5
+                        
+                        if distance < min_distance:
+                            min_distance = distance
+                            closest_name = name
+                    except Exception:
+                        continue
+                
+                # Si encontramos una ubicación cercana (dentro de ~0.5 grados), usar ese nombre
+                if closest_name and min_distance < 0.5:
+                    log_entry["locationName"] = closest_name
+            
+            logged_data.append(log_entry)
         
         # Generar estructura completa
         result = {
@@ -1174,14 +1260,14 @@ class LogSimulator:
         
         return result
     
-    def generate_json_string(self, indent: int = 2) -> str:
+    def generate_json_string(self, indent: int = 2, include_location_names: bool = False, location_names: dict = None) -> str:
         # Genera el JSON como string formateado
-        return json.dumps(self.generate(), indent=indent)
+        return json.dumps(self.generate(include_location_names=include_location_names, location_names=location_names), indent=indent)
     
-    def save_to_file(self, filename: str, indent: int = 2):
+    def save_to_file(self, filename: str, indent: int = 2, include_location_names: bool = False, location_names: dict = None):
         # Guarda el JSON en un archivo
         with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(self.generate(), f, indent=indent)
+            json.dump(self.generate(include_location_names=include_location_names, location_names=location_names), f, indent=indent)
 
     def compute_segment_stats(self) -> List[Dict[str, Any]]:
         """Calcula estadísticas observadas por tramo (entre waypoints) sobre las temperaturas generadas.

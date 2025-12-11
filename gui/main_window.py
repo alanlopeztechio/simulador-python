@@ -115,6 +115,18 @@ class SimulatorGUI:
                                                       font=("Arial", 9))
         self.secondary_routes_dropdown.pack(side=tk.LEFT, padx=5)
         
+        # Include location names checkbox
+        self.include_location_names_var = tk.BooleanVar(value=False)
+        location_names_check = tk.Checkbutton(control_frame, text="Include Location Names", 
+                                             variable=self.include_location_names_var, 
+                                             bg="#f0f0f0",
+                                             font=("Arial", 9))
+        location_names_check.pack(side=tk.LEFT, padx=10)
+        
+        create_tooltip(location_names_check, 
+                      "Add location names (city, street) to each data point.\n"
+                      "⚠️ May slow down generation (requires API calls).")
+        
         # Generate button
         tk.Button(action_frame, text="🚀 GENERATE SIMULATION", 
                  command=self.start_generation,
@@ -162,6 +174,7 @@ class SimulatorGUI:
         use_real = self.use_real_routes_var.get()
         use_secondary = self.use_secondary_routes_var.get()
         secondary_count = self.secondary_routes_count_var.get() if use_secondary else 0
+        include_location_names = self.include_location_names_var.get()
         
         total_files = num_samples * len(route_config.sensors)
         if use_secondary:
@@ -184,11 +197,11 @@ class SimulatorGUI:
         self.root.config(cursor="wait")
         
         thread = threading.Thread(target=self._run_simulation, 
-                                 args=(route_config, num_samples, use_real, use_secondary, secondary_count),
+                                 args=(route_config, num_samples, use_real, use_secondary, secondary_count, include_location_names),
                                  daemon=True)
         thread.start()
     
-    def _run_simulation(self, route_config, num_samples, use_real_routes, use_secondary_routes=False, secondary_routes_count=0):
+    def _run_simulation(self, route_config, num_samples, use_real_routes, use_secondary_routes=False, secondary_routes_count=0, include_location_names=False):
         """Run simulation in background thread.
         
         Generates complete RFID tag JSON files using the simulator.
@@ -207,7 +220,8 @@ class SimulatorGUI:
                 use_real_routes=use_real_routes,
                 use_secondary_routes=use_secondary_routes,
                 secondary_routes_count=secondary_routes_count,
-                output_dir=output_dir
+                output_dir=output_dir,
+                include_location_names=include_location_names
             )
             
             # Update UI on main thread
