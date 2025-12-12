@@ -1078,20 +1078,85 @@ class LogSimulator:
         
         return interpolated if interpolated else route_points
     
-    def _generate_inventories(self, num_inventories: int = 2) -> List[Dict[str, Any]]:
-        # Genera lecturas de inventario RFID
+    def _generate_inventories(self, key_locations: List[Tuple[float, float, str]] = None, 
+                             total_samples: int = None) -> List[Dict[str, Any]]:
+        """Genera lecturas de inventario RFID para cada parada clave.
+        
+        Args:
+            key_locations: Lista de tuplas (lat, lng, name) para cada parada
+            total_samples: Número total de muestras en loggedData
+        """
         inventories = []
         start_dt = self._parse_timestamp(self.config.start_timestamp)
         
-        for i in range(num_inventories):
-            timestamp = start_dt + timedelta(seconds=i * 5)
+        # Si no se proporcionan ubicaciones clave, usar origen y destino
+        if not key_locations:
+            key_locations = [
+                (self.config.start_lat, self.config.start_lng, "Origin"),
+                (self.config.end_lat, self.config.end_lng, "Destination")
+            ]
+        
+        # Encontrar el índice real de cada parada en las coordenadas interpoladas
+        # usando la distancia más cercana
+        from geopy.distance import geodesic
+        
+        def find_closest_sample_index(target_lat: float, target_lng: float) -> int:
+            """Encuentra el índice de muestra más cercano a las coordenadas dadas"""
+            if not self.coordinates or len(self.coordinates) == 0:
+                return 0
+            
+            min_distance = float('inf')
+            closest_index = 0
+            
+            for i, (lat, lng) in enumerate(self.coordinates):
+                distance = geodesic((target_lat, target_lng), (lat, lng)).meters
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_index = i
+            
+            return closest_index
+        
+        # Generar un inventory por cada ubicación clave (parada)
+        for i, (lat, lng, location_name) in enumerate(key_locations):
+            # Encontrar en qué índice de muestra está esta parada
+            sample_index = find_closest_sample_index(lat, lng)
+            
+            # Usar las coordenadas exactas de la muestra en loggedData
+            if sample_index < len(self.coordinates):
+                actual_lat, actual_lng = self.coordinates[sample_index]
+            else:
+                actual_lat, actual_lng = lat, lng
+            
+            # Calcular timestamp basado en el índice real de la muestra
+            timestamp = start_dt + timedelta(seconds=sample_index * self.config.log_interval_in_seconds)
+            
+            # loggerNextSample es la siguiente posición de muestra a tomar (índice + 1)
+            # Si es la última parada y está en el último índice, no hay siguiente muestra
+            if sample_index >= total_samples - 1:
+                # Es el último punto, no hay más muestras después
+                logger_next_sample = 0
+            else:
+                # Siguiente posición a tomar (índice base-1)
+                logger_next_sample = sample_index + 1
+            
             inventory = {
                 "readerTimestamp": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z",
                 "readerHost": f"FX9600{random.randint(100000, 999999):X}",
                 "readerMAC": ":".join([f"{random.randint(0, 255):02X}" for _ in range(6)]),
-                "readerLatitude": round(self.config.start_lat, 2),
-                "readerLongitude": round(self.config.start_lng, 2),
+                "readerLatitude": round(actual_lat, 2),
+                "readerLongitude": round(actual_lng, 2),
                 "readerAccuracyInMeters": round(random.uniform(10.0, 20.0), 1),
+                # Información de geocodificación (simplificada por ahora)
+                "adminArea": "",
+                "countryCode": "US",
+                "countryName": "United States",
+                "featureName": "",
+                "locality": location_name if location_name not in ["Origin", "Destination", "Waypoint"] else "",
+                "postalCode": "",
+                "subAdminArea": "",
+                "subLocality": "",
+                "subThoroughfare": "",
+                "thoroughfare": "",
                 "readerChannel": random.choice([905250, 912250, 915250]),
                 "readerRSSI": round(random.uniform(-60.0, -50.0), 1),
                 "tagPacketPC": "3F00",
@@ -1103,7 +1168,7 @@ class LogSimulator:
                 "tagOnChipRSSI": random.randint(10, 20),
                 "loggerState": "LOGGING",
                 "loggerRtc": (start_dt - timedelta(seconds=random.randint(10, 20))).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "loggerNextSample": random.randint(10, 20)
+                "loggerNextSample": logger_next_sample
             }
             inventories.append(inventory)
         
@@ -1224,12 +1289,29 @@ class LogSimulator:
             
             logged_data.append(log_entry)
         
+        # Construir lista de ubicaciones clave para inventories (origin, waypoints, destination)
+        key_locations = []
+        if self.config.waypoints and len(self.config.waypoints) >= 2:
+            # Usar waypoints (que incluyen origin y destination)
+            for i, (lat, lng) in enumerate(self.config.waypoints):
+                coord_key = f"{lat},{lng}"
+                location_name = location_names_cache.get(coord_key, f"Stop {i+1}")
+                key_locations.append((lat, lng, location_name))
+        else:
+            # Solo origin y destination
+            coord_key_origin = f"{self.config.start_lat},{self.config.start_lng}"
+            coord_key_dest = f"{self.config.end_lat},{self.config.end_lng}"
+            origin_name = location_names_cache.get(coord_key_origin, "Origin")
+            dest_name = location_names_cache.get(coord_key_dest, "Destination")
+            key_locations.append((self.config.start_lat, self.config.start_lng, origin_name))
+            key_locations.append((self.config.end_lat, self.config.end_lng, dest_name))
+        
         # Generar estructura completa
         result = {
             "version": "1.1.0",
             "EPC": self.config.epc,
             "TID": self.config.tid,
-            "inventories": self._generate_inventories(),
+            "inventories": self._generate_inventories(key_locations=key_locations, total_samples=self.config.number_of_samples),
             "configuration": {
                 "logIntervalInSeconds": self.config.log_interval_in_seconds,
                 "logDelayedStartInSamples": 1,
