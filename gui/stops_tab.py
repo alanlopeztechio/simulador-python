@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models.route import RouteConfig, RoutePoint
 from models.segment import SegmentMetadata
 from models.sensor import SensorConfig
+from db.database import DatabaseManager
 
 
 class StopsTab(tk.Frame):
@@ -78,6 +79,11 @@ class StopsTab(tk.Frame):
         self.segment_frames = []
         self.sensor_checkboxes = []
         self.available_sensors = []  # List of SensorConfig objects
+        
+        # Cache for used EPCs/TIDs (optimización para evitar consultas repetidas a BD)
+        self.used_epcs_cache = set()
+        self.used_tids_cache = set()
+        self._load_used_identifiers_cache()
         
         # Map markers
         self.origin_marker = None
@@ -437,10 +443,24 @@ class StopsTab(tk.Frame):
                             break
     
     def _add_sensor(self):
-        """Add a new sensor."""
-        index = len(self.available_sensors) + 1
-        sensor = SensorConfig.generate_default(index)
+        """Add a new sensor with unique EPC/TID verification."""
+        # Generar sensor verificando contra la base de datos y cache local
+        sensor = self._generate_unique_sensor()
+        if sensor is None:
+            messagebox.showerror(
+                "Error",
+                "No se pudo generar un sensor único. Verifica la conexión a la base de datos."
+            )
+            return
+        
+        # Agregar a cache local
+        self.used_epcs_cache.add(sensor.epc)
+        self.used_tids_cache.add(sensor.tid)
+        
         self.available_sensors.append(sensor)
+        
+        # Get current index for this sensor
+        current_index = len(self.available_sensors) - 1
         
         # Create checkbox frame
         frame = tk.Frame(self.sensors_list_frame, relief=tk.GROOVE, borderwidth=1, padx=5, pady=3)
@@ -453,19 +473,22 @@ class StopsTab(tk.Frame):
         # Edit/Delete buttons
         btn_frame = tk.Frame(frame)
         btn_frame.pack(side=tk.RIGHT)
-        tk.Button(btn_frame, text="Edit", command=lambda: self._edit_sensor(index-1),
+        tk.Button(btn_frame, text="Edit", command=lambda idx=current_index: self._edit_sensor(idx),
                  bg="#2196F3", fg="white", font=("Arial", 8), width=5).pack(side=tk.LEFT, padx=2)
-        tk.Button(btn_frame, text="Delete", command=lambda: self._remove_sensor(frame, index-1),
+        tk.Button(btn_frame, text="Delete", command=lambda f=frame, idx=current_index: self._remove_sensor(f, idx),
                  bg="#E53935", fg="white", font=("Arial", 8), width=5).pack(side=tk.LEFT, padx=2)
     
     def _edit_sensor(self, index):
-        """Edit sensor configuration."""
+        """Edit sensor configuration with duplicate checking."""
         if 0 <= index < len(self.available_sensors):
             sensor = self.available_sensors[index]
+            original_epc = sensor.epc
+            original_tid = sensor.tid
+            
             # Simple dialog for editing
             dialog = tk.Toplevel(self)
             dialog.title(f"Edit {sensor.get_display_name()}")
-            dialog.geometry("400x250")
+            dialog.geometry("400x300")
             
             tk.Label(dialog, text="EPC:").grid(row=0, column=0, sticky=tk.W, padx=10, pady=5)
             epc_var = tk.StringVar(value=sensor.epc)
@@ -479,14 +502,38 @@ class StopsTab(tk.Frame):
             name_var = tk.StringVar(value=sensor.name or "")
             tk.Entry(dialog, textvariable=name_var, width=30).grid(row=2, column=1, padx=10, pady=5)
             
+            # Status label for warnings
+            status_label = tk.Label(dialog, text="", fg="orange", font=("Arial", 8))
+            status_label.grid(row=3, column=0, columnspan=2, pady=5)
+            
             def save():
-                sensor.epc = epc_var.get()
-                sensor.tid = tid_var.get()
+                new_epc = epc_var.get().strip()
+                new_tid = tid_var.get().strip()
+                
+                # Verificar duplicados solo si cambió el valor
+                if new_epc != original_epc and self._is_identifier_used(new_epc, 'epc', exclude_sensor=sensor):
+                    messagebox.showerror("Error", f"El EPC '{new_epc}' ya está en uso en la base de datos.")
+                    return
+                
+                if new_tid != original_tid and self._is_identifier_used(new_tid, 'tid', exclude_sensor=sensor):
+                    messagebox.showerror("Error", f"El TID '{new_tid}' ya está en uso en la base de datos.")
+                    return
+                
+                # Actualizar cache si cambió
+                if new_epc != original_epc:
+                    self.used_epcs_cache.discard(original_epc)
+                    self.used_epcs_cache.add(new_epc)
+                if new_tid != original_tid:
+                    self.used_tids_cache.discard(original_tid)
+                    self.used_tids_cache.add(new_tid)
+                
+                sensor.epc = new_epc
+                sensor.tid = new_tid
                 sensor.name = name_var.get() if name_var.get() else None
                 self._refresh_sensor_list()
                 dialog.destroy()
             
-            tk.Button(dialog, text="Save", command=save, bg="#4CAF50", fg="white").grid(row=3, column=0, columnspan=2, pady=10)
+            tk.Button(dialog, text="Save", command=save, bg="#4CAF50", fg="white").grid(row=4, column=0, columnspan=2, pady=10)
     
     def _remove_sensor(self, frame, index):
         """Remove a sensor."""
@@ -509,7 +556,7 @@ class StopsTab(tk.Frame):
     
     def _add_sensor_display(self, sensor):
         """Add sensor to display without creating new sensor."""
-        index = len(self.available_sensors) - 1
+        current_index = len(self.available_sensors) - 1
         frame = tk.Frame(self.sensors_list_frame, relief=tk.GROOVE, borderwidth=1, padx=5, pady=3)
         frame.pack(fill=tk.X, pady=2)
         
@@ -518,9 +565,9 @@ class StopsTab(tk.Frame):
         
         btn_frame = tk.Frame(frame)
         btn_frame.pack(side=tk.RIGHT)
-        tk.Button(btn_frame, text="Edit", command=lambda: self._edit_sensor(index),
+        tk.Button(btn_frame, text="Edit", command=lambda idx=current_index: self._edit_sensor(idx),
                  bg="#2196F3", fg="white", font=("Arial", 8), width=5).pack(side=tk.LEFT, padx=2)
-        tk.Button(btn_frame, text="Delete", command=lambda: self._remove_sensor(frame, index),
+        tk.Button(btn_frame, text="Delete", command=lambda f=frame, idx=current_index: self._remove_sensor(f, idx),
                  bg="#E53935", fg="white", font=("Arial", 8), width=5).pack(side=tk.LEFT, padx=2)
     
     def get_route_config(self) -> Optional[RouteConfig]:
@@ -688,6 +735,127 @@ class LocationSearchWidget(tk.Frame):
         if coords and self.on_select_callback:
             # Llamamos a la función del padre pasándole (lat, lon)
             self.on_select_callback(coords[0], coords[1])
+
+
+# Helper functions para StopsTab - Verificación de EPCs/TIDs
+def _load_used_identifiers_cache(self):
+    """Carga el cache de EPCs/TIDs usados desde la base de datos.
+    
+    Esta función se ejecuta una sola vez al inicializar la UI para
+    optimizar las verificaciones posteriores.
+    """
+    try:
+        with DatabaseManager() as db:
+            self.used_epcs_cache = set(db.get_used_epcs())
+            self.used_tids_cache = set(db.get_used_tids())
+            print(f"✓ Cache cargado: {len(self.used_epcs_cache)} EPCs, {len(self.used_tids_cache)} TIDs en uso")
+    except Exception as e:
+        print(f"⚠ No se pudo cargar cache de BD: {e}")
+        print("  Continuando sin verificación de base de datos...")
+        self.used_epcs_cache = set()
+        self.used_tids_cache = set()
+
+
+def _is_identifier_used(self, identifier: str, id_type: str, exclude_sensor=None) -> bool:
+    """Verifica si un EPC o TID ya está en uso.
+    
+    Args:
+        identifier: EPC o TID a verificar
+        id_type: 'epc' o 'tid'
+        exclude_sensor: Sensor a excluir de la verificación (para edición)
+    
+    Returns:
+        True si está en uso, False si está disponible
+    """
+    # Verificar en sensores locales primero
+    for sensor in self.available_sensors:
+        if sensor == exclude_sensor:
+            continue
+        if id_type == 'epc' and sensor.epc == identifier:
+            return True
+        if id_type == 'tid' and sensor.tid == identifier:
+            return True
+    
+    # Verificar en cache de base de datos
+    if id_type == 'epc':
+        return identifier in self.used_epcs_cache
+    else:
+        return identifier in self.used_tids_cache
+
+
+def _generate_unique_sensor(self) -> Optional[SensorConfig]:
+    """Genera un sensor con EPC y TID únicos.
+    
+    Verifica contra la base de datos y sensores locales para garantizar
+    que no haya duplicados.
+    
+    Returns:
+        SensorConfig con identificadores únicos o None si hay error
+    """
+    try:
+        # Recargar cache para asegurar datos frescos
+        with DatabaseManager() as db:
+            self.used_epcs_cache = set(db.get_used_epcs())
+            self.used_tids_cache = set(db.get_used_tids())
+        
+        # Encontrar el siguiente índice disponible
+        index = 1
+        max_attempts = 10000  # Prevenir bucle infinito
+        
+        while index < max_attempts:
+            # Generar EPC y TID con el índice actual
+            test_epc = f"5201F250300{index:05d}"
+            test_tid = f"E2C24500200005668{index:07d}"
+            
+            # Verificar si están disponibles (no en cache ni en sensores locales)
+            epc_available = not self._is_identifier_used(test_epc, 'epc')
+            tid_available = not self._is_identifier_used(test_tid, 'tid')
+            
+            if epc_available and tid_available:
+                # Encontramos un índice disponible
+                sensor = SensorConfig.generate_default(index)
+                print(f"✓ Sensor único generado: índice {index}, EPC: {test_epc}")
+                return sensor
+            
+            index += 1
+        
+        # Si llegamos aquí, no encontramos índice disponible
+        messagebox.showwarning(
+            "Advertencia",
+            f"No se encontró un índice disponible después de {max_attempts} intentos."
+        )
+        return None
+        
+    except Exception as e:
+        print(f"✗ Error generando sensor único: {e}")
+        # En caso de error, generar con índice basado en cantidad local
+        # (modo fallback sin verificación de BD)
+        index = len(self.available_sensors) + 1
+        sensor = SensorConfig.generate_default(index)
+        print(f"⚠ Usando modo fallback: índice {index}")
+        return sensor
+
+
+def _refresh_cache_from_db(self):
+    """Refresca el cache de EPCs/TIDs desde la base de datos.
+    
+    Útil para actualizar después de operaciones que modifican la BD.
+    """
+    try:
+        with DatabaseManager() as db:
+            self.used_epcs_cache = set(db.get_used_epcs())
+            self.used_tids_cache = set(db.get_used_tids())
+            print(f"✓ Cache actualizado: {len(self.used_epcs_cache)} EPCs, {len(self.used_tids_cache)} TIDs")
+    except Exception as e:
+        print(f"⚠ No se pudo actualizar cache: {e}")
+
+
+# Agregar los métodos a la clase StopsTab
+StopsTab._load_used_identifiers_cache = _load_used_identifiers_cache
+StopsTab._is_identifier_used = _is_identifier_used
+StopsTab._generate_unique_sensor = _generate_unique_sensor
+StopsTab._refresh_cache_from_db = _refresh_cache_from_db
+
 
 if __name__ == "__main__":
     # Test the tab

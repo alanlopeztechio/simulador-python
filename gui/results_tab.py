@@ -69,6 +69,9 @@ class ResultsTab(tk.Frame):
         tk.Button(action_frame, text="🗑️ Delete", command=self._delete_file,
                  bg="#E53935", fg="white", font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
         
+        tk.Button(action_frame, text="💾 Save to Neon", command=self._save_to_neon,
+                 bg="#9C27B0", fg="white", font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+        
         # Info panel
         info_frame = tk.LabelFrame(self, text="File Information", 
                                    font=("Arial", 10, "bold"), padx=10, pady=10)
@@ -265,6 +268,55 @@ Violations:
                 subprocess.Popen(["xdg-open", output_path])
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open folder:\n{str(e)}")
+    
+    def _save_to_neon(self):
+        """Save selected simulation to Neon database."""
+        selection = self.files_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a file to save to Neon.")
+            return
+        
+        filename = self.files_listbox.get(selection[0])
+        filepath = os.path.join(self.output_dir, filename)
+        
+        # Confirmation
+        if not messagebox.askyesno("Confirm Save", 
+                                   f"Save simulation to Neon database?\n\nFile: {filename}"):
+            return
+        
+        try:
+            from db.database import save_simulation_to_neon
+            
+            # Show progress
+            self.info_text.delete(1.0, tk.END)
+            self.info_text.insert(1.0, "Saving to Neon database...\n")
+            self.update_idletasks()
+            
+            # Save to database
+            simulation_id = save_simulation_to_neon(json_file=filepath)
+            
+            # Success message
+            success_msg = (f"✅ Simulation saved successfully!\n\n"
+                          f"Database ID: {simulation_id}\n"
+                          f"File: {filename}\n\n"
+                          f"You can now view this simulation in Power BI.")
+            
+            self.info_text.delete(1.0, tk.END)
+            self.info_text.insert(1.0, success_msg)
+            
+            messagebox.showinfo("Success", f"Simulation saved to Neon!\n\nDatabase ID: {simulation_id}")
+            
+        except ImportError:
+            messagebox.showerror(
+                "Module Not Available",
+                "Database module not installed.\n\n"
+                "Install with: pip install -r requirements_db.txt"
+            )
+        except Exception as e:
+            error_msg = f"Failed to save to Neon:\n\n{str(e)}"
+            self.info_text.delete(1.0, tk.END)
+            self.info_text.insert(1.0, f"❌ Error: {str(e)}\n")
+            messagebox.showerror("Error", error_msg)
 
 
 if __name__ == "__main__":

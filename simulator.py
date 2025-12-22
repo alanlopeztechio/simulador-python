@@ -1340,6 +1340,15 @@ class LogSimulator:
             "loggedData": logged_data
         }
         
+        # Agregar metadata adicional para la base de datos
+        result["metadata"] = {
+            "route_name": self.config.route_name,
+            "use_real_route": self.config.use_real_route,
+            "transport_mode": self.config.transport_mode,
+            "distribution_type": self.config.distribution_type,
+            "total_distance_km": self.route_info.get('total_distance_km', 0.0) if self.route_info else 0.0
+        }
+        
         return result
     
     def generate_json_string(self, indent: int = 2, include_location_names: bool = False, location_names: dict = None) -> str:
@@ -1350,6 +1359,38 @@ class LogSimulator:
         # Guarda el JSON en un archivo
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(self.generate(include_location_names=include_location_names, location_names=location_names), f, indent=indent)
+    
+    def save_to_database(self, connection_string: str = None) -> int:
+        """
+        Guarda la simulación directamente en Neon PostgreSQL
+        
+        Args:
+            connection_string: String de conexión a Neon (opcional, usa .env si no se proporciona)
+        
+        Returns:
+            ID de la simulación guardada
+        """
+        try:
+            from db.database import DatabaseManager
+            
+            # Generar datos
+            simulation_data = self.generate()
+            segments_data = self.compute_segment_stats()
+            
+            # Guardar en base de datos
+            with DatabaseManager(connection_string) as db:
+                simulation_id = db.save_simulation_complete(simulation_data, segments_data)
+            
+            return simulation_id
+            
+        except ImportError:
+            print("✗ Error: Módulo de base de datos no disponible")
+            print("  Instala las dependencias: pip install -r requirements_db.txt")
+            raise
+        except Exception as e:
+            print(f"✗ Error guardando en base de datos: {e}")
+            raise
+
 
     def compute_segment_stats(self) -> List[Dict[str, Any]]:
         """Calcula estadísticas observadas por tramo (entre waypoints) sobre las temperaturas generadas.

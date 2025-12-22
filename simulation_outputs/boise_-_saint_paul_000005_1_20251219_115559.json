@@ -1,0 +1,490 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030000005",
+  "TID": "E2C245002000056680000005",
+  "inventories": [
+    {
+      "readerTimestamp": "2025-12-19T11:11:00.000Z",
+      "readerHost": "FX960026030",
+      "readerMAC": "C6:12:35:3A:06:6F",
+      "readerLatitude": 43.94,
+      "readerLongitude": -115.89,
+      "readerAccuracyInMeters": 12.3,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 1",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -57.3,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 9.4,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.12,
+      "tagSensorCode": 112,
+      "tagOnChipRSSI": 20,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:46Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2025-12-19T11:51:00.000Z",
+      "readerHost": "FX960031136",
+      "readerMAC": "34:41:78:9F:6C:40",
+      "readerLatitude": 46.76,
+      "readerLongitude": -114.26,
+      "readerAccuracyInMeters": 10.9,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 2",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -51.4,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 0.8,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.15,
+      "tagSensorCode": 125,
+      "tagOnChipRSSI": 15,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:49Z",
+      "loggerNextSample": 9
+    },
+    {
+      "readerTimestamp": "2025-12-19T12:36:00.000Z",
+      "readerHost": "FX9600DC705",
+      "readerMAC": "AE:91:01:DD:3F:61",
+      "readerLatitude": 45.82,
+      "readerLongitude": -108.34,
+      "readerAccuracyInMeters": 18.3,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 3",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -53.7,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 7.5,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.02,
+      "tagSensorCode": 104,
+      "tagOnChipRSSI": 16,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:47Z",
+      "loggerNextSample": 18
+    },
+    {
+      "readerTimestamp": "2025-12-19T13:36:00.000Z",
+      "readerHost": "FX9600DC2EB",
+      "readerMAC": "A3:5B:0F:EE:B6:34",
+      "readerLatitude": 44.4,
+      "readerLongitude": -100.31,
+      "readerAccuracyInMeters": 14.6,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 4",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -52.6,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 0.6,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.05,
+      "tagSensorCode": 129,
+      "tagOnChipRSSI": 16,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:43Z",
+      "loggerNextSample": 30
+    },
+    {
+      "readerTimestamp": "2025-12-19T14:26:00.000Z",
+      "readerHost": "FX960065712",
+      "readerMAC": "22:61:36:DE:65:50",
+      "readerLatitude": 44.95,
+      "readerLongitude": -93.09,
+      "readerAccuracyInMeters": 11.8,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 5",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -59.2,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.1,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.16,
+      "tagSensorCode": 124,
+      "tagOnChipRSSI": 10,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:42Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 40,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2025-12-19T11:11:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": false,
+    "alarmTemperature": false,
+    "alarmLowTemperature": false,
+    "alarmHighTemperature": false,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": null,
+    "alarmTemperatureValue": null,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2025-12-19T11:11:00Z",
+      "tempInC": 5.9,
+      "tamper": false,
+      "latitude": 43.944932,
+      "longitude": -115.885993,
+      "locationName": "Boise County, ID, USA"
+    },
+    {
+      "timestamp": "2025-12-19T11:16:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 44.262842,
+      "longitude": -116.077172,
+      "locationName": "Boise County, ID, USA"
+    },
+    {
+      "timestamp": "2025-12-19T11:21:00Z",
+      "tempInC": 2.8,
+      "tamper": false,
+      "latitude": 44.788202,
+      "longitude": -116.076897
+    },
+    {
+      "timestamp": "2025-12-19T11:26:00Z",
+      "tempInC": 5.6,
+      "tamper": false,
+      "latitude": 45.247066,
+      "longitude": -116.332002
+    },
+    {
+      "timestamp": "2025-12-19T11:31:00Z",
+      "tempInC": 3.0,
+      "tamper": false,
+      "latitude": 45.749284,
+      "longitude": -116.30774
+    },
+    {
+      "timestamp": "2025-12-19T11:36:00Z",
+      "tempInC": 5.5,
+      "tamper": false,
+      "latitude": 46.129169,
+      "longitude": -115.97708
+    },
+    {
+      "timestamp": "2025-12-19T11:41:00Z",
+      "tempInC": 3.1,
+      "tamper": false,
+      "latitude": 46.273284,
+      "longitude": -115.392508
+    },
+    {
+      "timestamp": "2025-12-19T11:46:00Z",
+      "tempInC": 3.0,
+      "tamper": false,
+      "latitude": 46.503651,
+      "longitude": -114.812068
+    },
+    {
+      "timestamp": "2025-12-19T11:51:00Z",
+      "tempInC": 3.1,
+      "tamper": false,
+      "latitude": 46.759546,
+      "longitude": -114.256101,
+      "locationName": "Missoula, MT, USA"
+    },
+    {
+      "timestamp": "2025-12-19T11:56:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 46.727981,
+      "longitude": -113.663452,
+      "locationName": "Missoula, MT, USA"
+    },
+    {
+      "timestamp": "2025-12-19T12:01:00Z",
+      "tempInC": 8.2,
+      "tamper": false,
+      "latitude": 46.576502,
+      "longitude": -112.894989
+    },
+    {
+      "timestamp": "2025-12-19T12:06:00Z",
+      "tempInC": 6.3,
+      "tamper": false,
+      "latitude": 46.062358,
+      "longitude": -112.769995
+    },
+    {
+      "timestamp": "2025-12-19T12:11:00Z",
+      "tempInC": 0.6,
+      "tamper": false,
+      "latitude": 45.872239,
+      "longitude": -112.032611
+    },
+    {
+      "timestamp": "2025-12-19T12:16:00Z",
+      "tempInC": 5.9,
+      "tamper": false,
+      "latitude": 45.809504,
+      "longitude": -111.244551
+    },
+    {
+      "timestamp": "2025-12-19T12:21:00Z",
+      "tempInC": 3.9,
+      "tamper": false,
+      "latitude": 45.667533,
+      "longitude": -110.523929
+    },
+    {
+      "timestamp": "2025-12-19T12:26:00Z",
+      "tempInC": 4.3,
+      "tamper": false,
+      "latitude": 45.773665,
+      "longitude": -109.797834
+    },
+    {
+      "timestamp": "2025-12-19T12:31:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 45.601536,
+      "longitude": -109.056628
+    },
+    {
+      "timestamp": "2025-12-19T12:36:00Z",
+      "tempInC": 6.9,
+      "tamper": false,
+      "latitude": 45.818999,
+      "longitude": -108.343502,
+      "locationName": "Billings, MT, USA"
+    },
+    {
+      "timestamp": "2025-12-19T12:41:00Z",
+      "tempInC": 7.2,
+      "tamper": false,
+      "latitude": 45.709761,
+      "longitude": -107.532505
+    },
+    {
+      "timestamp": "2025-12-19T12:46:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 45.584573,
+      "longitude": -106.856542
+    },
+    {
+      "timestamp": "2025-12-19T12:51:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 45.570447,
+      "longitude": -106.056459
+    },
+    {
+      "timestamp": "2025-12-19T12:56:00Z",
+      "tempInC": 3.0,
+      "tamper": false,
+      "latitude": 45.36975,
+      "longitude": -105.286774
+    },
+    {
+      "timestamp": "2025-12-19T13:01:00Z",
+      "tempInC": 1.8,
+      "tamper": false,
+      "latitude": 45.090886,
+      "longitude": -104.538887
+    },
+    {
+      "timestamp": "2025-12-19T13:06:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 44.708936,
+      "longitude": -103.89721
+    },
+    {
+      "timestamp": "2025-12-19T13:11:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 44.267778,
+      "longitude": -103.414202
+    },
+    {
+      "timestamp": "2025-12-19T13:16:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 44.103402,
+      "longitude": -102.714387
+    },
+    {
+      "timestamp": "2025-12-19T13:21:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 43.885293,
+      "longitude": -101.99946
+    },
+    {
+      "timestamp": "2025-12-19T13:26:00Z",
+      "tempInC": 4.2,
+      "tamper": false,
+      "latitude": 43.85586,
+      "longitude": -101.197091
+    },
+    {
+      "timestamp": "2025-12-19T13:31:00Z",
+      "tempInC": 2.6,
+      "tamper": false,
+      "latitude": 43.909834,
+      "longitude": -100.396871
+    },
+    {
+      "timestamp": "2025-12-19T13:36:00Z",
+      "tempInC": 0.9,
+      "tamper": false,
+      "latitude": 44.398151,
+      "longitude": -100.310923,
+      "locationName": "South Dakota, USA"
+    },
+    {
+      "timestamp": "2025-12-19T13:41:00Z",
+      "tempInC": 3.7,
+      "tamper": false,
+      "latitude": 44.526761,
+      "longitude": -99.667977
+    },
+    {
+      "timestamp": "2025-12-19T13:46:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 44.510686,
+      "longitude": -98.844238
+    },
+    {
+      "timestamp": "2025-12-19T13:51:00Z",
+      "tempInC": 5.9,
+      "tamper": false,
+      "latitude": 44.370055,
+      "longitude": -98.11739
+    },
+    {
+      "timestamp": "2025-12-19T13:56:00Z",
+      "tempInC": 3.0,
+      "tamper": false,
+      "latitude": 44.361438,
+      "longitude": -97.292965
+    },
+    {
+      "timestamp": "2025-12-19T14:01:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 44.311457,
+      "longitude": -96.520067
+    },
+    {
+      "timestamp": "2025-12-19T14:06:00Z",
+      "tempInC": 8.2,
+      "tamper": false,
+      "latitude": 44.38871,
+      "longitude": -95.881886
+    },
+    {
+      "timestamp": "2025-12-19T14:11:00Z",
+      "tempInC": 3.1,
+      "tamper": false,
+      "latitude": 44.789216,
+      "longitude": -95.446632
+    },
+    {
+      "timestamp": "2025-12-19T14:16:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 44.732345,
+      "longitude": -94.614901
+    },
+    {
+      "timestamp": "2025-12-19T14:21:00Z",
+      "tempInC": 7.5,
+      "tamper": false,
+      "latitude": 44.769099,
+      "longitude": -93.795766
+    },
+    {
+      "timestamp": "2025-12-19T14:26:00Z",
+      "tempInC": 5.9,
+      "tamper": false,
+      "latitude": 44.953067,
+      "longitude": -93.090079,
+      "locationName": "St. Paul, MN, USA"
+    }
+  ],
+  "metadata": {
+    "route_name": "boise - saint paul",
+    "use_real_route": true,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0
+  }
+}

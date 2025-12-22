@@ -1,0 +1,2202 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030000001",
+  "TID": "E2C245002000056680000001",
+  "inventories": [
+    {
+      "readerTimestamp": "2025-12-15T11:15:00.000Z",
+      "readerHost": "FX9600B826C",
+      "readerMAC": "B4:22:52:C1:C6:A5",
+      "readerLatitude": 40.77,
+      "readerLongitude": -111.93,
+      "readerAccuracyInMeters": 15.9,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 1",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -56.1,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.3,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.14,
+      "tagSensorCode": 116,
+      "tagOnChipRSSI": 16,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:45Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2025-12-15T12:40:00.000Z",
+      "readerHost": "FX9600375A5",
+      "readerMAC": "BD:8B:24:06:18:AF",
+      "readerLatitude": 41.47,
+      "readerLongitude": -105.72,
+      "readerAccuracyInMeters": 17.6,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 2",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -58.8,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 0.6,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.12,
+      "tagSensorCode": 128,
+      "tagOnChipRSSI": 19,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:50Z",
+      "loggerNextSample": 18
+    },
+    {
+      "readerTimestamp": "2025-12-15T13:35:00.000Z",
+      "readerHost": "FX960037F65",
+      "readerMAC": "8F:49:C9:9A:8A:71",
+      "readerLatitude": 43.96,
+      "readerLongitude": -103.33,
+      "readerAccuracyInMeters": 14.1,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 3",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -50.6,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 7.8,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.03,
+      "tagSensorCode": 117,
+      "tagOnChipRSSI": 20,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:47Z",
+      "loggerNextSample": 29
+    },
+    {
+      "readerTimestamp": "2025-12-15T14:15:00.000Z",
+      "readerHost": "FX96007AC44",
+      "readerMAC": "4A:88:DB:9E:5B:6A",
+      "readerLatitude": 44.45,
+      "readerLongitude": -100.35,
+      "readerAccuracyInMeters": 17.4,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 4",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -56.9,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 1.7,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.18,
+      "tagSensorCode": 111,
+      "tagOnChipRSSI": 13,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:44Z",
+      "loggerNextSample": 37
+    },
+    {
+      "readerTimestamp": "2025-12-15T15:05:00.000Z",
+      "readerHost": "FX960079139",
+      "readerMAC": "02:E5:5D:9F:64:21",
+      "readerLatitude": 43.48,
+      "readerLongitude": -96.76,
+      "readerAccuracyInMeters": 14.1,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 5",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -50.8,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 1.4,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.16,
+      "tagSensorCode": 128,
+      "tagOnChipRSSI": 15,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:43Z",
+      "loggerNextSample": 47
+    },
+    {
+      "readerTimestamp": "2025-12-15T15:25:00.000Z",
+      "readerHost": "FX9600EC58A",
+      "readerMAC": "87:D5:21:A7:B7:71",
+      "readerLatitude": 42.4,
+      "readerLongitude": -96.4,
+      "readerAccuracyInMeters": 19.3,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 6",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -55.9,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 9.6,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.05,
+      "tagSensorCode": 103,
+      "tagOnChipRSSI": 17,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:47Z",
+      "loggerNextSample": 51
+    },
+    {
+      "readerTimestamp": "2025-12-15T15:30:00.000Z",
+      "readerHost": "FX9600503E4",
+      "readerMAC": "C3:1E:E2:23:B2:7B",
+      "readerLatitude": 42.12,
+      "readerLongitude": -96.45,
+      "readerAccuracyInMeters": 20.0,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 7",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -56.5,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 9.7,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.11,
+      "tagSensorCode": 108,
+      "tagOnChipRSSI": 19,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:48Z",
+      "loggerNextSample": 52
+    },
+    {
+      "readerTimestamp": "2025-12-15T15:55:00.000Z",
+      "readerHost": "FX9600E4473",
+      "readerMAC": "8B:69:D1:D3:51:7C",
+      "readerLatitude": 40.84,
+      "readerLongitude": -96.57,
+      "readerAccuracyInMeters": 18.6,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 8",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -53.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.3,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.15,
+      "tagSensorCode": 109,
+      "tagOnChipRSSI": 14,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:50Z",
+      "loggerNextSample": 57
+    },
+    {
+      "readerTimestamp": "2025-12-15T16:35:00.000Z",
+      "readerHost": "FX96004EBD1",
+      "readerMAC": "93:E6:04:B1:B4:8C",
+      "readerLatitude": 41.54,
+      "readerLongitude": -93.76,
+      "readerAccuracyInMeters": 13.0,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 9",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -53.2,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 1.6,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.0,
+      "tagSensorCode": 114,
+      "tagOnChipRSSI": 13,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:44Z",
+      "loggerNextSample": 65
+    },
+    {
+      "readerTimestamp": "2025-12-15T17:25:00.000Z",
+      "readerHost": "FX9600F2BD9",
+      "readerMAC": "49:9F:10:B0:AD:36",
+      "readerLatitude": 39.1,
+      "readerLongitude": -94.51,
+      "readerAccuracyInMeters": 15.6,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 10",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -54.1,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.0,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.15,
+      "tagSensorCode": 115,
+      "tagOnChipRSSI": 14,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:48Z",
+      "loggerNextSample": 75
+    },
+    {
+      "readerTimestamp": "2025-12-15T18:45:00.000Z",
+      "readerHost": "FX96006BD12",
+      "readerMAC": "D2:41:53:87:16:A0",
+      "readerLatitude": 38.37,
+      "readerLongitude": -88.88,
+      "readerAccuracyInMeters": 11.9,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 11",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -56.9,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.9,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.13,
+      "tagSensorCode": 107,
+      "tagOnChipRSSI": 15,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:48Z",
+      "loggerNextSample": 91
+    },
+    {
+      "readerTimestamp": "2025-12-15T19:30:00.000Z",
+      "readerHost": "FX9600509EA",
+      "readerMAC": "61:1D:2E:53:B7:BA",
+      "readerLatitude": 38.19,
+      "readerLongitude": -85.72,
+      "readerAccuracyInMeters": 11.8,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 12",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -59.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.5,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.11,
+      "tagSensorCode": 130,
+      "tagOnChipRSSI": 10,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:43Z",
+      "loggerNextSample": 100
+    },
+    {
+      "readerTimestamp": "2025-12-15T19:55:00.000Z",
+      "readerHost": "FX9600D8686",
+      "readerMAC": "9F:F5:80:58:5E:8E",
+      "readerLatitude": 39.18,
+      "readerLongitude": -84.47,
+      "readerAccuracyInMeters": 17.4,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 13",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -52.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.7,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.15,
+      "tagSensorCode": 116,
+      "tagOnChipRSSI": 19,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:47Z",
+      "loggerNextSample": 105
+    },
+    {
+      "readerTimestamp": "2025-12-15T20:20:00.000Z",
+      "readerHost": "FX9600633A0",
+      "readerMAC": "19:A0:FD:56:EE:0C",
+      "readerLatitude": 39.87,
+      "readerLongitude": -82.91,
+      "readerAccuracyInMeters": 17.0,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 14",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -52.7,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.1,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.19,
+      "tagSensorCode": 119,
+      "tagOnChipRSSI": 11,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:41Z",
+      "loggerNextSample": 110
+    },
+    {
+      "readerTimestamp": "2025-12-15T20:50:00.000Z",
+      "readerHost": "FX9600F2AE5",
+      "readerMAC": "FC:E7:97:80:1A:E4",
+      "readerLatitude": 41.04,
+      "readerLongitude": -81.45,
+      "readerAccuracyInMeters": 13.1,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 15",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -55.7,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.9,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.07,
+      "tagSensorCode": 117,
+      "tagOnChipRSSI": 16,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:49Z",
+      "loggerNextSample": 116
+    },
+    {
+      "readerTimestamp": "2025-12-15T21:15:00.000Z",
+      "readerHost": "FX9600579AC",
+      "readerMAC": "77:AA:0B:38:25:A7",
+      "readerLatitude": 40.41,
+      "readerLongitude": -79.82,
+      "readerAccuracyInMeters": 17.3,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 16",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -59.8,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 7.1,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.15,
+      "tagSensorCode": 124,
+      "tagOnChipRSSI": 12,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:47Z",
+      "loggerNextSample": 121
+    },
+    {
+      "readerTimestamp": "2025-12-15T21:20:00.000Z",
+      "readerHost": "FX96003FC8E",
+      "readerMAC": "CE:A3:66:5F:CE:DB",
+      "readerLatitude": 40.27,
+      "readerLongitude": -79.59,
+      "readerAccuracyInMeters": 18.9,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 17",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -59.9,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 5.9,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.1,
+      "tagSensorCode": 104,
+      "tagOnChipRSSI": 14,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:40Z",
+      "loggerNextSample": 122
+    },
+    {
+      "readerTimestamp": "2025-12-15T22:05:00.000Z",
+      "readerHost": "FX96001E424",
+      "readerMAC": "F1:1A:D7:D9:39:B6",
+      "readerLatitude": 38.34,
+      "readerLongitude": -81.66,
+      "readerAccuracyInMeters": 19.4,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 18",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -53.9,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 1.4,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.16,
+      "tagSensorCode": 119,
+      "tagOnChipRSSI": 11,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:50Z",
+      "loggerNextSample": 131
+    },
+    {
+      "readerTimestamp": "2025-12-15T22:55:00.000Z",
+      "readerHost": "FX9600B3097",
+      "readerMAC": "F3:84:C1:48:A6:F1",
+      "readerLatitude": 37.6,
+      "readerLongitude": -85.05,
+      "readerAccuracyInMeters": 18.3,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 19",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -57.5,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.2,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.13,
+      "tagSensorCode": 121,
+      "tagOnChipRSSI": 14,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:48Z",
+      "loggerNextSample": 141
+    },
+    {
+      "readerTimestamp": "2025-12-15T23:30:00.000Z",
+      "readerHost": "FX96006CF37",
+      "readerMAC": "D5:6B:2A:40:05:68",
+      "readerLatitude": 36.25,
+      "readerLongitude": -86.81,
+      "readerAccuracyInMeters": 14.8,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 20",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -59.6,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 7.6,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.16,
+      "tagSensorCode": 100,
+      "tagOnChipRSSI": 10,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:46Z",
+      "loggerNextSample": 148
+    },
+    {
+      "readerTimestamp": "2025-12-16T00:20:00.000Z",
+      "readerHost": "FX960070F2E",
+      "readerMAC": "FD:CF:F2:23:B3:D8",
+      "readerLatitude": 35.12,
+      "readerLongitude": -89.94,
+      "readerAccuracyInMeters": 17.4,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 21",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -54.8,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 1.6,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.14,
+      "tagSensorCode": 109,
+      "tagOnChipRSSI": 18,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:44Z",
+      "loggerNextSample": 158
+    },
+    {
+      "readerTimestamp": "2025-12-16T04:10:00.000Z",
+      "readerHost": "FX96003B824",
+      "readerMAC": "56:EC:18:61:98:40",
+      "readerLatitude": 39.74,
+      "readerLongitude": -104.99,
+      "readerAccuracyInMeters": 18.7,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 22",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -54.2,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 6.0,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.09,
+      "tagSensorCode": 102,
+      "tagOnChipRSSI": 10,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-15T11:14:44Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 204,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2025-12-15T11:15:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": true,
+    "alarmTemperature": true,
+    "alarmLowTemperature": true,
+    "alarmHighTemperature": false,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": "2025-12-15T12:55:00.000Z",
+    "alarmTemperatureValue": -2.2,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2025-12-15T11:15:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 40.773201,
+      "longitude": -111.933984,
+      "locationName": "Salt Lake City, UT, USA"
+    },
+    {
+      "timestamp": "2025-12-15T11:20:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 40.813875,
+      "longitude": -111.570293,
+      "locationName": "Salt Lake City, UT, USA"
+    },
+    {
+      "timestamp": "2025-12-15T11:25:00Z",
+      "tempInC": 3.7,
+      "tamper": false,
+      "latitude": 40.854573,
+      "longitude": -111.206387
+    },
+    {
+      "timestamp": "2025-12-15T11:30:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 40.895295,
+      "longitude": -110.842264
+    },
+    {
+      "timestamp": "2025-12-15T11:35:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 40.936041,
+      "longitude": -110.477924
+    },
+    {
+      "timestamp": "2025-12-15T11:40:00Z",
+      "tempInC": 3.3,
+      "tamper": false,
+      "latitude": 40.976812,
+      "longitude": -110.113367
+    },
+    {
+      "timestamp": "2025-12-15T11:45:00Z",
+      "tempInC": 3.9,
+      "tamper": false,
+      "latitude": 41.017607,
+      "longitude": -109.748592
+    },
+    {
+      "timestamp": "2025-12-15T11:50:00Z",
+      "tempInC": 2.1,
+      "tamper": false,
+      "latitude": 41.058426,
+      "longitude": -109.383599
+    },
+    {
+      "timestamp": "2025-12-15T11:55:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 41.09927,
+      "longitude": -109.018386
+    },
+    {
+      "timestamp": "2025-12-15T12:00:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 41.140139,
+      "longitude": -108.652954
+    },
+    {
+      "timestamp": "2025-12-15T12:05:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 41.181032,
+      "longitude": -108.287302
+    },
+    {
+      "timestamp": "2025-12-15T12:10:00Z",
+      "tempInC": 4.7,
+      "tamper": false,
+      "latitude": 41.221952,
+      "longitude": -107.92141
+    },
+    {
+      "timestamp": "2025-12-15T12:15:00Z",
+      "tempInC": 6.5,
+      "tamper": false,
+      "latitude": 41.262897,
+      "longitude": -107.555297
+    },
+    {
+      "timestamp": "2025-12-15T12:20:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 41.303866,
+      "longitude": -107.188962
+    },
+    {
+      "timestamp": "2025-12-15T12:25:00Z",
+      "tempInC": 8.2,
+      "tamper": false,
+      "latitude": 41.344861,
+      "longitude": -106.822405
+    },
+    {
+      "timestamp": "2025-12-15T12:30:00Z",
+      "tempInC": 7.6,
+      "tamper": false,
+      "latitude": 41.38588,
+      "longitude": -106.455625
+    },
+    {
+      "timestamp": "2025-12-15T12:35:00Z",
+      "tempInC": 1.5,
+      "tamper": false,
+      "latitude": 41.426924,
+      "longitude": -106.088621,
+      "locationName": "Wyoming, WY, USA"
+    },
+    {
+      "timestamp": "2025-12-15T12:40:00Z",
+      "tempInC": 0.4,
+      "tamper": false,
+      "latitude": 41.467994,
+      "longitude": -105.721393,
+      "locationName": "Wyoming, WY, USA"
+    },
+    {
+      "timestamp": "2025-12-15T12:45:00Z",
+      "tempInC": 0.6,
+      "tamper": false,
+      "latitude": 41.653642,
+      "longitude": -105.47278,
+      "locationName": "Wyoming, WY, USA"
+    },
+    {
+      "timestamp": "2025-12-15T12:50:00Z",
+      "tempInC": 8.9,
+      "tamper": false,
+      "latitude": 41.882852,
+      "longitude": -105.259562
+    },
+    {
+      "timestamp": "2025-12-15T12:55:00Z",
+      "tempInC": -2.2,
+      "tamper": true,
+      "latitude": 42.112341,
+      "longitude": -105.046086
+    },
+    {
+      "timestamp": "2025-12-15T13:00:00Z",
+      "tempInC": -7.6,
+      "tamper": true,
+      "latitude": 42.342083,
+      "longitude": -104.832373
+    },
+    {
+      "timestamp": "2025-12-15T13:05:00Z",
+      "tempInC": 7.3,
+      "tamper": false,
+      "latitude": 42.572079,
+      "longitude": -104.618424
+    },
+    {
+      "timestamp": "2025-12-15T13:10:00Z",
+      "tempInC": -0.1,
+      "tamper": true,
+      "latitude": 42.802359,
+      "longitude": -104.404212
+    },
+    {
+      "timestamp": "2025-12-15T13:15:00Z",
+      "tempInC": -3.3,
+      "tamper": true,
+      "latitude": 43.032899,
+      "longitude": -104.189757
+    },
+    {
+      "timestamp": "2025-12-15T13:20:00Z",
+      "tempInC": -0.9,
+      "tamper": true,
+      "latitude": 43.263697,
+      "longitude": -103.975062
+    },
+    {
+      "timestamp": "2025-12-15T13:25:00Z",
+      "tempInC": -3.9,
+      "tamper": true,
+      "latitude": 43.494777,
+      "longitude": -103.760106
+    },
+    {
+      "timestamp": "2025-12-15T13:30:00Z",
+      "tempInC": -7.1,
+      "tamper": true,
+      "latitude": 43.726127,
+      "longitude": -103.544897,
+      "locationName": "Rapid City, SD, USA"
+    },
+    {
+      "timestamp": "2025-12-15T13:35:00Z",
+      "tempInC": 3.1,
+      "tamper": false,
+      "latitude": 43.957741,
+      "longitude": -103.329443,
+      "locationName": "Rapid City, SD, USA"
+    },
+    {
+      "timestamp": "2025-12-15T13:40:00Z",
+      "tempInC": 6.6,
+      "tamper": false,
+      "latitude": 44.095385,
+      "longitude": -103.027745,
+      "locationName": "Rapid City, SD, USA"
+    },
+    {
+      "timestamp": "2025-12-15T13:45:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 44.146504,
+      "longitude": -102.6467
+    },
+    {
+      "timestamp": "2025-12-15T13:50:00Z",
+      "tempInC": 4.2,
+      "tamper": false,
+      "latitude": 44.197664,
+      "longitude": -102.265342
+    },
+    {
+      "timestamp": "2025-12-15T13:55:00Z",
+      "tempInC": 3.4,
+      "tamper": false,
+      "latitude": 44.248868,
+      "longitude": -101.883656
+    },
+    {
+      "timestamp": "2025-12-15T14:00:00Z",
+      "tempInC": 7.5,
+      "tamper": false,
+      "latitude": 44.300114,
+      "longitude": -101.50166
+    },
+    {
+      "timestamp": "2025-12-15T14:05:00Z",
+      "tempInC": 4.3,
+      "tamper": false,
+      "latitude": 44.351404,
+      "longitude": -101.119333
+    },
+    {
+      "timestamp": "2025-12-15T14:10:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 44.402737,
+      "longitude": -100.73669
+    },
+    {
+      "timestamp": "2025-12-15T14:15:00Z",
+      "tempInC": 1.4,
+      "tamper": false,
+      "latitude": 44.454113,
+      "longitude": -100.353721,
+      "locationName": "South Dakota, USA"
+    },
+    {
+      "timestamp": "2025-12-15T14:20:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 44.401209,
+      "longitude": -99.984653,
+      "locationName": "South Dakota, USA"
+    },
+    {
+      "timestamp": "2025-12-15T14:25:00Z",
+      "tempInC": 7.9,
+      "tamper": false,
+      "latitude": 44.298664,
+      "longitude": -99.622746
+    },
+    {
+      "timestamp": "2025-12-15T14:30:00Z",
+      "tempInC": 6.1,
+      "tamper": false,
+      "latitude": 44.196272,
+      "longitude": -99.261382
+    },
+    {
+      "timestamp": "2025-12-15T14:35:00Z",
+      "tempInC": 3.9,
+      "tamper": false,
+      "latitude": 44.094034,
+      "longitude": -98.900558
+    },
+    {
+      "timestamp": "2025-12-15T14:40:00Z",
+      "tempInC": 0.7,
+      "tamper": false,
+      "latitude": 43.991947,
+      "longitude": -98.54027
+    },
+    {
+      "timestamp": "2025-12-15T14:45:00Z",
+      "tempInC": 7.5,
+      "tamper": false,
+      "latitude": 43.890012,
+      "longitude": -98.180516
+    },
+    {
+      "timestamp": "2025-12-15T14:50:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 43.788226,
+      "longitude": -97.821292
+    },
+    {
+      "timestamp": "2025-12-15T14:55:00Z",
+      "tempInC": 9.4,
+      "tamper": false,
+      "latitude": 43.68659,
+      "longitude": -97.462595
+    },
+    {
+      "timestamp": "2025-12-15T15:00:00Z",
+      "tempInC": 1.1,
+      "tamper": false,
+      "latitude": 43.585103,
+      "longitude": -97.104421,
+      "locationName": "Sioux Falls, SD, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:05:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 43.477229,
+      "longitude": -96.756612,
+      "locationName": "Sioux Falls, SD, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:10:00Z",
+      "tempInC": 2.6,
+      "tamper": false,
+      "latitude": 43.208747,
+      "longitude": -96.651399,
+      "locationName": "Sioux Falls, SD, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:15:00Z",
+      "tempInC": 7.7,
+      "tamper": false,
+      "latitude": 42.940342,
+      "longitude": -96.546216,
+      "locationName": "Sioux City, IA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:20:00Z",
+      "tempInC": 9.3,
+      "tamper": false,
+      "latitude": 42.672014,
+      "longitude": -96.441064,
+      "locationName": "Sioux City, IA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:25:00Z",
+      "tempInC": 2.1,
+      "tamper": false,
+      "latitude": 42.399818,
+      "longitude": -96.402951,
+      "locationName": "Sioux City, IA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:30:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 42.122666,
+      "longitude": -96.449498,
+      "locationName": "Omaha, NE, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:35:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 41.84553,
+      "longitude": -96.496172,
+      "locationName": "Omaha, NE, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:40:00Z",
+      "tempInC": 0.5,
+      "tamper": false,
+      "latitude": 41.5684,
+      "longitude": -96.542845
+    },
+    {
+      "timestamp": "2025-12-15T15:45:00Z",
+      "tempInC": 6.1,
+      "tamper": false,
+      "latitude": 41.291275,
+      "longitude": -96.589517,
+      "locationName": "Lincoln, NE, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:50:00Z",
+      "tempInC": 0.9,
+      "tamper": false,
+      "latitude": 41.014156,
+      "longitude": -96.636188,
+      "locationName": "Lincoln, NE, USA"
+    },
+    {
+      "timestamp": "2025-12-15T15:55:00Z",
+      "tempInC": 1.2,
+      "tamper": false,
+      "latitude": 40.84295,
+      "longitude": -96.567396,
+      "locationName": "Lincoln, NE, USA"
+    },
+    {
+      "timestamp": "2025-12-15T16:00:00Z",
+      "tempInC": 6.2,
+      "tamper": false,
+      "latitude": 40.929519,
+      "longitude": -96.217407,
+      "locationName": "Lincoln, NE, USA"
+    },
+    {
+      "timestamp": "2025-12-15T16:05:00Z",
+      "tempInC": 7.7,
+      "tamper": false,
+      "latitude": 41.01619,
+      "longitude": -95.867009
+    },
+    {
+      "timestamp": "2025-12-15T16:10:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 41.102965,
+      "longitude": -95.516184
+    },
+    {
+      "timestamp": "2025-12-15T16:15:00Z",
+      "tempInC": 8.4,
+      "tamper": false,
+      "latitude": 41.189844,
+      "longitude": -95.164943
+    },
+    {
+      "timestamp": "2025-12-15T16:20:00Z",
+      "tempInC": 8.1,
+      "tamper": false,
+      "latitude": 41.276826,
+      "longitude": -94.813285
+    },
+    {
+      "timestamp": "2025-12-15T16:25:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 41.363911,
+      "longitude": -94.461209
+    },
+    {
+      "timestamp": "2025-12-15T16:30:00Z",
+      "tempInC": 6.0,
+      "tamper": false,
+      "latitude": 41.4511,
+      "longitude": -94.108713
+    },
+    {
+      "timestamp": "2025-12-15T16:35:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 41.538396,
+      "longitude": -93.755785,
+      "locationName": "Des Moines, IA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T16:40:00Z",
+      "tempInC": 6.2,
+      "tamper": false,
+      "latitude": 41.417405,
+      "longitude": -93.675466,
+      "locationName": "Des Moines, IA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T16:45:00Z",
+      "tempInC": -0.5,
+      "tamper": true,
+      "latitude": 41.150778,
+      "longitude": -93.785953,
+      "locationName": "Des Moines, IA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T16:50:00Z",
+      "tempInC": 9.8,
+      "tamper": false,
+      "latitude": 40.884236,
+      "longitude": -93.896405
+    },
+    {
+      "timestamp": "2025-12-15T16:55:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 40.617779,
+      "longitude": -94.006822
+    },
+    {
+      "timestamp": "2025-12-15T17:00:00Z",
+      "tempInC": 2.8,
+      "tamper": false,
+      "latitude": 40.351407,
+      "longitude": -94.117204
+    },
+    {
+      "timestamp": "2025-12-15T17:05:00Z",
+      "tempInC": 6.6,
+      "tamper": false,
+      "latitude": 40.08512,
+      "longitude": -94.227551
+    },
+    {
+      "timestamp": "2025-12-15T17:10:00Z",
+      "tempInC": 7.1,
+      "tamper": false,
+      "latitude": 39.818916,
+      "longitude": -94.337863
+    },
+    {
+      "timestamp": "2025-12-15T17:15:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 39.552797,
+      "longitude": -94.44814,
+      "locationName": "Kansas City, KS, USA"
+    },
+    {
+      "timestamp": "2025-12-15T17:20:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 39.286761,
+      "longitude": -94.558382,
+      "locationName": "Kansas City, KS, USA"
+    },
+    {
+      "timestamp": "2025-12-15T17:25:00Z",
+      "tempInC": -3.3,
+      "tamper": true,
+      "latitude": 39.097352,
+      "longitude": -94.506779,
+      "locationName": "Kansas City, KS, USA"
+    },
+    {
+      "timestamp": "2025-12-15T17:30:00Z",
+      "tempInC": -0.2,
+      "tamper": true,
+      "latitude": 39.050848,
+      "longitude": -94.153264,
+      "locationName": "Kansas City, KS, USA"
+    },
+    {
+      "timestamp": "2025-12-15T17:35:00Z",
+      "tempInC": -0.1,
+      "tamper": true,
+      "latitude": 39.004373,
+      "longitude": -93.799967
+    },
+    {
+      "timestamp": "2025-12-15T17:40:00Z",
+      "tempInC": 0.4,
+      "tamper": false,
+      "latitude": 38.957927,
+      "longitude": -93.446892
+    },
+    {
+      "timestamp": "2025-12-15T17:45:00Z",
+      "tempInC": -8.4,
+      "tamper": true,
+      "latitude": 38.911513,
+      "longitude": -93.094063
+    },
+    {
+      "timestamp": "2025-12-15T17:50:00Z",
+      "tempInC": -7.0,
+      "tamper": true,
+      "latitude": 38.865128,
+      "longitude": -92.74145
+    },
+    {
+      "timestamp": "2025-12-15T17:55:00Z",
+      "tempInC": 1.2,
+      "tamper": false,
+      "latitude": 38.818771,
+      "longitude": -92.389054
+    },
+    {
+      "timestamp": "2025-12-15T18:00:00Z",
+      "tempInC": -0.5,
+      "tamper": true,
+      "latitude": 38.772443,
+      "longitude": -92.036873
+    },
+    {
+      "timestamp": "2025-12-15T18:05:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 38.726143,
+      "longitude": -91.684911
+    },
+    {
+      "timestamp": "2025-12-15T18:10:00Z",
+      "tempInC": -3.9,
+      "tamper": true,
+      "latitude": 38.679876,
+      "longitude": -91.333191
+    },
+    {
+      "timestamp": "2025-12-15T18:15:00Z",
+      "tempInC": -3.1,
+      "tamper": true,
+      "latitude": 38.633636,
+      "longitude": -90.981685
+    },
+    {
+      "timestamp": "2025-12-15T18:20:00Z",
+      "tempInC": -9.0,
+      "tamper": true,
+      "latitude": 38.587425,
+      "longitude": -90.630393
+    },
+    {
+      "timestamp": "2025-12-15T18:25:00Z",
+      "tempInC": -4.1,
+      "tamper": true,
+      "latitude": 38.541241,
+      "longitude": -90.279314
+    },
+    {
+      "timestamp": "2025-12-15T18:30:00Z",
+      "tempInC": -3.1,
+      "tamper": true,
+      "latitude": 38.495085,
+      "longitude": -89.928447
+    },
+    {
+      "timestamp": "2025-12-15T18:35:00Z",
+      "tempInC": -3.9,
+      "tamper": true,
+      "latitude": 38.448961,
+      "longitude": -89.57782
+    },
+    {
+      "timestamp": "2025-12-15T18:40:00Z",
+      "tempInC": -5.6,
+      "tamper": true,
+      "latitude": 38.402865,
+      "longitude": -89.227406,
+      "locationName": "Jefferson City, IL, USA"
+    },
+    {
+      "timestamp": "2025-12-15T18:45:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 38.366459,
+      "longitude": -88.875583,
+      "locationName": "Jefferson City, IL, USA"
+    },
+    {
+      "timestamp": "2025-12-15T18:50:00Z",
+      "tempInC": 1.6,
+      "tamper": false,
+      "latitude": 38.340764,
+      "longitude": -88.522153
+    },
+    {
+      "timestamp": "2025-12-15T18:55:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 38.315078,
+      "longitude": -88.168848
+    },
+    {
+      "timestamp": "2025-12-15T19:00:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 38.289401,
+      "longitude": -87.815666
+    },
+    {
+      "timestamp": "2025-12-15T19:05:00Z",
+      "tempInC": 4.2,
+      "tamper": false,
+      "latitude": 38.263733,
+      "longitude": -87.462608
+    },
+    {
+      "timestamp": "2025-12-15T19:10:00Z",
+      "tempInC": 6.6,
+      "tamper": false,
+      "latitude": 38.238074,
+      "longitude": -87.109672
+    },
+    {
+      "timestamp": "2025-12-15T19:15:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 38.212424,
+      "longitude": -86.75686
+    },
+    {
+      "timestamp": "2025-12-15T19:20:00Z",
+      "tempInC": 1.3,
+      "tamper": false,
+      "latitude": 38.186782,
+      "longitude": -86.40417
+    },
+    {
+      "timestamp": "2025-12-15T19:25:00Z",
+      "tempInC": 3.9,
+      "tamper": false,
+      "latitude": 38.16115,
+      "longitude": -86.051602,
+      "locationName": "Louisville, KY, USA"
+    },
+    {
+      "timestamp": "2025-12-15T19:30:00Z",
+      "tempInC": 3.2,
+      "tamper": false,
+      "latitude": 38.185493,
+      "longitude": -85.722597,
+      "locationName": "Louisville, KY, USA"
+    },
+    {
+      "timestamp": "2025-12-15T19:35:00Z",
+      "tempInC": 9.7,
+      "tamper": false,
+      "latitude": 38.386567,
+      "longitude": -85.476297,
+      "locationName": "Louisville, KY, USA"
+    },
+    {
+      "timestamp": "2025-12-15T19:40:00Z",
+      "tempInC": 2.9,
+      "tamper": false,
+      "latitude": 38.587905,
+      "longitude": -85.229673
+    },
+    {
+      "timestamp": "2025-12-15T19:45:00Z",
+      "tempInC": 1.8,
+      "tamper": false,
+      "latitude": 38.789509,
+      "longitude": -84.982723
+    },
+    {
+      "timestamp": "2025-12-15T19:50:00Z",
+      "tempInC": 2.1,
+      "tamper": false,
+      "latitude": 38.991381,
+      "longitude": -84.735445,
+      "locationName": "Cincinnati, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T19:55:00Z",
+      "tempInC": 5.7,
+      "tamper": false,
+      "latitude": 39.179051,
+      "longitude": -84.47329,
+      "locationName": "Cincinnati, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:00:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 39.31767,
+      "longitude": -84.161226,
+      "locationName": "Cincinnati, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:05:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 39.456496,
+      "longitude": -83.848697
+    },
+    {
+      "timestamp": "2025-12-15T20:10:00Z",
+      "tempInC": 5.6,
+      "tamper": false,
+      "latitude": 39.595526,
+      "longitude": -83.535708
+    },
+    {
+      "timestamp": "2025-12-15T20:15:00Z",
+      "tempInC": 7.3,
+      "tamper": false,
+      "latitude": 39.734768,
+      "longitude": -83.22224,
+      "locationName": "Columbus, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:20:00Z",
+      "tempInC": 2.6,
+      "tamper": false,
+      "latitude": 39.874218,
+      "longitude": -82.908306,
+      "locationName": "Columbus, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:25:00Z",
+      "tempInC": -2.2,
+      "tamper": true,
+      "latitude": 40.063041,
+      "longitude": -82.647402,
+      "locationName": "Columbus, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:30:00Z",
+      "tempInC": -5.2,
+      "tamper": true,
+      "latitude": 40.277158,
+      "longitude": -82.41342
+    },
+    {
+      "timestamp": "2025-12-15T20:35:00Z",
+      "tempInC": 7.8,
+      "tamper": false,
+      "latitude": 40.491551,
+      "longitude": -82.179136
+    },
+    {
+      "timestamp": "2025-12-15T20:40:00Z",
+      "tempInC": -6.0,
+      "tamper": true,
+      "latitude": 40.706218,
+      "longitude": -81.944554
+    },
+    {
+      "timestamp": "2025-12-15T20:45:00Z",
+      "tempInC": -7.2,
+      "tamper": true,
+      "latitude": 40.921165,
+      "longitude": -81.709666,
+      "locationName": "Akron, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:50:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 41.043205,
+      "longitude": -81.449406,
+      "locationName": "Akron, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T20:55:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 40.914932,
+      "longitude": -81.121935,
+      "locationName": "Akron, OH, USA"
+    },
+    {
+      "timestamp": "2025-12-15T21:00:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 40.786853,
+      "longitude": -80.794964
+    },
+    {
+      "timestamp": "2025-12-15T21:05:00Z",
+      "tempInC": 6.2,
+      "tamper": false,
+      "latitude": 40.658968,
+      "longitude": -80.468486
+    },
+    {
+      "timestamp": "2025-12-15T21:10:00Z",
+      "tempInC": 2.3,
+      "tamper": false,
+      "latitude": 40.531275,
+      "longitude": -80.142498,
+      "locationName": "Pittsburgh, PA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T21:15:00Z",
+      "tempInC": 7.5,
+      "tamper": false,
+      "latitude": 40.40627,
+      "longitude": -79.815371,
+      "locationName": "Pittsburgh, PA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T21:20:00Z",
+      "tempInC": 5.5,
+      "tamper": false,
+      "latitude": 40.267495,
+      "longitude": -79.592007,
+      "locationName": "Greensburg, PA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T21:25:00Z",
+      "tempInC": 4.0,
+      "tamper": false,
+      "latitude": 40.050866,
+      "longitude": -79.821992,
+      "locationName": "Greensburg, PA, USA"
+    },
+    {
+      "timestamp": "2025-12-15T21:30:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 39.834505,
+      "longitude": -80.051693
+    },
+    {
+      "timestamp": "2025-12-15T21:35:00Z",
+      "tempInC": 1.9,
+      "tamper": false,
+      "latitude": 39.618411,
+      "longitude": -80.28111
+    },
+    {
+      "timestamp": "2025-12-15T21:40:00Z",
+      "tempInC": 1.7,
+      "tamper": false,
+      "latitude": 39.402581,
+      "longitude": -80.510247
+    },
+    {
+      "timestamp": "2025-12-15T21:45:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 39.187015,
+      "longitude": -80.739103
+    },
+    {
+      "timestamp": "2025-12-15T21:50:00Z",
+      "tempInC": 2.9,
+      "tamper": false,
+      "latitude": 38.971711,
+      "longitude": -80.967682
+    },
+    {
+      "timestamp": "2025-12-15T21:55:00Z",
+      "tempInC": 0.7,
+      "tamper": false,
+      "latitude": 38.756669,
+      "longitude": -81.195982
+    },
+    {
+      "timestamp": "2025-12-15T22:00:00Z",
+      "tempInC": 3.2,
+      "tamper": false,
+      "latitude": 38.541888,
+      "longitude": -81.424006,
+      "locationName": "Charleston, WV, USA"
+    },
+    {
+      "timestamp": "2025-12-15T22:05:00Z",
+      "tempInC": -0.4,
+      "tamper": true,
+      "latitude": 38.340952,
+      "longitude": -81.662579,
+      "locationName": "Charleston, WV, USA"
+    },
+    {
+      "timestamp": "2025-12-15T22:10:00Z",
+      "tempInC": -7.5,
+      "tamper": true,
+      "latitude": 38.273002,
+      "longitude": -82.006643,
+      "locationName": "Charleston, WV, USA"
+    },
+    {
+      "timestamp": "2025-12-15T22:15:00Z",
+      "tempInC": -2.4,
+      "tamper": true,
+      "latitude": 38.205111,
+      "longitude": -82.350405
+    },
+    {
+      "timestamp": "2025-12-15T22:20:00Z",
+      "tempInC": 4.2,
+      "tamper": false,
+      "latitude": 38.13728,
+      "longitude": -82.693867
+    },
+    {
+      "timestamp": "2025-12-15T22:25:00Z",
+      "tempInC": -1.9,
+      "tamper": true,
+      "latitude": 38.069507,
+      "longitude": -83.037031
+    },
+    {
+      "timestamp": "2025-12-15T22:30:00Z",
+      "tempInC": -5.8,
+      "tamper": true,
+      "latitude": 38.001794,
+      "longitude": -83.379897
+    },
+    {
+      "timestamp": "2025-12-15T22:35:00Z",
+      "tempInC": -0.3,
+      "tamper": true,
+      "latitude": 37.934138,
+      "longitude": -83.722467
+    },
+    {
+      "timestamp": "2025-12-15T22:40:00Z",
+      "tempInC": -7.4,
+      "tamper": true,
+      "latitude": 37.866541,
+      "longitude": -84.064742
+    },
+    {
+      "timestamp": "2025-12-15T22:45:00Z",
+      "tempInC": -4.7,
+      "tamper": true,
+      "latitude": 37.799002,
+      "longitude": -84.406723
+    },
+    {
+      "timestamp": "2025-12-15T22:50:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 37.731521,
+      "longitude": -84.748411,
+      "locationName": "Kentucky, USA"
+    },
+    {
+      "timestamp": "2025-12-15T22:55:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 37.602793,
+      "longitude": -85.047155,
+      "locationName": "Kentucky, USA"
+    },
+    {
+      "timestamp": "2025-12-15T23:00:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 37.409297,
+      "longitude": -85.300381,
+      "locationName": "Kentucky, USA"
+    },
+    {
+      "timestamp": "2025-12-15T23:05:00Z",
+      "tempInC": 5.7,
+      "tamper": false,
+      "latitude": 37.216057,
+      "longitude": -85.553274
+    },
+    {
+      "timestamp": "2025-12-15T23:10:00Z",
+      "tempInC": 4.0,
+      "tamper": false,
+      "latitude": 37.023071,
+      "longitude": -85.805833
+    },
+    {
+      "timestamp": "2025-12-15T23:15:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 36.830339,
+      "longitude": -86.058062
+    },
+    {
+      "timestamp": "2025-12-15T23:20:00Z",
+      "tempInC": 4.5,
+      "tamper": false,
+      "latitude": 36.637856,
+      "longitude": -86.309963
+    },
+    {
+      "timestamp": "2025-12-15T23:25:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 36.445623,
+      "longitude": -86.561537,
+      "locationName": "Nashville, TN, USA"
+    },
+    {
+      "timestamp": "2025-12-15T23:30:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 36.253636,
+      "longitude": -86.81279,
+      "locationName": "Nashville, TN, USA"
+    },
+    {
+      "timestamp": "2025-12-15T23:35:00Z",
+      "tempInC": 8.7,
+      "tamper": false,
+      "latitude": 36.133204,
+      "longitude": -87.122339,
+      "locationName": "Nashville, TN, USA"
+    },
+    {
+      "timestamp": "2025-12-15T23:40:00Z",
+      "tempInC": 6.8,
+      "tamper": false,
+      "latitude": 36.019723,
+      "longitude": -87.437115
+    },
+    {
+      "timestamp": "2025-12-15T23:45:00Z",
+      "tempInC": 0.4,
+      "tamper": false,
+      "latitude": 35.906378,
+      "longitude": -87.751515
+    },
+    {
+      "timestamp": "2025-12-15T23:50:00Z",
+      "tempInC": 8.4,
+      "tamper": false,
+      "latitude": 35.793168,
+      "longitude": -88.065544
+    },
+    {
+      "timestamp": "2025-12-15T23:55:00Z",
+      "tempInC": 9.4,
+      "tamper": false,
+      "latitude": 35.68009,
+      "longitude": -88.379201
+    },
+    {
+      "timestamp": "2025-12-16T00:00:00Z",
+      "tempInC": 0.2,
+      "tamper": false,
+      "latitude": 35.567146,
+      "longitude": -88.692491
+    },
+    {
+      "timestamp": "2025-12-16T00:05:00Z",
+      "tempInC": 5.9,
+      "tamper": false,
+      "latitude": 35.454333,
+      "longitude": -89.005416
+    },
+    {
+      "timestamp": "2025-12-16T00:10:00Z",
+      "tempInC": 6.2,
+      "tamper": false,
+      "latitude": 35.341651,
+      "longitude": -89.317976
+    },
+    {
+      "timestamp": "2025-12-16T00:15:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 35.229099,
+      "longitude": -89.630176,
+      "locationName": "Memphis, TN, USA"
+    },
+    {
+      "timestamp": "2025-12-16T00:20:00Z",
+      "tempInC": 9.6,
+      "tamper": false,
+      "latitude": 35.11668,
+      "longitude": -89.942009,
+      "locationName": "Memphis, TN, USA"
+    },
+    {
+      "timestamp": "2025-12-16T00:25:00Z",
+      "tempInC": 1.9,
+      "tamper": false,
+      "latitude": 35.206406,
+      "longitude": -90.2608,
+      "locationName": "Memphis, TN, USA"
+    },
+    {
+      "timestamp": "2025-12-16T00:30:00Z",
+      "tempInC": 7.5,
+      "tamper": false,
+      "latitude": 35.304669,
+      "longitude": -90.57989
+    },
+    {
+      "timestamp": "2025-12-16T00:35:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 35.403056,
+      "longitude": -90.899382
+    },
+    {
+      "timestamp": "2025-12-16T00:40:00Z",
+      "tempInC": 5.8,
+      "tamper": false,
+      "latitude": 35.501578,
+      "longitude": -91.219311
+    },
+    {
+      "timestamp": "2025-12-16T00:45:00Z",
+      "tempInC": 5.8,
+      "tamper": false,
+      "latitude": 35.600102,
+      "longitude": -91.539246
+    },
+    {
+      "timestamp": "2025-12-16T00:50:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 35.698885,
+      "longitude": -91.860023
+    },
+    {
+      "timestamp": "2025-12-16T00:55:00Z",
+      "tempInC": 7.0,
+      "tamper": false,
+      "latitude": 35.797668,
+      "longitude": -92.1808
+    },
+    {
+      "timestamp": "2025-12-16T01:00:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 35.896594,
+      "longitude": -92.502041
+    },
+    {
+      "timestamp": "2025-12-16T01:05:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 35.995641,
+      "longitude": -92.823676
+    },
+    {
+      "timestamp": "2025-12-16T01:10:00Z",
+      "tempInC": 7.3,
+      "tamper": false,
+      "latitude": 36.09471,
+      "longitude": -93.145381
+    },
+    {
+      "timestamp": "2025-12-16T01:15:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 36.194025,
+      "longitude": -93.467883
+    },
+    {
+      "timestamp": "2025-12-16T01:20:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 36.293339,
+      "longitude": -93.790385
+    },
+    {
+      "timestamp": "2025-12-16T01:25:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 36.392823,
+      "longitude": -94.113437
+    },
+    {
+      "timestamp": "2025-12-16T01:30:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 36.492407,
+      "longitude": -94.436816
+    },
+    {
+      "timestamp": "2025-12-16T01:35:00Z",
+      "tempInC": 5.1,
+      "tamper": false,
+      "latitude": 36.592041,
+      "longitude": -94.760355
+    },
+    {
+      "timestamp": "2025-12-16T01:40:00Z",
+      "tempInC": -0.2,
+      "tamper": true,
+      "latitude": 36.691898,
+      "longitude": -95.08462
+    },
+    {
+      "timestamp": "2025-12-16T01:45:00Z",
+      "tempInC": 0.9,
+      "tamper": false,
+      "latitude": 36.791755,
+      "longitude": -95.408884
+    },
+    {
+      "timestamp": "2025-12-16T01:50:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 36.891816,
+      "longitude": -95.733813
+    },
+    {
+      "timestamp": "2025-12-16T01:55:00Z",
+      "tempInC": 7.0,
+      "tamper": false,
+      "latitude": 36.991949,
+      "longitude": -96.058974
+    },
+    {
+      "timestamp": "2025-12-16T02:00:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 37.092168,
+      "longitude": -96.384414
+    },
+    {
+      "timestamp": "2025-12-16T02:05:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 37.19258,
+      "longitude": -96.71048
+    },
+    {
+      "timestamp": "2025-12-16T02:10:00Z",
+      "tempInC": 7.1,
+      "tamper": false,
+      "latitude": 37.292992,
+      "longitude": -97.036545
+    },
+    {
+      "timestamp": "2025-12-16T02:15:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 37.393652,
+      "longitude": -97.363419
+    },
+    {
+      "timestamp": "2025-12-16T02:20:00Z",
+      "tempInC": 6.8,
+      "tamper": false,
+      "latitude": 37.494346,
+      "longitude": -97.6904
+    },
+    {
+      "timestamp": "2025-12-16T02:25:00Z",
+      "tempInC": 4.5,
+      "tamper": false,
+      "latitude": 37.595172,
+      "longitude": -98.01781
+    },
+    {
+      "timestamp": "2025-12-16T02:30:00Z",
+      "tempInC": 1.7,
+      "tamper": false,
+      "latitude": 37.69615,
+      "longitude": -98.345716
+    },
+    {
+      "timestamp": "2025-12-16T02:35:00Z",
+      "tempInC": 8.6,
+      "tamper": false,
+      "latitude": 37.797143,
+      "longitude": -98.67367
+    },
+    {
+      "timestamp": "2025-12-16T02:40:00Z",
+      "tempInC": 2.2,
+      "tamper": false,
+      "latitude": 37.89841,
+      "longitude": -99.002512
+    },
+    {
+      "timestamp": "2025-12-16T02:45:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 37.999677,
+      "longitude": -99.331354
+    },
+    {
+      "timestamp": "2025-12-16T02:50:00Z",
+      "tempInC": 6.8,
+      "tamper": false,
+      "latitude": 38.101131,
+      "longitude": -99.660805
+    },
+    {
+      "timestamp": "2025-12-16T02:55:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 38.202689,
+      "longitude": -99.990592
+    },
+    {
+      "timestamp": "2025-12-16T03:00:00Z",
+      "tempInC": 5.5,
+      "tamper": false,
+      "latitude": 38.304319,
+      "longitude": -100.320615
+    },
+    {
+      "timestamp": "2025-12-16T03:05:00Z",
+      "tempInC": 2.9,
+      "tamper": false,
+      "latitude": 38.406171,
+      "longitude": -100.651358
+    },
+    {
+      "timestamp": "2025-12-16T03:10:00Z",
+      "tempInC": 3.7,
+      "tamper": false,
+      "latitude": 38.508023,
+      "longitude": -100.9821
+    },
+    {
+      "timestamp": "2025-12-16T03:15:00Z",
+      "tempInC": 3.6,
+      "tamper": false,
+      "latitude": 38.610129,
+      "longitude": -101.313669
+    },
+    {
+      "timestamp": "2025-12-16T03:20:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 38.712279,
+      "longitude": -101.645377
+    },
+    {
+      "timestamp": "2025-12-16T03:25:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 38.814569,
+      "longitude": -101.977545
+    },
+    {
+      "timestamp": "2025-12-16T03:30:00Z",
+      "tempInC": 4.3,
+      "tamper": false,
+      "latitude": 38.91702,
+      "longitude": -102.31023
+    },
+    {
+      "timestamp": "2025-12-16T03:35:00Z",
+      "tempInC": 6.5,
+      "tamper": false,
+      "latitude": 39.019498,
+      "longitude": -102.643005
+    },
+    {
+      "timestamp": "2025-12-16T03:40:00Z",
+      "tempInC": 4.0,
+      "tamper": false,
+      "latitude": 39.122252,
+      "longitude": -102.976678
+    },
+    {
+      "timestamp": "2025-12-16T03:45:00Z",
+      "tempInC": 6.1,
+      "tamper": false,
+      "latitude": 39.225006,
+      "longitude": -103.31035
+    },
+    {
+      "timestamp": "2025-12-16T03:50:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 39.327981,
+      "longitude": -103.644741
+    },
+    {
+      "timestamp": "2025-12-16T03:55:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 39.431043,
+      "longitude": -103.979411
+    },
+    {
+      "timestamp": "2025-12-16T04:00:00Z",
+      "tempInC": 5.7,
+      "tamper": false,
+      "latitude": 39.534215,
+      "longitude": -104.314441
+    },
+    {
+      "timestamp": "2025-12-16T04:05:00Z",
+      "tempInC": 4.6,
+      "tamper": false,
+      "latitude": 39.637587,
+      "longitude": -104.65012,
+      "locationName": "Denver, CO, USA"
+    },
+    {
+      "timestamp": "2025-12-16T04:10:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 39.740959,
+      "longitude": -104.985798,
+      "locationName": "Denver, CO, USA"
+    }
+  ],
+  "metadata": {
+    "route_name": "20s2",
+    "use_real_route": true,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0
+  }
+}

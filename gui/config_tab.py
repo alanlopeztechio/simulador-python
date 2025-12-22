@@ -16,6 +16,7 @@ from models.route import RouteConfig, RoutePoint
 from models.segment import SegmentMetadata
 from models.distribution import Distribution
 from models.sensor import SensorConfig
+from db.database import DatabaseManager
 
 
 class ConfigTab(tk.Frame):
@@ -30,8 +31,13 @@ class ConfigTab(tk.Frame):
         # Ensure directory exists
         os.makedirs(self.config_dir, exist_ok=True)
         
+        # Neon database settings
+        self.auto_save_to_neon_var = tk.BooleanVar(value=False)
+        self.neon_status_var = tk.StringVar(value="Not configured")
+        
         self._build_ui()
         self.refresh_config_list()
+        self._check_neon_connection()
     
     def _build_ui(self):
         """Build the UI."""
@@ -40,6 +46,9 @@ class ConfigTab(tk.Frame):
         title_frame.pack(fill=tk.X, padx=10)
         tk.Label(title_frame, text="Save Configurations", 
                 font=("Arial", 14, "bold")).pack()
+        
+        # Neon Database Configuration
+        self._build_neon_config()
         
         # Save options
         save_frame = tk.LabelFrame(self, text="Save Options", 
@@ -313,6 +322,142 @@ class ConfigTab(tk.Frame):
             "log_interval_seconds": sensor.log_interval_seconds,
             "log_delayed_start_samples": sensor.log_delayed_start_samples,
         }
+    
+    def _build_neon_config(self):
+        """Build Neon database configuration section."""
+        neon_frame = tk.LabelFrame(self, text="🗄️ Neon Database Configuration",
+                                   font=("Arial", 10, "bold"), padx=10, pady=10)
+        neon_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        # Status indicator
+        status_frame = tk.Frame(neon_frame)
+        status_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(status_frame, text="Status:", font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+        self.status_label = tk.Label(status_frame, textvariable=self.neon_status_var,
+                                     font=("Arial", 9), fg="gray")
+        self.status_label.pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(status_frame, text="🔄 Test Connection", command=self._check_neon_connection,
+                 bg="#2196F3", fg="white", font=("Arial", 8)).pack(side=tk.LEFT, padx=10)
+        
+        tk.Button(status_frame, text="🔄 Sync Database", command=self.sync_database,
+                 bg="#FF9800", fg="white", font=("Arial", 8, "bold")).pack(side=tk.LEFT, padx=5)
+        
+        # Auto-save checkbox
+        auto_frame = tk.Frame(neon_frame)
+        auto_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Checkbutton(auto_frame, text="Auto-save simulations to Neon after generation",
+                      variable=self.auto_save_to_neon_var, font=("Arial", 9),
+                      command=self._on_auto_save_toggle).pack(side=tk.LEFT, padx=5)
+        
+        # Info text
+        info_text = ("💡 Tip: Configure your Neon connection in the .env file (DATABASE_URL)\n"
+                    "   Run 'python init_database.py' first to create the database schema.")
+        tk.Label(neon_frame, text=info_text, font=("Arial", 8), fg="#666",
+                justify=tk.LEFT, anchor=tk.W).pack(fill=tk.X, padx=5, pady=5)
+    
+    def sync_database(self):
+        """Synchronize/reinitialize the database schema."""
+        # Ask for confirmation
+        confirm = messagebox.askyesno(
+            "Confirm Database Sync",
+            "This will reinitialize the database schema.\n\n"
+            "⚠️ WARNING: This will DROP all existing tables and recreate them.\n"
+            "All data will be LOST!\n\n"
+            "Do you want to continue?",
+            icon='warning'
+        )
+        
+        if not confirm:
+            return
+        
+        # Show progress
+        self.neon_status_var.set("⏳ Synchronizing...")
+        self.status_label.config(fg="orange")
+        self.update()
+        
+        try:
+            # Initialize database schema
+            with DatabaseManager() as db:
+                db.initialize_schema()
+            
+            # Success
+            self.neon_status_var.set("🟢 Synced successfully")
+            self.status_label.config(fg="green")
+            messagebox.showinfo(
+                "Success",
+                "✓ Database schema synchronized successfully!\n\n"
+                "Tables created:\n"
+                "  • simulations\n"
+                "  • segments\n"
+                "  • stops\n"
+                "  • sensor_data\n\n"
+                "The database is now ready to use."
+            )
+        except Exception as e:
+            # Error handling
+            self.neon_status_var.set("🔴 Sync failed")
+            self.status_label.config(fg="red")
+            messagebox.showerror(
+                "Database Sync Error",
+                f"Failed to synchronize database:\n\n{str(e)}\n\n"
+                "Please check:\n"
+                "• DATABASE_URL in .env file\n"
+                "• Network connection\n"
+                "• Database credentials"
+            )
+            print(f"Database sync error: {e}")
+    
+    def _check_neon_connection(self):
+        """Check if Neon database connection is available."""
+        try:
+            # Check if .env exists
+            if not os.path.exists('.env'):
+                self.neon_status_var.set("🔴 Not configured (.env missing)")
+                self.status_label.config(fg="red")
+                return False
+            
+            # Try to import and connect
+            try:
+                with DatabaseManager() as db:
+                    # Simple test query
+                    db.cursor.execute("SELECT 1")
+                    self.neon_status_var.set("🟢 Connected")
+                    self.status_label.config(fg="green")
+                    return True
+            except ImportError:
+                self.neon_status_var.set("🟡 DB module not installed")
+                self.status_label.config(fg="orange")
+                return False
+            except Exception as e:
+                self.neon_status_var.set(f"🔴 Connection failed: {str(e)[:30]}...")
+                self.status_label.config(fg="red")
+                return False
+        except Exception as e:
+            self.neon_status_var.set(f"🔴 Error: {str(e)[:30]}...")
+            self.status_label.config(fg="red")
+            return False
+    
+    def _on_auto_save_toggle(self):
+        """Handle auto-save toggle change."""
+        if self.auto_save_to_neon_var.get():
+            # Check connection when enabling
+            if not self._check_neon_connection():
+                messagebox.showwarning(
+                    "Connection Issue",
+                    "Auto-save enabled, but Neon connection is not available.\n\n"
+                    "Simulations will be saved as JSON only until connection is configured.\n\n"
+                    "To configure:\n"
+                    "1. Create .env file with DATABASE_URL\n"
+                    "2. Run: python init_database.py\n"
+                    "3. Test connection again"
+                )
+    
+    def get_auto_save_enabled(self):
+        """Return whether auto-save to Neon is enabled."""
+        return self.auto_save_to_neon_var.get()
 
 
 if __name__ == "__main__":

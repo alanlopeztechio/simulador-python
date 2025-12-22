@@ -237,14 +237,49 @@ class SimulatorGUI:
         self.root.config(cursor="")
         self.status_var.set("Generation complete")
         
+        # Check if auto-save to Neon is enabled
+        auto_save_enabled = self.config_tab.get_auto_save_enabled()
+        saved_to_neon = False
+        neon_ids = []
+        
+        if auto_save_enabled and isinstance(generated_files, list):
+            # Try to save to Neon
+            try:
+                from db.database import save_simulation_to_neon
+                
+                self.status_var.set("Saving to Neon database...")
+                
+                for json_file in generated_files:
+                    try:
+                        sim_id = save_simulation_to_neon(json_file=json_file)
+                        neon_ids.append(sim_id)
+                    except Exception as e:
+                        print(f"Failed to save {json_file}: {e}")
+                
+                if neon_ids:
+                    saved_to_neon = True
+                    self.status_var.set(f"Generation complete - {len(neon_ids)} saved to Neon")
+                
+            except Exception as e:
+                print(f"Auto-save to Neon failed: {e}")
+                self.status_var.set("Generation complete - Neon save failed")
+        
+        # Show success message
         if isinstance(generated_files, list):
             files_list = "\n".join([f"  • {os.path.basename(f)}" for f in generated_files[:10]])
             if len(generated_files) > 10:
                 files_list += f"\n  ... and {len(generated_files) - 10} more"
             
-            messagebox.showinfo("Success", 
-                              f"✓ Generated {len(generated_files)} simulation file(s):\n\n{files_list}\n\n"
-                              f"Saved to: simulation_outputs/")
+            success_msg = f"✓ Generated {len(generated_files)} simulation file(s):\n\n{files_list}\n\nSaved to: simulation_outputs/"
+            
+            if saved_to_neon:
+                success_msg += f"\n\n💾 {len(neon_ids)} simulation(s) saved to Neon database"
+                if neon_ids:
+                    success_msg += f"\nDatabase IDs: {', '.join(map(str, neon_ids[:5]))}"
+                    if len(neon_ids) > 5:
+                        success_msg += f" ... and {len(neon_ids) - 5} more"
+            
+            messagebox.showinfo("Success", success_msg)
         else:
             messagebox.showinfo("Success", f"Simulation complete:\n{generated_files}")
         

@@ -1,0 +1,201 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030000003",
+  "TID": "E2C245002000056680000003",
+  "inventories": [
+    {
+      "readerTimestamp": "2025-12-19T11:11:00.000Z",
+      "readerHost": "FX9600E9054",
+      "readerMAC": "16:C1:9E:C8:DB:90",
+      "readerLatitude": 33.78,
+      "readerLongitude": -117.22,
+      "readerAccuracyInMeters": 13.0,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 1",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -55.2,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 2.4,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.18,
+      "tagSensorCode": 103,
+      "tagOnChipRSSI": 12,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:50Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2025-12-19T12:06:00.000Z",
+      "readerHost": "FX9600BF95B",
+      "readerMAC": "E3:84:7D:A2:8A:79",
+      "readerLatitude": 36.53,
+      "readerLongitude": -119.59,
+      "readerAccuracyInMeters": 12.5,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Stop 2",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -59.1,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.8,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.14,
+      "tagSensorCode": 107,
+      "tagOnChipRSSI": 12,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2025-12-19T11:10:47Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 12,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2025-12-19T11:11:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": false,
+    "alarmTemperature": false,
+    "alarmLowTemperature": false,
+    "alarmHighTemperature": false,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": null,
+    "alarmTemperatureValue": null,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2025-12-19T11:11:00Z",
+      "tempInC": 4.3,
+      "tamper": false,
+      "latitude": 33.77934,
+      "longitude": -117.218361,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2025-12-19T11:16:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 34.017328,
+      "longitude": -117.46836,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2025-12-19T11:21:00Z",
+      "tempInC": 5.8,
+      "tamper": false,
+      "latitude": 34.116791,
+      "longitude": -117.823969
+    },
+    {
+      "timestamp": "2025-12-19T11:26:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 34.147004,
+      "longitude": -118.227
+    },
+    {
+      "timestamp": "2025-12-19T11:31:00Z",
+      "tempInC": 5.1,
+      "tamper": false,
+      "latitude": 34.350112,
+      "longitude": -118.541581
+    },
+    {
+      "timestamp": "2025-12-19T11:36:00Z",
+      "tempInC": 0.1,
+      "tamper": false,
+      "latitude": 34.639109,
+      "longitude": -118.746738
+    },
+    {
+      "timestamp": "2025-12-19T11:41:00Z",
+      "tempInC": 4.5,
+      "tamper": false,
+      "latitude": 34.911444,
+      "longitude": -118.923296
+    },
+    {
+      "timestamp": "2025-12-19T11:46:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 35.255942,
+      "longitude": -119.019883
+    },
+    {
+      "timestamp": "2025-12-19T11:51:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 35.558844,
+      "longitude": -119.19728
+    },
+    {
+      "timestamp": "2025-12-19T11:56:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 35.904323,
+      "longitude": -119.278485
+    },
+    {
+      "timestamp": "2025-12-19T12:01:00Z",
+      "tempInC": 4.2,
+      "tamper": false,
+      "latitude": 36.249138,
+      "longitude": -119.35206,
+      "locationName": "California, USA"
+    },
+    {
+      "timestamp": "2025-12-19T12:06:00Z",
+      "tempInC": 3.2,
+      "tamper": false,
+      "latitude": 36.532476,
+      "longitude": -119.586166,
+      "locationName": "California, USA"
+    }
+  ],
+  "metadata": {
+    "route_name": "Phoenix - Tijuana",
+    "use_real_route": true,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0
+  }
+}
