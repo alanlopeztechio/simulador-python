@@ -22,9 +22,9 @@ from db.database import DatabaseManager
 class ConfigTab(tk.Frame):
     """Tab 4: Save Configurations - Save and load complete route configurations."""
     
-    def __init__(self, parent, stops_tab, distributions_tab):
+    def __init__(self, parent, routes_tab=None, distributions_tab=None):
         super().__init__(parent)
-        self.stops_tab = stops_tab
+        self.routes_tab = routes_tab
         self.distributions_tab = distributions_tab
         self.config_dir = "saved_configurations"
         
@@ -103,13 +103,18 @@ class ConfigTab(tk.Frame):
     
     def _save_route_config(self):
         """Save complete route configuration (route + distributions + sensors)."""
-        route_config = self.stops_tab.get_route_config()
+        if not self.routes_tab:
+            messagebox.showwarning("Error", "Routes tab not available.")
+            return
+        route_config = self.routes_tab.get_route_config()
         if not route_config:
+            messagebox.showwarning("No Route", "Please select a route in the Rutas tab first.")
             return
         
-        # Apply distributions
-        if not self.distributions_tab.apply_distributions_to_route(route_config):
-            return
+        # Apply distributions if available
+        if self.distributions_tab and hasattr(self.distributions_tab, 'apply_distributions_to_route'):
+            if not self.distributions_tab.apply_distributions_to_route(route_config):
+                return
         
         # Ask for filename
         filename = filedialog.asksaveasfilename(
@@ -135,6 +140,9 @@ class ConfigTab(tk.Frame):
     
     def _save_distribution_config(self):
         """Save only distribution configurations."""
+        if not self.distributions_tab:
+            messagebox.showwarning("Error", "Distributions tab not available.")
+            return
         distributions = self.distributions_tab.get_all_distributions()
         if not distributions:
             messagebox.showwarning("No Distributions", "No distributions configured to save.")
@@ -158,7 +166,10 @@ class ConfigTab(tk.Frame):
     
     def _save_sensors_config(self):
         """Save only sensor configurations."""
-        route_config = self.stops_tab.get_route_config()
+        if not self.routes_tab:
+            messagebox.showwarning("Error", "Routes tab not available.")
+            return
+        route_config = self.routes_tab.get_route_config()
         if not route_config or not route_config.sensors:
             messagebox.showwarning("No Sensors", "No sensors configured to save.")
             return

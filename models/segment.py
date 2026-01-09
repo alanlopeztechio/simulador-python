@@ -58,3 +58,36 @@ class SegmentMetadata:
         """Remove a distribution by index."""
         if 0 <= index < len(self.distributions):
             self.distributions.pop(index)
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for storage."""
+        return {
+            'description': self.description,
+            'segment_type': self.segment_type,
+            'estimated_stop_time_minutes': self.estimated_stop_time_minutes,
+            'distributions': [d.to_dict() for d in self.distributions],
+            'blend_strategy': self.blend_strategy,
+            'alarm_lower_temp': self.alarm_lower_temp,
+            'alarm_upper_temp': self.alarm_upper_temp,
+            'apply_smoothing': self.apply_smoothing,
+            'smoothing_phi': self.smoothing_phi
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Create from dictionary."""
+        distributions = []
+        if data.get('distributions'):
+            distributions = [Distribution.from_dict(d) for d in data['distributions']]
+        
+        return cls(
+            description=data.get('description', ''),
+            segment_type=data.get('segment_type', 'highway'),
+            estimated_stop_time_minutes=data.get('estimated_stop_time_minutes', 0),
+            distributions=distributions,
+            blend_strategy=data.get('blend_strategy', 'weighted_average'),
+            alarm_lower_temp=data.get('alarm_lower_temp'),
+            alarm_upper_temp=data.get('alarm_upper_temp'),
+            apply_smoothing=data.get('apply_smoothing', False),
+            smoothing_phi=data.get('smoothing_phi', 0.8)
+        )

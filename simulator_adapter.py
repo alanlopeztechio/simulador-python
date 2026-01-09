@@ -100,6 +100,8 @@ class SimulatorAdapter:
         
         # Get alternative routes if requested
         routes_to_generate = []
+        api_duration_hours = None  # Store real API duration
+        
         if use_real_routes and use_secondary_routes and secondary_routes_count > 0:
             # Get alternative routes from OpenRouteService
             # El API retorna la ruta principal + las alternativas, por lo que solicitamos
@@ -117,6 +119,10 @@ class SimulatorAdapter:
                 routes_to_generate = alternative_routes
                 num_secondary = len(alternative_routes) - 1
                 print(f"✓ Se obtuvieron {len(alternative_routes)} rutas (1 principal + {num_secondary} secundarias)")
+                
+                # Get API duration from the main route
+                if alternative_routes[0].get('duration_hours'):
+                    api_duration_hours = alternative_routes[0]['duration_hours']
                 
                 # Si se solicitaron rutas secundarias pero solo se obtuvo la principal
                 if len(alternative_routes) == 1 and secondary_routes_count > 0:
@@ -144,14 +150,62 @@ class SimulatorAdapter:
                     'distance_km': 0,
                     'duration_hours': total_duration_hours
                 }]
+        elif use_real_routes:
+            # Get single route from API
+            router = OpenStreetMapRouter()
+            route_info = router.get_route_multi(coordinates, mode=route_config.transport_mode)
+            
+            if route_info and 'duration_hours' in route_info:
+                api_duration_hours = route_info['duration_hours']
+                routes_to_generate = [{
+                    'route_type': 'principal',
+                    'coordinates': route_info.get('coordinates', coordinates),
+                    'distance_km': route_info.get('distance_km', 0),
+                    'duration_hours': api_duration_hours
+                }]
+            else:
+                # Fallback if API fails
+                routes_to_generate = [{
+                    'route_type': 'principal',
+                    'coordinates': coordinates,
+                    'distance_km': 0,
+                    'duration_hours': total_duration_hours
+                }]
         else:
-            # Only generate main route
+            # Only generate main route without real routes
             routes_to_generate = [{
                 'route_type': 'principal',
                 'coordinates': coordinates,
                 'distance_km': 0,
                 'duration_hours': total_duration_hours
             }]
+        
+        # Update destination timestamp with real API duration if available
+        if api_duration_hours is not None and route_config.origin and route_config.origin.timestamp:
+            route_config.destination.timestamp = route_config.origin.timestamp + timedelta(hours=api_duration_hours)
+            print(f"   ⏱️  Tiempo de tránsito actualizado: {api_duration_hours:.2f} hrs")
+            # Recalculate total_duration_hours and num_temp_samples with real API data
+            total_duration_hours = api_duration_hours
+            num_temp_samples = max(2, int((total_duration_hours * 3600) / log_interval))
+        
+        # Build key_waypoints list with (lat, lng, name) tuples for inventories
+        key_waypoints = []
+        if include_location_names:
+            if route_config.origin:
+                key_waypoints.append((
+                    route_config.origin.latitude,
+                    route_config.origin.longitude,
+                    route_config.origin.name
+                ))
+            for wp in route_config.waypoints:
+                key_waypoints.append((wp.latitude, wp.longitude, wp.name))
+            if route_config.destination:
+                key_waypoints.append((
+                    route_config.destination.latitude,
+                    route_config.destination.longitude,
+                    route_config.destination.name
+                ))
+            print(f"   📍 Creando {len(key_waypoints)} key_waypoints para inventories")
         
         for sensor_idx, sensor in enumerate(route_config.sensors):
             for route_idx, route_info in enumerate(routes_to_generate):
@@ -179,9 +233,12 @@ class SimulatorAdapter:
                         number_of_stops=len(route_coords) - 2,
                         distribution_type=segment_profiles[0].distribution_type if segment_profiles else "normal",
                         waypoints=route_coords,
+                        key_waypoints=key_waypoints if include_location_names else None,
                         transport_mode=route_config.transport_mode,
                         use_real_route=use_real_routes,
                         route_name=route_config.route_name,
+                        company_id=route_config.company_id,
+                        route_id=route_config.id,
                         segment_profiles=segment_profiles,
                     )
                     

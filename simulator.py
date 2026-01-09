@@ -31,6 +31,9 @@ class LogGeneratorInput:
     # Lista opcional de puntos de ruta (lat, lng) incluyendo origen y último destino.
     # Si se proporciona, tiene prioridad sobre start/end.
     waypoints: Optional[List[Tuple[float, float]]] = None
+    # Ubicaciones clave (origin, waypoints intermedios, destination) con sus nombres
+    # Lista de tuplas (lat, lng, name) para generar inventories correctamente
+    key_waypoints: Optional[List[Tuple[float, float, str]]] = None
     # Modo de transporte para la ruta real
     transport_mode: Literal["driving-car", "foot-walking", "cycling-regular"] = "driving-car"
     # Parámetros para distribución normal
@@ -42,6 +45,9 @@ class LogGeneratorInput:
     # Ruta real usando OpenStreetMap
     use_real_route: bool = False
     route_name: str = "Custom Route"
+    # Database references
+    company_id: Optional[int] = None
+    route_id: Optional[int] = None
     # Per-segment temperature/distribution profiles. One entry per leg between waypoints.
     # If provided, overrides global lower/upper/distribution for the corresponding samples.
     segment_profiles: Optional[List["TempProfile"]] = None
@@ -1291,20 +1297,26 @@ class LogSimulator:
         
         # Construir lista de ubicaciones clave para inventories (origin, waypoints, destination)
         key_locations = []
-        if self.config.waypoints and len(self.config.waypoints) >= 2:
-            # Usar waypoints (que incluyen origin y destination)
-            for i, (lat, lng) in enumerate(self.config.waypoints):
-                coord_key = f"{lat},{lng}"
-                location_name = location_names_cache.get(coord_key, f"Stop {i+1}")
-                key_locations.append((lat, lng, location_name))
-        else:
-            # Solo origin y destination
-            coord_key_origin = f"{self.config.start_lat},{self.config.start_lng}"
-            coord_key_dest = f"{self.config.end_lat},{self.config.end_lng}"
+        
+        # Prioridad 1: Usar key_waypoints si están disponibles (vienen del RouteConfig original)
+        if self.config.key_waypoints and len(self.config.key_waypoints) >= 2:
+            # key_waypoints ya tiene el formato (lat, lng, name)
+            key_locations = list(self.config.key_waypoints)
+            print(f"   📍 Usando {len(key_locations)} key_waypoints para inventories")
+        # Prioridad 2: Usar location_names_cache con start/end
+        elif include_location_names and location_names_cache:
+            # Usar origin y destination con nombres del caché
+            coord_key_origin = f"{round(self.config.start_lat, 4)},{round(self.config.start_lng, 4)}"
+            coord_key_dest = f"{round(self.config.end_lat, 4)},{round(self.config.end_lng, 4)}"
             origin_name = location_names_cache.get(coord_key_origin, "Origin")
             dest_name = location_names_cache.get(coord_key_dest, "Destination")
             key_locations.append((self.config.start_lat, self.config.start_lng, origin_name))
             key_locations.append((self.config.end_lat, self.config.end_lng, dest_name))
+            print(f"   📍 Usando start/end con nombres del caché: {origin_name} -> {dest_name}")
+        else:
+            # Fallback: solo origin y destination sin nombres
+            key_locations.append((self.config.start_lat, self.config.start_lng, "Origin"))
+            key_locations.append((self.config.end_lat, self.config.end_lng, "Destination"))
         
         # Generar estructura completa
         result = {
@@ -1346,7 +1358,9 @@ class LogSimulator:
             "use_real_route": self.config.use_real_route,
             "transport_mode": self.config.transport_mode,
             "distribution_type": self.config.distribution_type,
-            "total_distance_km": self.route_info.get('total_distance_km', 0.0) if self.route_info else 0.0
+            "total_distance_km": self.route_info.get('total_distance_km', 0.0) if self.route_info else 0.0,
+            "company_id": self.config.company_id,
+            "route_id": self.config.route_id
         }
         
         return result

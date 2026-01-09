@@ -127,6 +127,8 @@ class DatabaseManager:
             use_real_route = metadata.get('use_real_route', False)
             transport_mode = metadata.get('transport_mode', 'driving-car')
             total_distance_km = metadata.get('total_distance_km', 0.0)
+            company_id = metadata.get('company_id')  # Puede ser None
+            route_id = metadata.get('route_id')  # Puede ser None
             
             # Parse arm timestamp
             arm_timestamp_str = arming.get('armTimestamp')
@@ -140,7 +142,8 @@ class DatabaseManager:
             # Insertar simulación
             insert_query = """
                 INSERT INTO simulations (
-                    epc, tid, version, route_name,
+                    epc, tid, version, 
+                    company_id, route_id, route_name,
                     log_interval_seconds, log_number_of_samples,
                     temp_lower_limit, temp_upper_limit, distribution_type,
                     arm_status, arm_timestamp,
@@ -148,7 +151,8 @@ class DatabaseManager:
                     duration_hours, total_distance_km,
                     use_real_route, transport_mode
                 ) VALUES (
-                    %s, %s, %s, %s,
+                    %s, %s, %s,
+                    %s, %s, %s,
                     %s, %s,
                     %s, %s, %s,
                     %s, %s,
@@ -159,7 +163,8 @@ class DatabaseManager:
             """
             
             self.cursor.execute(insert_query, (
-                epc, tid, version, route_name,
+                epc, tid, version,
+                company_id, route_id, route_name,
                 config.get('logIntervalInSeconds'),
                 config.get('logNumberOfSamples'),
                 config.get('temperatureLowerLimit'),
@@ -603,6 +608,279 @@ class DatabaseManager:
         except Exception as e:
             print(f"✗ Error obteniendo TIDs: {e}")
             return []
+    
+    # ============================================================
+    # CRUD Operations for Companies
+    # ============================================================
+    
+    def create_company(self, company_data: Dict[str, Any]) -> int:
+        """
+        Create a new company
+        
+        Args:
+            company_data: Dictionary with company fields (name, description, contact_email, contact_phone)
+        
+        Returns:
+            ID of the created company
+        """
+        try:
+            query = """
+                INSERT INTO companies (name, description, contact_email, contact_phone)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """
+            self.cursor.execute(query, (
+                company_data.get('name'),
+                company_data.get('description', ''),
+                company_data.get('contact_email', ''),
+                company_data.get('contact_phone', '')
+            ))
+            company_id = self.cursor.fetchone()['id']
+            self.conn.commit()
+            print(f"✓ Compañía creada con ID: {company_id}")
+            return company_id
+        except Exception as e:
+            self.conn.rollback()
+            print(f"✗ Error creando compañía: {e}")
+            raise
+    
+    def get_all_companies(self) -> List[Dict[str, Any]]:
+        """Get all companies"""
+        try:
+            query = "SELECT * FROM companies ORDER BY name"
+            self.cursor.execute(query)
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(f"✗ Error obteniendo compañías: {e}")
+            return []
+    
+    def get_company_by_id(self, company_id: int) -> Optional[Dict[str, Any]]:
+        """Get company by ID"""
+        try:
+            query = "SELECT * FROM companies WHERE id = %s"
+            self.cursor.execute(query, (company_id,))
+            return self.cursor.fetchone()
+        except Exception as e:
+            print(f"✗ Error obteniendo compañía: {e}")
+            return None
+    
+    def update_company(self, company_id: int, company_data: Dict[str, Any]):
+        """Update company"""
+        try:
+            query = """
+                UPDATE companies 
+                SET name = %s, description = %s, contact_email = %s, 
+                    contact_phone = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """
+            self.cursor.execute(query, (
+                company_data.get('name'),
+                company_data.get('description', ''),
+                company_data.get('contact_email', ''),
+                company_data.get('contact_phone', ''),
+                company_id
+            ))
+            self.conn.commit()
+            print(f"✓ Compañía {company_id} actualizada")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"✗ Error actualizando compañía: {e}")
+            raise
+    
+    def delete_company(self, company_id: int):
+        """Delete company"""
+        try:
+            query = "DELETE FROM companies WHERE id = %s"
+            self.cursor.execute(query, (company_id,))
+            self.conn.commit()
+            print(f"✓ Compañía {company_id} eliminada")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"✗ Error eliminando compañía: {e}")
+            raise
+    
+    # ============================================================
+    # CRUD Operations for Routes
+    # ============================================================
+    
+    def create_route(self, route_data: Dict[str, Any]) -> int:
+        """
+        Create a new route
+        
+        Args:
+            route_data: Dictionary with route fields
+        
+        Returns:
+            ID of the created route
+        """
+        try:
+            query = """
+                INSERT INTO routes (
+                    company_id, route_name, route_description,
+                    origin_name, origin_latitude, origin_longitude, origin_departure_time,
+                    destination_name, destination_latitude, destination_longitude, destination_arrival_time,
+                    waypoints_json, segments_json, sensors_json,
+                    log_interval_seconds, use_real_routes, transport_mode
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """
+            self.cursor.execute(query, (
+                route_data.get('company_id'),
+                route_data.get('route_name'),
+                route_data.get('route_description', ''),
+                route_data.get('origin_name'),
+                route_data.get('origin_latitude'),
+                route_data.get('origin_longitude'),
+                route_data.get('origin_departure_time'),
+                route_data.get('destination_name'),
+                route_data.get('destination_latitude'),
+                route_data.get('destination_longitude'),
+                route_data.get('destination_arrival_time'),
+                route_data.get('waypoints_json'),
+                route_data.get('segments_json'),
+                route_data.get('sensors_json'),
+                route_data.get('log_interval_seconds', 300),
+                route_data.get('use_real_routes', False),
+                route_data.get('transport_mode', 'driving-car')
+            ))
+            route_id = self.cursor.fetchone()['id']
+            self.conn.commit()
+            print(f"✓ Ruta creada con ID: {route_id}")
+            return route_id
+        except Exception as e:
+            self.conn.rollback()
+            print(f"✗ Error creando ruta: {e}")
+            raise
+    
+    def get_routes_by_company(self, company_id: int) -> List[Dict[str, Any]]:
+        """Get all routes for a company"""
+        try:
+            query = "SELECT * FROM routes WHERE company_id = %s ORDER BY route_name"
+            self.cursor.execute(query, (company_id,))
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(f"✗ Error obteniendo rutas: {e}")
+            return []
+    
+    def get_route_by_id(self, route_id: int) -> Optional[Dict[str, Any]]:
+        """Get route by ID"""
+        try:
+            query = "SELECT * FROM routes WHERE id = %s"
+            self.cursor.execute(query, (route_id,))
+            return self.cursor.fetchone()
+        except Exception as e:
+            print(f"✗ Error obteniendo ruta: {e}")
+            return None
+    
+    def update_route(self, route_id: int, route_data: Dict[str, Any]):
+        """Update route"""
+        try:
+            query = """
+                UPDATE routes 
+                SET company_id = %s, route_name = %s, route_description = %s,
+                    origin_name = %s, origin_latitude = %s, origin_longitude = %s, origin_departure_time = %s,
+                    destination_name = %s, destination_latitude = %s, destination_longitude = %s, destination_arrival_time = %s,
+                    waypoints_json = %s, segments_json = %s, sensors_json = %s,
+                    log_interval_seconds = %s, use_real_routes = %s, transport_mode = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """
+            self.cursor.execute(query, (
+                route_data.get('company_id'),
+                route_data.get('route_name'),
+                route_data.get('route_description', ''),
+                route_data.get('origin_name'),
+                route_data.get('origin_latitude'),
+                route_data.get('origin_longitude'),
+                route_data.get('origin_departure_time'),
+                route_data.get('destination_name'),
+                route_data.get('destination_latitude'),
+                route_data.get('destination_longitude'),
+                route_data.get('destination_arrival_time'),
+                route_data.get('waypoints_json'),
+                route_data.get('segments_json'),
+                route_data.get('sensors_json'),
+                route_data.get('log_interval_seconds', 300),
+                route_data.get('use_real_routes', False),
+                route_data.get('transport_mode', 'driving-car'),
+                route_id
+            ))
+            self.conn.commit()
+            print(f"✓ Ruta {route_id} actualizada")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"✗ Error actualizando ruta: {e}")
+            raise
+    
+    def delete_route(self, route_id: int):
+        """Delete route"""
+        try:
+            query = "DELETE FROM routes WHERE id = %s"
+            self.cursor.execute(query, (route_id,))
+            self.conn.commit()
+            print(f"✓ Ruta {route_id} eliminada")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"✗ Error eliminando ruta: {e}")
+            raise
+    
+    def get_next_sensor_epc(self) -> str:
+        """Get the next available sensor EPC number.
+        
+        Format: 5201F25030000001 (prefix 5201F2503 + 7 digit incremental number)
+        
+        Returns:
+            Next available EPC string
+        """
+        try:
+            # Get the maximum number from EPCs with format 5201F2503XXXXXXX
+            query = """
+                SELECT MAX(CAST(SUBSTRING(epc FROM 10) AS BIGINT)) as max_num 
+                FROM simulations 
+                WHERE epc LIKE '5201F2503%' AND LENGTH(epc) = 16
+            """
+            self.cursor.execute(query)
+            result = self.cursor.fetchone()
+            
+            if result and result['max_num']:
+                next_num = int(result['max_num']) + 1
+            else:
+                next_num = 1
+            
+            # Format: 5201F2503 + 7 digits
+            return f"5201F2503{next_num:07d}"
+        except Exception as e:
+            print(f"✗ Error obteniendo siguiente EPC: {e}")
+            return "5201F25030000001"
+    
+    def get_next_sensor_tid(self) -> str:
+        """Get the next available sensor TID number.
+        
+        Format: E2C245002000056680000001 (prefix E2C24500200005668 + 7 digit incremental number)
+        
+        Returns:
+            Next available TID string
+        """
+        try:
+            # Get the maximum number from TIDs with format E2C24500200005668XXXXXXX
+            query = """
+                SELECT MAX(CAST(SUBSTRING(tid FROM 18) AS BIGINT)) as max_num 
+                FROM simulations 
+                WHERE tid LIKE 'E2C24500200005668%' AND LENGTH(tid) = 24
+            """
+            self.cursor.execute(query)
+            result = self.cursor.fetchone()
+            
+            if result and result['max_num']:
+                next_tid = int(result['max_num']) + 1
+            else:
+                next_tid = 1
+            
+            # Format: E2C24500200005668 + 7 digits
+            return f"E2C24500200005668{next_tid:07d}"
+        except Exception as e:
+            print(f"✗ Error obteniendo siguiente TID: {e}")
+            return "E2C245002000056680000001"
 
 
 # Función helper para uso rápido

@@ -168,16 +168,6 @@ class StopsTab(tk.Frame):
         self.destination_search.grid(row=0, column=1, columnspan=3, sticky="w")
         tk.Label(dest_frame, text="Location :").grid(row=0, column=0, sticky=tk.E)
         
-        # tk.Label(dest_frame, text="Latitude:").grid(row=0, column=0, sticky=tk.E)
-        # tk.Entry(dest_frame, textvariable=self.dest_lat_var, width=15).grid(row=0, column=1, padx=5)
-        
-        # tk.Label(dest_frame, text="Longitude:").grid(row=0, column=2, sticky=tk.E)
-        # tk.Entry(dest_frame, textvariable=self.dest_lng_var, width=15).grid(row=0, column=3, padx=5)
-        
-        tk.Label(dest_frame, text="Estimated Transit Time (minutes):").grid(row=1, column=0, sticky=tk.E)
-        self.est_transit_var = tk.IntVar(value=60)
-        tk.Entry(dest_frame, textvariable=self.est_transit_var, width=10).grid(row=1, column=1, sticky=tk.W, padx=5)
-        
         # === SEGMENTS ===
         segments_frame = tk.LabelFrame(container, text="Segments", 
                                        font=("Arial", 10, "bold"), padx=10, pady=10)
@@ -348,8 +338,6 @@ class StopsTab(tk.Frame):
             
         except Exception as e:
             print(f"Error updating map markers: {e}")
-
-
     
     def _add_segment(self):
         """Add a new segment to the route."""
@@ -607,9 +595,19 @@ class StopsTab(tk.Frame):
             timestamp=origin_time,
         )
         
-        # Destination (calculate arrival time based on transit estimate)
+        # Destination (arrival time will be calculated with real API data during generation)
         from datetime import timedelta
-        arrival_time = origin_time + timedelta(minutes=self.est_transit_var.get())
+        from geopy.distance import geodesic
+        
+        # Use simple distance-based estimation for now
+        # The real API duration will be used during simulation generation
+        distance_km = geodesic(
+            (self.origin_lat_var.get(), self.origin_lng_var.get()),
+            (self.dest_lat_var.get(), self.dest_lng_var.get())
+        ).kilometers
+        estimated_hours = distance_km / 60.0
+        arrival_time = origin_time + timedelta(hours=estimated_hours)
+        
         config.destination = RoutePoint(
             name=self.dest_name_var.get(),
             latitude=self.dest_lat_var.get(),

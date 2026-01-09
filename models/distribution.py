@@ -98,6 +98,39 @@ class Distribution:
         
         else:
             raise ValueError(f"Unsupported distribution type: {self.type}")
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for storage."""
+        return {
+            'type': self.type,
+            'mode': self.mode,
+            'mean_temp': self.mean_temp,
+            'std_dev': self.std_dev,
+            'beta_alpha': self.beta_alpha,
+            'beta_beta': self.beta_beta,
+            'lower_temp': self.lower_temp,
+            'upper_temp': self.upper_temp,
+            'weight': self.weight,
+            'ambient_temp': self.ambient_temp,
+            'relative_offset_pct': self.relative_offset_pct
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Create from dictionary."""
+        return cls(
+            type=data.get('type', 'normal'),
+            mode=data.get('mode', 'absolute'),
+            mean_temp=data.get('mean_temp'),
+            std_dev=data.get('std_dev', 5.0),
+            beta_alpha=data.get('beta_alpha', 2.0),
+            beta_beta=data.get('beta_beta', 5.0),
+            lower_temp=data.get('lower_temp'),
+            upper_temp=data.get('upper_temp'),
+            weight=data.get('weight', 1.0),
+            ambient_temp=data.get('ambient_temp'),
+            relative_offset_pct=data.get('relative_offset_pct', 0.0)
+        )
 
 
 class DistributionBlender:
@@ -177,3 +210,4 @@ class DistributionBlender:
             result += noise * 0.3 * dist.weight
         
         return np.round(result, 1)
+

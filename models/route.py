@@ -3,8 +3,9 @@ Route configuration with rich metadata.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, time
 from typing import List, Optional, Tuple
+import json
 from .segment import SegmentMetadata
 from .sensor import SensorConfig
 
@@ -21,6 +22,30 @@ class RoutePoint:
     def to_tuple(self) -> Tuple[float, float]:
         """Convert to (lat, lng) tuple."""
         return (self.latitude, self.longitude)
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary."""
+        return {
+            'name': self.name,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'point_type': self.point_type,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Create from dictionary."""
+        timestamp = None
+        if data.get('timestamp'):
+            timestamp = datetime.fromisoformat(data['timestamp'])
+        return cls(
+            name=data['name'],
+            latitude=data['latitude'],
+            longitude=data['longitude'],
+            point_type=data['point_type'],
+            timestamp=timestamp
+        )
 
 
 @dataclass
@@ -33,6 +58,10 @@ class RouteConfig:
     # Route metadata
     route_name: str
     route_description: str = ""
+    company_id: Optional[int] = None  # Link to company
+    id: Optional[int] = None  # Database ID
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     
     # Route points (ordered)
     origin: RoutePoint = None
@@ -110,6 +139,101 @@ class RouteConfig:
         self.sensors.append(sensor)
     
     def remove_sensor(self, index: int):
+        """Remove a sensor from this route."""
+        if 0 <= index < len(self.sensors):
+            self.sensors.pop(index)
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for database storage."""
+        from models.sensor import SensorConfig
+        return {
+            'id': self.id,
+            'company_id': self.company_id,
+            'route_name': self.route_name,
+            'route_description': self.route_description,
+            'origin_name': self.origin.name if self.origin else None,
+            'origin_latitude': self.origin.latitude if self.origin else None,
+            'origin_longitude': self.origin.longitude if self.origin else None,
+            'origin_departure_time': self.origin.timestamp.time() if self.origin and self.origin.timestamp else None,
+            'destination_name': self.destination.name if self.destination else None,
+            'destination_latitude': self.destination.latitude if self.destination else None,
+            'destination_longitude': self.destination.longitude if self.destination else None,
+            'destination_arrival_time': self.destination.timestamp.time() if self.destination and self.destination.timestamp else None,
+            'waypoints_json': json.dumps([wp.to_dict() for wp in self.waypoints]) if self.waypoints else None,
+            'segments_json': json.dumps([s.to_dict() for s in self.segments]) if self.segments else None,
+            'sensors_json': json.dumps([{'epc': s.epc, 'tid': s.tid} for s in self.sensors]) if self.sensors else None,
+            'log_interval_seconds': self.log_interval_seconds,
+            'use_real_routes': self.use_real_routes,
+            'transport_mode': self.transport_mode,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Create RouteConfig from database dictionary."""
+        # Parse origin
+        origin = None
+        if data.get('origin_name'):
+            origin = RoutePoint(
+                name=data['origin_name'],
+                latitude=float(data['origin_latitude']),
+                longitude=float(data['origin_longitude']),
+                point_type='origin',
+                timestamp=None  # Will set time separately
+            )
+            if data.get('origin_departure_time'):
+                # Combine with a dummy date (time only)
+                origin.timestamp = datetime.combine(datetime.today().date(), data['origin_departure_time'])
+        
+        # Parse destination
+        destination = None
+        if data.get('destination_name'):
+            destination = RoutePoint(
+                name=data['destination_name'],
+                latitude=float(data['destination_latitude']),
+                longitude=float(data['destination_longitude']),
+                point_type='destination',
+                timestamp=None
+            )
+            if data.get('destination_arrival_time'):
+                destination.timestamp = datetime.combine(datetime.today().date(), data['destination_arrival_time'])
+        
+        # Parse waypoints
+        waypoints = []
+        if data.get('waypoints_json'):
+            waypoints_data = json.loads(data['waypoints_json'])
+            waypoints = [RoutePoint.from_dict(wp) for wp in waypoints_data]
+        
+        # Parse segments
+        segments = []
+        if data.get('segments_json'):
+            segments_data = json.loads(data['segments_json'])
+            segments = [SegmentMetadata.from_dict(seg) for seg in segments_data]
+        
+        # Parse sensors
+        sensors = []
+        if data.get('sensors_json'):
+            from models.sensor import SensorConfig
+            sensors_data = json.loads(data['sensors_json'])
+            sensors = [SensorConfig(epc=s.get('epc', ''), tid=s.get('tid', '')) for s in sensors_data]
+        
+        return cls(
+            id=data.get('id'),
+            company_id=data.get('company_id'),
+            route_name=data.get('route_name', ''),
+            route_description=data.get('route_description', ''),
+            origin=origin,
+            destination=destination,
+            waypoints=waypoints,
+            segments=segments,
+            sensors=sensors,
+            log_interval_seconds=data.get('log_interval_seconds', 300),
+            use_real_routes=data.get('use_real_routes', False),
+            transport_mode=data.get('transport_mode', 'driving-car'),
+            created_at=data.get('created_at'),
+            updated_at=data.get('updated_at')
+        )
         """Remove a sensor by index."""
         if 0 <= index < len(self.sensors):
             self.sensors.pop(index)

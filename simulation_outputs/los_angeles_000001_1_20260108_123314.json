@@ -1,0 +1,242 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030000001",
+  "TID": "E2C245002000056680000001",
+  "inventories": [
+    {
+      "readerTimestamp": "2026-01-08T08:00:00.000Z",
+      "readerHost": "FX9600C6EEB",
+      "readerMAC": "96:93:15:24:A0:B7",
+      "readerLatitude": 34.06,
+      "readerLongitude": -118.26,
+      "readerAccuracyInMeters": 20.0,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Los Angeles, CA, USA",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -59.4,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 0.9,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.04,
+      "tagSensorCode": 126,
+      "tagOnChipRSSI": 13,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-08T07:59:48Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2026-01-08T09:15:00.000Z",
+      "readerHost": "FX9600D189C",
+      "readerMAC": "30:10:FF:E2:97:47",
+      "readerLatitude": 33.78,
+      "readerLongitude": -117.22,
+      "readerAccuracyInMeters": 15.2,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Perris, CA, USA",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -59.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 9.4,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.11,
+      "tagSensorCode": 120,
+      "tagOnChipRSSI": 15,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-08T07:59:40Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 16,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2026-01-08T08:00:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": true,
+    "alarmTemperature": true,
+    "alarmLowTemperature": true,
+    "alarmHighTemperature": true,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": "2026-01-08T08:05:00.000Z",
+    "alarmTemperatureValue": 17.2,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2026-01-08T08:00:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 34.055125,
+      "longitude": -118.257022,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:05:00Z",
+      "tempInC": 17.2,
+      "tamper": true,
+      "latitude": 34.029349,
+      "longitude": -118.222545,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:10:00Z",
+      "tempInC": 9.5,
+      "tamper": false,
+      "latitude": 34.033039,
+      "longitude": -118.134178,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:15:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 34.038438,
+      "longitude": -118.044928,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:20:00Z",
+      "tempInC": 11.9,
+      "tamper": true,
+      "latitude": 34.007315,
+      "longitude": -117.96582,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:25:00Z",
+      "tempInC": 1.1,
+      "tamper": false,
+      "latitude": 33.99518,
+      "longitude": -117.877506,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:30:00Z",
+      "tempInC": -0.8,
+      "tamper": true,
+      "latitude": 34.027189,
+      "longitude": -117.800413,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:35:00Z",
+      "tempInC": 0.2,
+      "tamper": false,
+      "latitude": 34.023252,
+      "longitude": -117.767356,
+      "locationName": "Los Angeles, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:40:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 34.030187,
+      "longitude": -117.678202
+    },
+    {
+      "timestamp": "2026-01-08T08:45:00Z",
+      "tempInC": 2.8,
+      "tamper": false,
+      "latitude": 34.030467,
+      "longitude": -117.587237,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:50:00Z",
+      "tempInC": 5.6,
+      "tamper": false,
+      "latitude": 34.019007,
+      "longitude": -117.498677,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:55:00Z",
+      "tempInC": -1.1,
+      "tamper": true,
+      "latitude": 34.004463,
+      "longitude": -117.41017,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:00:00Z",
+      "tempInC": 8.1,
+      "tamper": false,
+      "latitude": 33.973058,
+      "longitude": -117.332809,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:05:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 33.915127,
+      "longitude": -117.286741,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:10:00Z",
+      "tempInC": 4.8,
+      "tamper": false,
+      "latitude": 33.845678,
+      "longitude": -117.25204,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:15:00Z",
+      "tempInC": 6.9,
+      "tamper": false,
+      "latitude": 33.77934,
+      "longitude": -117.218361,
+      "locationName": "Perris, CA, USA"
+    }
+  ],
+  "metadata": {
+    "route_name": "los angeles",
+    "use_real_route": true,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0,
+    "company_id": 1,
+    "route_id": 1
+  }
+}

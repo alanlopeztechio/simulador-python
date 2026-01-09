@@ -30,9 +30,9 @@ class DistributionsTab(tk.Frame):
     DISTRIBUTION_MODES = ["absolute", "relative"]
     BLEND_STRATEGIES = ["weighted_average", "alternating", "layered"]
     
-    def __init__(self, parent, stops_tab):
+    def __init__(self, parent, routes_tab):
         super().__init__(parent)
-        self.stops_tab = stops_tab
+        self.routes_tab = routes_tab
         self.segment_distribution_widgets = []  # List of segment widgets, each containing distribution widgets
         
         # Scrollable canvas
@@ -78,13 +78,14 @@ class DistributionsTab(tk.Frame):
         
         # Initial message
         tk.Label(self.segments_dist_container, 
-                text="Click 'Regenerate Distributions' to load route segments from Stops tab",
+                text="Click 'Regenerate Distributions' to load route segments from Rutas tab",
                 font=("Arial", 10), fg="gray").pack(pady=20)
     
     def regenerate_from_route(self):
         """Load route configuration and generate distribution UI for each segment."""
-        route_config = self.stops_tab.get_route_config()
+        route_config = self.routes_tab.get_route_config()
         if not route_config:
+            messagebox.showinfo("Info", "Selecciona una ruta en la pestaña de Rutas primero.")
             return
         
         # Clear existing
@@ -97,7 +98,7 @@ class DistributionsTab(tk.Frame):
         
         if not route_config.segments:
             tk.Label(self.segments_dist_container, 
-                    text="No segments found. Please add segments in the Stops tab.",
+                    text="No segments found. Please add segments in the Rutas tab.",
                     font=("Arial", 10), fg="red").pack(pady=20)
             return
         

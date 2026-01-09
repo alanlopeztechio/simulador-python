@@ -1,0 +1,367 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030000010",
+  "TID": "E2C245002000056680000001",
+  "inventories": [
+    {
+      "readerTimestamp": "2026-01-08T08:00:00.000Z",
+      "readerHost": "FX9600AEA67",
+      "readerMAC": "FE:41:F1:7F:3E:F4",
+      "readerLatitude": 33.78,
+      "readerLongitude": -117.22,
+      "readerAccuracyInMeters": 10.3,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Perris, CA, USA",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -53.8,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.7,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.01,
+      "tagSensorCode": 121,
+      "tagOnChipRSSI": 15,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-08T07:59:48Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2026-01-08T08:55:00.000Z",
+      "readerHost": "FX9600466B1",
+      "readerMAC": "08:F8:5A:F7:0C:B1",
+      "readerLatitude": 33.23,
+      "readerLongitude": -117.31,
+      "readerAccuracyInMeters": 16.4,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Oceanside, CA, USA",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -58.2,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 1.8,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.09,
+      "tagSensorCode": 119,
+      "tagOnChipRSSI": 16,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-08T07:59:42Z",
+      "loggerNextSample": 12
+    },
+    {
+      "readerTimestamp": "2026-01-08T10:15:00.000Z",
+      "readerHost": "FX960069EB8",
+      "readerMAC": "F6:67:CE:43:8A:E4",
+      "readerLatitude": 33.8,
+      "readerLongitude": -118.12,
+      "readerAccuracyInMeters": 13.5,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Long Beach, CA, USA",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -51.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 3.9,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.0,
+      "tagSensorCode": 119,
+      "tagOnChipRSSI": 13,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-08T07:59:47Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 28,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2026-01-08T08:00:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": true,
+    "alarmTemperature": true,
+    "alarmLowTemperature": true,
+    "alarmHighTemperature": true,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": "2026-01-08T08:10:00.000Z",
+    "alarmTemperatureValue": 12.2,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2026-01-08T08:00:00Z",
+      "tempInC": 0.4,
+      "tamper": false,
+      "latitude": 33.77934,
+      "longitude": -117.218361,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:05:00Z",
+      "tempInC": 2.1,
+      "tamper": false,
+      "latitude": 33.73679,
+      "longitude": -117.189522,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:10:00Z",
+      "tempInC": 12.2,
+      "tamper": true,
+      "latitude": 33.677529,
+      "longitude": -117.171015,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:15:00Z",
+      "tempInC": 0.1,
+      "tamper": false,
+      "latitude": 33.614557,
+      "longitude": -117.171244,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:20:00Z",
+      "tempInC": 11.2,
+      "tamper": true,
+      "latitude": 33.553516,
+      "longitude": -117.181141,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:25:00Z",
+      "tempInC": 11.4,
+      "tamper": true,
+      "latitude": 33.497542,
+      "longitude": -117.14939,
+      "locationName": "Perris, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:30:00Z",
+      "tempInC": 10.5,
+      "tamper": true,
+      "latitude": 33.437374,
+      "longitude": -117.140138,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:35:00Z",
+      "tempInC": -5.5,
+      "tamper": true,
+      "latitude": 33.383086,
+      "longitude": -117.17437,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:40:00Z",
+      "tempInC": 0.2,
+      "tamper": false,
+      "latitude": 33.325419,
+      "longitude": -117.16521,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:45:00Z",
+      "tempInC": 7.7,
+      "tamper": false,
+      "latitude": 33.292357,
+      "longitude": -117.224301,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:50:00Z",
+      "tempInC": 1.7,
+      "tamper": false,
+      "latitude": 33.252325,
+      "longitude": -117.263803,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T08:55:00Z",
+      "tempInC": 1.8,
+      "tamper": false,
+      "latitude": 33.229885,
+      "longitude": -117.312851,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:00:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 33.209509,
+      "longitude": -117.37927,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:05:00Z",
+      "tempInC": -0.7,
+      "tamper": true,
+      "latitude": 33.248956,
+      "longitude": -117.419102,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:10:00Z",
+      "tempInC": 6.3,
+      "tamper": false,
+      "latitude": 33.298711,
+      "longitude": -117.464286,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:15:00Z",
+      "tempInC": 13.4,
+      "tamper": true,
+      "latitude": 33.344188,
+      "longitude": -117.513341,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:20:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 33.38174,
+      "longitude": -117.573229,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:25:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 33.431578,
+      "longitude": -117.614835,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:30:00Z",
+      "tempInC": 8.2,
+      "tamper": false,
+      "latitude": 33.469742,
+      "longitude": -117.67354,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:35:00Z",
+      "tempInC": -4.0,
+      "tamper": true,
+      "latitude": 33.527074,
+      "longitude": -117.669062,
+      "locationName": "Oceanside, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:40:00Z",
+      "tempInC": 4.1,
+      "tamper": false,
+      "latitude": 33.574322,
+      "longitude": -117.707365,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:45:00Z",
+      "tempInC": 2.9,
+      "tamper": false,
+      "latitude": 33.599301,
+      "longitude": -117.774568,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:50:00Z",
+      "tempInC": -0.1,
+      "tamper": true,
+      "latitude": 33.629651,
+      "longitude": -117.837122,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T09:55:00Z",
+      "tempInC": 6.6,
+      "tamper": false,
+      "latitude": 33.673384,
+      "longitude": -117.886007,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T10:00:00Z",
+      "tempInC": 10.9,
+      "tamper": true,
+      "latitude": 33.701693,
+      "longitude": -117.94927,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T10:05:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 33.744476,
+      "longitude": -118.004457,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T10:10:00Z",
+      "tempInC": 0.5,
+      "tamper": false,
+      "latitude": 33.774406,
+      "longitude": -118.065176,
+      "locationName": "Long Beach, CA, USA"
+    },
+    {
+      "timestamp": "2026-01-08T10:15:00Z",
+      "tempInC": 6.2,
+      "tamper": false,
+      "latitude": 33.797395,
+      "longitude": -118.121449,
+      "locationName": "Long Beach, CA, USA"
+    }
+  ],
+  "metadata": {
+    "route_name": "perrin-",
+    "use_real_route": true,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0
+  }
+}
