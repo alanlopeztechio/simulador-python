@@ -90,6 +90,22 @@ class SimulatorAdapter:
         log_interval = route_config.log_interval_seconds
         num_temp_samples = max(2, int((total_duration_hours * 3600) / log_interval))
         
+        # Advertir y limitar si son demasiadas muestras
+        MAX_SAMPLES = 5000
+        if num_temp_samples > MAX_SAMPLES:
+            print(f"")
+            print(f"   ⚠️  ADVERTENCIA: Demasiadas muestras calculadas ({num_temp_samples})")
+            print(f"   🔧 Limitando a {MAX_SAMPLES} muestras para evitar bloqueo")
+            print(f"   💡 Aumenta el log_interval a {int((total_duration_hours * 3600) / MAX_SAMPLES)} segundos")
+            print(f"      para capturar toda la ruta sin límite.")
+            print(f"")
+            num_temp_samples = MAX_SAMPLES
+        elif num_temp_samples > 2000:
+            print(f"")
+            print(f"   ℹ️  Ruta larga: generando {num_temp_samples} muestras")
+            print(f"   ⏳ Esto puede tardar 30-60 segundos...")
+            print(f"")
+        
         # Convert segments to TempProfile objects for existing simulator
         segment_profiles = SimulatorAdapter._convert_segments_to_profiles(route_config.segments)
         
@@ -106,6 +122,15 @@ class SimulatorAdapter:
             # Get alternative routes from OpenRouteService
             # El API retorna la ruta principal + las alternativas, por lo que solicitamos
             # secondary_routes_count rutas alternativas (el API agregará la principal automáticamente)
+            print(f"\n🗺️  CALCULANDO RUTAS ALTERNATIVAS")
+            print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print(f"   📍 Origen: {coordinates[0]}")
+            print(f"   📍 Destino: {coordinates[-1]}")
+            print(f"   🚗 Modo: {route_config.transport_mode}")
+            print(f"   🔢 Rutas solicitadas: 1 principal + {secondary_routes_count} secundarias")
+            print(f"   ⚠️  Esto puede tardar 20-60 segundos...")
+            print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+            
             router = OpenStreetMapRouter()
             alternative_routes = router.get_alternative_routes(
                 start=coordinates[0],
@@ -152,6 +177,13 @@ class SimulatorAdapter:
                 }]
         elif use_real_routes:
             # Get single route from API
+            print(f"\n🗺️  CALCULANDO RUTA PRINCIPAL")
+            print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print(f"   📍 Puntos en la ruta: {len(coordinates)}")
+            print(f"   🚗 Modo: {route_config.transport_mode}")
+            print(f"   ⏳ Esperando respuesta del API...")
+            print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+            
             router = OpenStreetMapRouter()
             route_info = router.get_route_multi(coordinates, mode=route_config.transport_mode)
             
@@ -211,6 +243,8 @@ class SimulatorAdapter:
             for route_idx, route_info in enumerate(routes_to_generate):
                 route_type = route_info.get('route_type', 'principal')
                 route_coords = route_info.get('coordinates', coordinates)
+                
+                print(f"\n📦 Generando JSONs - Sensor {sensor_idx+1}/{len(route_config.sensors)}, Ruta: {route_type}")
                 
                 # Si la ruta no tiene coordenadas (geometría codificada), usar coordenadas originales
                 if not route_coords:
