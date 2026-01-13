@@ -271,7 +271,6 @@ class SimulatorAdapter:
                         transport_mode=route_config.transport_mode,
                         use_real_route=use_real_routes,
                         route_name=route_config.route_name,
-                        company_id=route_config.company_id,
                         route_id=route_config.id,
                         segment_profiles=segment_profiles,
                     )

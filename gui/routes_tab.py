@@ -161,7 +161,6 @@ class RoutesTab(tk.Frame):
         
         # Data storage for editor
         self.segment_frames = []
-        self.sensor_frames = []
         
         # Map markers
         self.origin_marker = None
@@ -270,6 +269,14 @@ class RoutesTab(tk.Frame):
                                           font=("Arial", 14, "bold"), bg="#1976D2", fg="white")
         self.editor_title_label.pack()
         
+        # Save button
+        save_frame = tk.Frame(container, bg="#f0f0f0", pady=15)
+        save_frame.pack(fill=tk.X)
+        
+        tk.Button(save_frame, text="💾 GUARDAR RUTA", command=self._save_route,
+                 bg="#1976D2", fg="white", font=("Arial", 12, "bold"),
+                 height=2, width=25).pack()
+        
         # Route metadata
         metadata_frame = tk.LabelFrame(container, text="Información de la Ruta",
                                       font=("Arial", 10, "bold"), padx=10, pady=10)
@@ -337,25 +344,6 @@ class RoutesTab(tk.Frame):
         
         tk.Button(segments_frame, text="➕ Agregar Segmento", command=self._add_segment,
                  bg="#4CAF50", fg="white", font=("Arial", 9, "bold")).pack(pady=5)
-        
-        # Sensors
-        sensors_frame = tk.LabelFrame(container, text="Sensores Asociados",
-                                     font=("Arial", 10, "bold"), padx=10, pady=10)
-        sensors_frame.pack(fill=tk.X, padx=10, pady=5)
-        
-        self.sensors_container = tk.Frame(sensors_frame)
-        self.sensors_container.pack(fill=tk.BOTH, expand=True)
-        
-        tk.Button(sensors_frame, text="➕ Agregar Sensor", command=self._add_sensor,
-                 bg="#2196F3", fg="white", font=("Arial", 9)).pack(pady=5)
-        
-        # Save button
-        save_frame = tk.Frame(container, bg="#f0f0f0", pady=15)
-        save_frame.pack(fill=tk.X, side=tk.BOTTOM)
-        
-        tk.Button(save_frame, text="💾 GUARDAR RUTA", command=self._save_route,
-                 bg="#1976D2", fg="white", font=("Arial", 12, "bold"),
-                 height=2, width=25).pack()
         
         self._set_editor_state(False)
     
@@ -425,75 +413,6 @@ class RoutesTab(tk.Frame):
                 self.segment_frames.remove(seg_data)
                 frame_widget.destroy()
                 self._update_map_markers()
-                break
-    
-    def _add_sensor(self):
-        """Add a sensor configuration with incremental EPC/TID from database."""
-        index = len(self.sensor_frames) + 1
-        
-        # Get next available EPC and TID from database
-        next_epc = f"5201F2503{index:07d}"
-        next_tid = f"E2C24500200005668{index:07d}"
-        
-        try:
-            if not self.db:
-                self.db = DatabaseManager()
-                self.db.connect()
-            
-            # Get incremental values from database
-            base_epc = self.db.get_next_sensor_epc()
-            base_tid = self.db.get_next_sensor_tid()
-            
-            # Adjust for multiple sensors being added in same session
-            if index > 1:
-                # Extract numeric part and increment for additional sensors
-                try:
-                    epc_num = int(base_epc[9:]) + (index - 1)  # 5201F2503 has 9 chars
-                    tid_num = int(base_tid[17:]) + (index - 1)  # E2C24500200005668 has 17 chars
-                    next_epc = f"5201F2503{epc_num:07d}"
-                    next_tid = f"E2C24500200005668{tid_num:07d}"
-                except ValueError:
-                    next_epc = base_epc
-                    next_tid = base_tid
-            else:
-                next_epc = base_epc
-                next_tid = base_tid
-                
-        except Exception as e:
-            print(f"Warning: Could not get next EPC/TID from DB: {e}")
-        
-        frame = tk.Frame(self.sensors_container, relief=tk.GROOVE, borderwidth=1, padx=10, pady=10)
-        frame.pack(fill=tk.X, pady=5)
-        
-        header = tk.Frame(frame)
-        header.pack(fill=tk.X)
-        tk.Label(header, text=f"Sensor {index}", font=("Arial", 9, "bold")).pack(side=tk.LEFT)
-        tk.Button(header, text="❌", command=lambda: self._remove_sensor(frame),
-                 bg="#f44336", fg="white", font=("Arial", 8, "bold")).pack(side=tk.RIGHT)
-        
-        data = tk.Frame(frame)
-        data.pack(fill=tk.X, pady=5)
-        
-        tk.Label(data, text="EPC:").grid(row=0, column=0, sticky=tk.W)
-        epc_var = tk.StringVar(value=next_epc)
-        tk.Entry(data, textvariable=epc_var, width=25).grid(row=0, column=1, sticky=tk.W, padx=5)
-        
-        tk.Label(data, text="TID:").grid(row=1, column=0, sticky=tk.W)
-        tid_var = tk.StringVar(value=next_tid)
-        tk.Entry(data, textvariable=tid_var, width=30).grid(row=1, column=1, sticky=tk.W, padx=5)
-        
-        self.sensor_frames.append({
-            "frame": frame,
-            "epc": epc_var,
-            "tid": tid_var
-        })
-    
-    def _remove_sensor(self, frame_widget):
-        """Remove a sensor."""
-        for sensor_data in self.sensor_frames:
-            if sensor_data["frame"] == frame_widget:
-                self.sensor_frames.remove(sensor_data)
-                frame_widget.destroy()
                 break
     
     def _update_map_markers(self):
@@ -684,14 +603,6 @@ class RoutesTab(tk.Frame):
                 )
                 segments.append(seg)
             
-            sensors = []
-            for sensor_data in self.sensor_frames:
-                sensor = SensorConfig(
-                    epc=sensor_data["epc"].get(),
-                    tid=sensor_data["tid"].get()
-                )
-                sensors.append(sensor)
-            
             route = RouteConfig(
                 company_id=self.selected_company_id,
                 route_name=route_name,
@@ -700,7 +611,7 @@ class RoutesTab(tk.Frame):
                 destination=destination,
                 waypoints=waypoints,
                 segments=segments,
-                sensors=sensors
+                sensors=[]  # Sensors are now managed in simulation tab
             )
             
             route_dict = route.to_dict()
@@ -734,10 +645,6 @@ class RoutesTab(tk.Frame):
         for seg in self.segment_frames:
             seg["frame"].destroy()
         self.segment_frames.clear()
-        
-        for sensor in self.sensor_frames:
-            sensor["frame"].destroy()
-        self.sensor_frames.clear()
         
         self._update_map_markers()
     
@@ -781,13 +688,6 @@ class RoutesTab(tk.Frame):
                 self.segment_frames[i]["stop_time"].set(seg.estimated_stop_time_minutes)
                 if seg.description:
                     self.segment_frames[i]["description"].set(seg.description)
-        
-        # Load sensors
-        for sensor in route.sensors:
-            self._add_sensor()
-            sensor_data = self.sensor_frames[-1]
-            sensor_data["epc"].set(sensor.epc)
-            sensor_data["tid"].set(sensor.tid)
         
         self._update_map_markers()
     

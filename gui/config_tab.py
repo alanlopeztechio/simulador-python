@@ -401,10 +401,14 @@ class ConfigTab(tk.Frame):
                 "Success",
                 "✓ Database schema synchronized successfully!\n\n"
                 "Tables created:\n"
-                "  • simulations\n"
-                "  • segments\n"
-                "  • stops\n"
-                "  • sensor_data\n\n"
+                "  • companies (compañías)\n"
+                "  • routes (rutas)\n"
+                "  • simulations (simulaciones)\n"
+                "  • segments (segmentos)\n"
+                "  • stops (paradas)\n"
+                "  • sensor_data (datos sensores)\n\n"
+                "Views created for Power BI:\n"
+                "  • vw_powerbi_master (vista consolidada)\n\n"
                 "The database is now ready to use."
             )
         except Exception as e:

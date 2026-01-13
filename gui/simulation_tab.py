@@ -167,6 +167,19 @@ class SimulationTab(tk.Frame):
         tk.Label(params_grid, text="(Puede ralentizar la generación - requiere llamadas API)", 
                 font=("Arial", 8), fg="gray").grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=(0, 5))
         
+        # Number of sensors
+        tk.Label(params_grid, text="Cantidad de Sensores:", 
+                font=("Arial", 9)).grid(row=5, column=0, sticky=tk.W, pady=5, padx=(0, 10))
+        
+        sensor_frame = tk.Frame(params_grid)
+        sensor_frame.grid(row=5, column=1, sticky=tk.W, pady=5)
+        
+        self.sensor_count_var = tk.IntVar(value=100)
+        tk.Spinbox(sensor_frame, from_=1, to=10000, textvariable=self.sensor_count_var, 
+                  width=10, font=("Arial", 9)).pack(side=tk.LEFT)
+        tk.Label(sensor_frame, text="sensores (se generarán automáticamente)", 
+                font=("Arial", 8), fg="gray").pack(side=tk.LEFT, padx=5)
+        
         # Action buttons
         action_frame = tk.Frame(main_container)
         action_frame.pack(fill=tk.X, pady=(10, 0))
@@ -345,6 +358,19 @@ Descripción: {route.route_description}
             messagebox.showwarning("Validación", "Por favor selecciona una ruta.")
             return
         
+        # Get sensor count from UI
+        sensor_count = self.sensor_count_var.get()
+        if sensor_count <= 0:
+            messagebox.showwarning("Validación", "La cantidad de sensores debe ser mayor a 0.")
+            return
+        
+        # Generate sensors automatically with incremental EPCs/TIDs
+        try:
+            self._generate_sensors_for_simulation(sensor_count)
+        except Exception as e:
+            messagebox.showerror("Error", f"Error generando sensores: {e}")
+            return
+        
         # Get parameters
         use_real = self.use_real_routes_var.get()
         use_secondary = self.use_secondary_routes_var.get()
@@ -399,6 +425,46 @@ Descripción: {route.route_description}
             daemon=True
         )
         thread.start()
+    
+    def _generate_sensors_for_simulation(self, count: int):
+        """Generate sensors with incremental EPCs/TIDs from database.
+        
+        Args:
+            count: Number of sensors to generate
+        """
+        from models.sensor import SensorConfig
+        from db.database import DatabaseManager
+        
+        # Clear existing sensors
+        self.selected_route.sensors = []
+        
+        # Get next available EPC and TID from database
+        db = DatabaseManager()
+        db.connect()
+        
+        try:
+            base_epc = db.get_next_sensor_epc()
+            base_tid = db.get_next_sensor_tid()
+            
+            # Extract numeric parts
+            epc_prefix = base_epc[:9]  # "5201F2503"
+            tid_prefix = base_tid[:17]  # "E2C24500200005668"
+            
+            epc_num = int(base_epc[9:])
+            tid_num = int(base_tid[17:])
+            
+            # Generate sensors
+            for i in range(count):
+                epc = f"{epc_prefix}{epc_num + i:07d}"
+                tid = f"{tid_prefix}{tid_num + i:07d}"
+                
+                sensor = SensorConfig(epc=epc, tid=tid)
+                self.selected_route.sensors.append(sensor)
+            
+            print(f"✓ Generados {count} sensores con EPCs desde {base_epc} hasta {self.selected_route.sensors[-1].epc}")
+            
+        finally:
+            db.disconnect()
     
     def _execute_simulation(self, use_real_routes, use_secondary_routes, secondary_routes_count, include_location_names):
         """Execute simulation in background thread."""

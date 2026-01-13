@@ -127,7 +127,6 @@ class DatabaseManager:
             use_real_route = metadata.get('use_real_route', False)
             transport_mode = metadata.get('transport_mode', 'driving-car')
             total_distance_km = metadata.get('total_distance_km', 0.0)
-            company_id = metadata.get('company_id')  # Puede ser None
             route_id = metadata.get('route_id')  # Puede ser None
             
             # Parse arm timestamp
@@ -143,7 +142,7 @@ class DatabaseManager:
             insert_query = """
                 INSERT INTO simulations (
                     epc, tid, version, 
-                    company_id, route_id, route_name,
+                    route_id, route_name,
                     log_interval_seconds, log_number_of_samples,
                     temp_lower_limit, temp_upper_limit, distribution_type,
                     arm_status, arm_timestamp,
@@ -152,7 +151,7 @@ class DatabaseManager:
                     use_real_route, transport_mode
                 ) VALUES (
                     %s, %s, %s,
-                    %s, %s, %s,
+                    %s, %s,
                     %s, %s,
                     %s, %s, %s,
                     %s, %s,
@@ -164,7 +163,7 @@ class DatabaseManager:
             
             self.cursor.execute(insert_query, (
                 epc, tid, version,
-                company_id, route_id, route_name,
+                route_id, route_name,
                 config.get('logIntervalInSeconds'),
                 config.get('logNumberOfSamples'),
                 config.get('temperatureLowerLimit'),

@@ -161,7 +161,7 @@ class RouteConfig:
             'destination_arrival_time': self.destination.timestamp.time() if self.destination and self.destination.timestamp else None,
             'waypoints_json': json.dumps([wp.to_dict() for wp in self.waypoints]) if self.waypoints else None,
             'segments_json': json.dumps([s.to_dict() for s in self.segments]) if self.segments else None,
-            'sensors_json': json.dumps([{'epc': s.epc, 'tid': s.tid} for s in self.sensors]) if self.sensors else None,
+            'sensors_json': None,  # Sensors are now managed in simulation tab
             'log_interval_seconds': self.log_interval_seconds,
             'use_real_routes': self.use_real_routes,
             'transport_mode': self.transport_mode,
@@ -211,13 +211,6 @@ class RouteConfig:
             segments_data = json.loads(data['segments_json'])
             segments = [SegmentMetadata.from_dict(seg) for seg in segments_data]
         
-        # Parse sensors
-        sensors = []
-        if data.get('sensors_json'):
-            from models.sensor import SensorConfig
-            sensors_data = json.loads(data['sensors_json'])
-            sensors = [SensorConfig(epc=s.get('epc', ''), tid=s.get('tid', '')) for s in sensors_data]
-        
         return cls(
             id=data.get('id'),
             company_id=data.get('company_id'),
@@ -227,7 +220,7 @@ class RouteConfig:
             destination=destination,
             waypoints=waypoints,
             segments=segments,
-            sensors=sensors,
+            sensors=[],  # Sensors are now managed in simulation tab
             log_interval_seconds=data.get('log_interval_seconds', 300),
             use_real_routes=data.get('use_real_routes', False),
             transport_mode=data.get('transport_mode', 'driving-car'),

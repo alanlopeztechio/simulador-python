@@ -46,7 +46,6 @@ class LogGeneratorInput:
     use_real_route: bool = False
     route_name: str = "Custom Route"
     # Database references
-    company_id: Optional[int] = None
     route_id: Optional[int] = None
     # Per-segment temperature/distribution profiles. One entry per leg between waypoints.
     # If provided, overrides global lower/upper/distribution for the corresponding samples.
@@ -1393,7 +1392,6 @@ class LogSimulator:
             "transport_mode": self.config.transport_mode,
             "distribution_type": self.config.distribution_type,
             "total_distance_km": self.route_info.get('total_distance_km', 0.0) if self.route_info else 0.0,
-            "company_id": self.config.company_id,
             "route_id": self.config.route_id
         }
         
