@@ -114,7 +114,12 @@ class SimulatorAdapter:
             # No sensors defined, use default
             route_config.sensors = [SensorConfig.generate_default(1)]
         
-        # Get alternative routes if requested
+        # ═══════════════════════════════════════════════════════════════════
+        # OPTIMIZATION: Get routes ONCE before processing sensors
+        # This prevents redundant API calls when multiple sensors share the same route
+        # ═══════════════════════════════════════════════════════════════════
+        print(f"\n🚀 OPTIMIZACIÓN: Obteniendo rutas UNA SOLA VEZ para {len(route_config.sensors)} sensores")
+        
         routes_to_generate = []
         api_duration_hours = None  # Store real API duration
         
@@ -144,6 +149,7 @@ class SimulatorAdapter:
                 routes_to_generate = alternative_routes
                 num_secondary = len(alternative_routes) - 1
                 print(f"✓ Se obtuvieron {len(alternative_routes)} rutas (1 principal + {num_secondary} secundarias)")
+                print(f"   💡 Estas rutas se reutilizarán para todos los sensores\n")
                 
                 # Get API duration from the main route
                 if alternative_routes[0].get('duration_hours'):
@@ -195,6 +201,8 @@ class SimulatorAdapter:
                     'distance_km': route_info.get('distance_km', 0),
                     'duration_hours': api_duration_hours
                 }]
+                print(f"   ✓ Ruta obtenida exitosamente")
+                print(f"   💡 Esta ruta se reutilizará para todos los sensores\n")
             else:
                 # Fallback if API fails
                 routes_to_generate = [{
@@ -211,6 +219,11 @@ class SimulatorAdapter:
                 'distance_km': 0,
                 'duration_hours': total_duration_hours
             }]
+        
+        print(f"   📊 Rutas totales obtenidas: {len(routes_to_generate)}")
+        print(f"   📦 Sensores a procesar: {len(route_config.sensors)}")
+        print(f"   🎯 Archivos JSON a generar: {len(routes_to_generate) * len(route_config.sensors) * num_samples}")
+        print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
         
         # Update destination timestamp with real API duration if available
         if api_duration_hours is not None and route_config.origin and route_config.origin.timestamp:
@@ -239,12 +252,19 @@ class SimulatorAdapter:
                 ))
             print(f"   📍 Creando {len(key_waypoints)} key_waypoints para inventories")
         
+        # ═══════════════════════════════════════════════════════════════════
+        # MAIN GENERATION LOOP: Iterate sensors → routes → samples
+        # Routes are already pre-calculated, so we're just reusing them
+        # Each sensor will use the SAME route coordinates but DIFFERENT temperature distributions
+        # ═══════════════════════════════════════════════════════════════════
         for sensor_idx, sensor in enumerate(route_config.sensors):
             for route_idx, route_info in enumerate(routes_to_generate):
                 route_type = route_info.get('route_type', 'principal')
                 route_coords = route_info.get('coordinates', coordinates)
                 
                 print(f"\n📦 Generando JSONs - Sensor {sensor_idx+1}/{len(route_config.sensors)}, Ruta: {route_type}")
+                print(f"   🔄 Reutilizando coordenadas de ruta (ya calculadas)")
+                print(f"   🌡️  Aplicando distribuciones de temperatura individuales del sensor")
                 
                 # Si la ruta no tiene coordenadas (geometría codificada), usar coordenadas originales
                 if not route_coords:

@@ -1018,9 +1018,18 @@ class LogSimulator:
         # Interpola coordenadas para N muestras usando ruta real o simple
         # Si hay waypoints definidos, se priorizan
         if self.config.waypoints and len(self.config.waypoints) >= 2:
+            # OPTIMIZATION: Si use_real_route está activado, los waypoints YA CONTIENEN
+            # las coordenadas de la ruta real calculada por el adapter.
+            # NO necesitamos hacer otra llamada al API aquí.
             if self.config.use_real_route:
-                route = self.osm_router.get_route_multi(self.config.waypoints, mode=self.config.transport_mode)
+                # Los waypoints ya son la ruta completa del API, usarlos directamente
+                route = {
+                    'coordinates': self.config.waypoints,
+                    'distance_km': 0,  # Metadata opcional
+                    'duration_hours': 0
+                }
             else:
+                # Solo para rutas simples sin API
                 route = self.osm_router._get_simple_route_multi(self.config.waypoints)
 
             if route:
