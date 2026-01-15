@@ -56,6 +56,16 @@ class SimulatorAdapter:
         if len(coordinates) < 2:
             raise ValueError("Route must have at least origin and destination")
         
+        # ═══════════════════════════════════════════════════════════════════
+        # IMPORTANTE: Distinguir entre waypoints clave y coordenadas de ruta
+        # - key_waypoints_for_segments: Solo origen, paradas intermedias, destino (para segmentos)
+        # - route_coords: Todos los puntos de la geometría de la ruta (para coordenadas)
+        # ═══════════════════════════════════════════════════════════════════
+        
+        # Waypoints clave para segmentos (NO para interpolación)
+        key_waypoints_for_segments = coordinates  # Solo los puntos clave del RouteConfig
+        print(f"   📍 Waypoints clave para segmentos: {len(key_waypoints_for_segments)}")
+        
         # Extract location names from RouteConfig if include_location_names is enabled
         location_names_map = {}
         if include_location_names:
@@ -300,6 +310,13 @@ class SimulatorAdapter:
                     # ═══════════════════════════════════════════════════════════
                     reference_sensor = sensor_group[0]
 
+                    # ⚠️ CRÍTICO: waypoints debe contener solo los puntos CLAVE (no toda la ruta)
+                    # - Si route_coords tiene miles de puntos (del API), usar key_waypoints_for_segments
+                    # - route_coords se usa solo para las coordenadas finales de interpolación
+                    waypoints_for_config = key_waypoints_for_segments if len(route_coords) > 100 else route_coords
+                    
+                    print(f"   🔍 Debug: route_coords={len(route_coords)} puntos, waypoints_for_config={len(waypoints_for_config)} puntos")
+
                     config = LogGeneratorInput(
                         epc=reference_sensor.epc,
                         tid=reference_sensor.tid,
@@ -312,9 +329,10 @@ class SimulatorAdapter:
                         start_lng=route_coords[0][1],
                         end_lat=route_coords[-1][0],
                         end_lng=route_coords[-1][1],
-                        number_of_stops=len(route_coords) - 2,
+                        number_of_stops=len(waypoints_for_config) - 2,
                         distribution_type=segment_profiles[0].distribution_type if segment_profiles else "normal",
-                        waypoints=route_coords,
+                        waypoints=waypoints_for_config,  # ← Solo waypoints clave, NO toda la ruta
+                        route_coordinates=route_coords,  # ← Todos los puntos para interpolar
                         key_waypoints=key_waypoints if include_location_names else None,
                         transport_mode=route_config.transport_mode,
                         use_real_route=use_real_routes,

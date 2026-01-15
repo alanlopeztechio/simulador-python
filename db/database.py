@@ -716,8 +716,8 @@ class DatabaseManager:
             query = """
                 INSERT INTO routes (
                     company_id, route_name, route_description,
-                    origin_name, origin_latitude, origin_longitude, origin_departure_time,
-                    destination_name, destination_latitude, destination_longitude, destination_arrival_time,
+                    origin_name, origin_latitude, origin_longitude, origin_departure_date,
+                    destination_name, destination_latitude, destination_longitude, destination_arrival_date,
                     waypoints_json, segments_json, sensors_json,
                     log_interval_seconds, use_real_routes, transport_mode
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -730,11 +730,11 @@ class DatabaseManager:
                 route_data.get('origin_name'),
                 route_data.get('origin_latitude'),
                 route_data.get('origin_longitude'),
-                route_data.get('origin_departure_time'),
+                route_data.get('origin_departure_date'),
                 route_data.get('destination_name'),
                 route_data.get('destination_latitude'),
                 route_data.get('destination_longitude'),
-                route_data.get('destination_arrival_time'),
+                route_data.get('destination_arrival_date'),
                 route_data.get('waypoints_json'),
                 route_data.get('segments_json'),
                 route_data.get('sensors_json'),
@@ -777,8 +777,8 @@ class DatabaseManager:
             query = """
                 UPDATE routes 
                 SET company_id = %s, route_name = %s, route_description = %s,
-                    origin_name = %s, origin_latitude = %s, origin_longitude = %s, origin_departure_time = %s,
-                    destination_name = %s, destination_latitude = %s, destination_longitude = %s, destination_arrival_time = %s,
+                    origin_name = %s, origin_latitude = %s, origin_longitude = %s, origin_departure_date = %s,
+                    destination_name = %s, destination_latitude = %s, destination_longitude = %s, destination_arrival_date = %s,
                     waypoints_json = %s, segments_json = %s, sensors_json = %s,
                     log_interval_seconds = %s, use_real_routes = %s, transport_mode = %s,
                     updated_at = CURRENT_TIMESTAMP
@@ -791,11 +791,11 @@ class DatabaseManager:
                 route_data.get('origin_name'),
                 route_data.get('origin_latitude'),
                 route_data.get('origin_longitude'),
-                route_data.get('origin_departure_time'),
+                route_data.get('origin_departure_date'),
                 route_data.get('destination_name'),
                 route_data.get('destination_latitude'),
                 route_data.get('destination_longitude'),
-                route_data.get('destination_arrival_time'),
+                route_data.get('destination_arrival_date'),
                 route_data.get('waypoints_json'),
                 route_data.get('segments_json'),
                 route_data.get('sensors_json'),

@@ -28,9 +28,12 @@ class LogGeneratorInput:
     end_lng: float
     number_of_stops: int
     distribution_type: Literal["normal", "beta", "truncnorm", "uniform"] = "normal"
-    # Lista opcional de puntos de ruta (lat, lng) incluyendo origen y último destino.
-    # Si se proporciona, tiene prioridad sobre start/end.
+    # Lista opcional de puntos de ruta CLAVE (origen, paradas, destino) - NO toda la geometría
+    # Usado para calcular segmentos de temperatura
     waypoints: Optional[List[Tuple[float, float]]] = None
+    # Coordenadas completas de la ruta (todos los puntos de geometría del API)
+    # Usado para interpolar las coordenadas finales
+    route_coordinates: Optional[List[Tuple[float, float]]] = None
     # Ubicaciones clave (origin, waypoints intermedios, destination) con sus nombres
     # Lista de tuplas (lat, lng, name) para generar inventories correctamente
     key_waypoints: Optional[List[Tuple[float, float, str]]] = None
@@ -830,10 +833,15 @@ class LogSimulator:
         Mapea los índices de muestras a segmentos encontrando, sobre las coordenadas interpoladas,
         los índices más cercanos a cada waypoint y asignando los rangos consecutivos.
         """
+        import time
+        temp_seg_start = time.time()
+        
         num_samples = self.config.number_of_samples
         coords = self.coordinates
         waypoints = self.config.waypoints or []
         num_segments = max(0, len(waypoints) - 1)
+        
+        print(f"      🔹 Generando temperaturas por segmentos ({num_segments} segmentos)...")
 
         # Normalizar perfiles: si faltan, completar con configuración global
         profiles: List[TempProfile] = []
@@ -852,8 +860,12 @@ class LogSimulator:
                 ))
 
         # Obtener mapeo muestras->segmento
+        print(f"      🔹 Computando mapeo de muestras a segmentos...")
+        map_start = time.time()
         mapping = self._compute_sample_segment_mapping()
         sample_to_seg = mapping["sample_to_segment"] if mapping else None
+        map_time = time.time() - map_start
+        print(f"      ✅ Mapeo completado en {map_time:.2f}s")
 
         temps: List[float] = [0.0] * num_samples
 
@@ -955,6 +967,9 @@ class LogSimulator:
                         self.config.lower_temp + self.config.upper_temp) / 2
                     temps[i] = round(float(np.random.normal(mean, self.config.std_dev)), 1)
 
+        temp_seg_time = time.time() - temp_seg_start
+        print(f"      ✅ Temperaturas por segmentos generadas en {temp_seg_time:.2f}s")
+        
         return temps
 
     def _compute_sample_segment_mapping(self) -> Optional[Dict[str, Any]]:
@@ -966,10 +981,16 @@ class LogSimulator:
         """
         if not (self.config.waypoints and len(self.config.waypoints) >= 2 and self.coordinates):
             return None
+        
+        import time
+        mapping_start = time.time()
+        
         num_samples = self.config.number_of_samples
         waypoints = self.config.waypoints
         coords = self.coordinates
         num_segments = len(waypoints) - 1
+        
+        print(f"         🔸 Buscando índices de {len(waypoints)} waypoints en {len(coords)} coordenadas...")
 
         # Encontrar índices aproximados de cada waypoint 
         def nearest_index(target: Tuple[float, float]) -> int:
@@ -990,6 +1011,7 @@ class LogSimulator:
                 wp_indices[i] = min(num_samples - 1, wp_indices[i-1] + 1)
 
         # Construir mapeo muestras->segmento
+        print(f"         🔸 Construyendo mapeo muestra→segmento...")
         sample_to_seg: List[Optional[int]] = [None] * num_samples
         for seg in range(num_segments):
             start_i = wp_indices[seg]
@@ -1002,13 +1024,26 @@ class LogSimulator:
         # Guardar en instancia para reutilizar
         self._wp_indices = wp_indices
         self._sample_segment_idx = sample_to_seg
+        
+        mapping_time = time.time() - mapping_start
+        print(f"         ✅ Mapeo completado en {mapping_time:.2f}s")
+        
         return {"wp_indices": wp_indices, "sample_to_segment": sample_to_seg}
     
     def _interpolate_coordinates(self) -> List[tuple]:
         # Interpola coordenadas para N muestras usando ruta real o simple
-        # Si hay waypoints definidos, se priorizan
+        
+        # PRIORIDAD 1: Si hay route_coordinates (toda la geometría del API), usar directamente
+        if self.config.route_coordinates and len(self.config.route_coordinates) >= 2:
+            print(f"      🔹 Usando route_coordinates del API ({len(self.config.route_coordinates)} puntos)")
+            return self._interpolate_route_points(self.config.route_coordinates, self.config.number_of_samples)
+        
+        # PRIORIDAD 2: Si hay waypoints definidos (solo puntos clave)
         if self.config.waypoints and len(self.config.waypoints) >= 2:
+            print(f"      🔹 Usando waypoints clave ({len(self.config.waypoints)} puntos)")
             if self.config.use_real_route:
+                # NOTA: Esta llamada ya NO debería ejecutarse si route_coordinates está definido
+                print(f"      ⚠️  WARNING: Llamando a API (esto no debería pasar si route_coordinates existe)")
                 route = self.osm_router.get_route_multi(self.config.waypoints, mode=self.config.transport_mode)
             else:
                 route = self.osm_router._get_simple_route_multi(self.config.waypoints)
@@ -1056,18 +1091,30 @@ class LogSimulator:
     def _interpolate_route_points(self, route_points: List[Tuple[float, float]], 
                                  num_samples: int) -> List[Tuple[float, float]]:
         # Interpola puntos de una ruta para obtener el número deseado de muestras
+        import time
+        interp_start = time.time()
+        
+        print(f"      🔹 Interpolando {len(route_points)} puntos → {num_samples} muestras...")
+        
         if len(route_points) == num_samples:
+            print(f"      ✅ Ya tiene el número exacto de muestras")
             return route_points
         
         # Calcular distancias acumuladas
+        print(f"      🔹 Calculando distancias acumuladas...")
+        dist_start = time.time()
         distances = [0]
         for i in range(1, len(route_points)):
             dist = geodesic(route_points[i-1], route_points[i]).meters
             distances.append(distances[-1] + dist)
+        dist_time = time.time() - dist_start
+        print(f"      ✅ {len(distances)} distancias en {dist_time:.2f}s")
         
         total_distance = distances[-1]
         
         # Generar muestras equidistantes
+        print(f"      🔹 Generando {num_samples} muestras equidistantes...")
+        sample_start = time.time()
         interpolated = []
         for i in range(num_samples):
             target_dist = (i / (num_samples - 1)) * total_distance if num_samples > 1 else 0
@@ -1081,6 +1128,10 @@ class LogSimulator:
                     lng = route_points[j][1] + (route_points[j + 1][1] - route_points[j][1]) * segment_progress
                     interpolated.append((round(lat, 6), round(lng, 6)))
                     break
+        
+        sample_time = time.time() - sample_start
+        total_time = time.time() - interp_start
+        print(f"      ✅ Interpolación: {total_time:.2f}s total")
         
         return interpolated if interpolated else route_points
     
@@ -1232,10 +1283,23 @@ class LogSimulator:
     
     def generate(self, include_location_names: bool = False, location_names: dict = None) -> Dict[str, Any]:
         # Genera el JSON completo de simulación
+        import time
+        start_time = time.time()
+        
         start_dt = self._parse_timestamp(self.config.start_timestamp)
+        
         # Primero calcular coordenadas, luego temperaturas (algunas configuraciones dependen de segmentos)
+        print(f"   🔵 [1/5] Iniciando interpolación de coordenadas...")
+        coord_start = time.time()
         self.coordinates = self._interpolate_coordinates()
+        coord_time = time.time() - coord_start
+        print(f"   ✅ Coordenadas interpoladas en {coord_time:.2f}s")
+        
+        print(f"   🔵 [2/5] Iniciando generación de temperaturas...")
+        temp_start = time.time()
         self.temperatures = self._generate_temperatures()
+        temp_time = time.time() - temp_start
+        print(f"   ✅ Temperaturas generadas en {temp_time:.2f}s")
         
         # Usar nombres de ubicaciones proporcionados (ya obtenidos del buscador)
         location_names_cache = {}
@@ -1248,6 +1312,8 @@ class LogSimulator:
             print(f"   ⚠️  include_location_names=True pero location_names está vacío")
         
         # Generar timestamps y loggedData
+        print(f"   🔵 [3/5] Construyendo loggedData ({self.config.number_of_samples} muestras)...")
+        logged_start = time.time()
         logged_data = []
         self.timestamps = []
         
@@ -1295,7 +1361,12 @@ class LogSimulator:
             
             logged_data.append(log_entry)
         
+        logged_time = time.time() - logged_start
+        print(f"   ✅ loggedData construido en {logged_time:.2f}s")
+        
         # Construir lista de ubicaciones clave para inventories (origin, waypoints, destination)
+        print(f"   🔵 [4/5] Generando inventories...")
+        inv_start = time.time()
         key_locations = []
         
         # Prioridad 1: Usar key_waypoints si están disponibles (vienen del RouteConfig original)
@@ -1319,11 +1390,18 @@ class LogSimulator:
             key_locations.append((self.config.end_lat, self.config.end_lng, "Destination"))
         
         # Generar estructura completa
+        inventories = self._generate_inventories(key_locations=key_locations, total_samples=self.config.number_of_samples)
+        inv_time = time.time() - inv_start
+        print(f"   ✅ Inventories generados en {inv_time:.2f}s")
+        
+        print(f"   🔵 [5/5] Calculando alarmas y armando JSON final...")
+        final_start = time.time()
+        
         result = {
             "version": "1.1.0",
             "EPC": self.config.epc,
             "TID": self.config.tid,
-            "inventories": self._generate_inventories(key_locations=key_locations, total_samples=self.config.number_of_samples),
+            "inventories": inventories,
             "configuration": {
                 "logIntervalInSeconds": self.config.log_interval_in_seconds,
                 "logDelayedStartInSamples": 1,
@@ -1362,6 +1440,11 @@ class LogSimulator:
             "company_id": self.config.company_id,
             "route_id": self.config.route_id
         }
+        
+        final_time = time.time() - final_start
+        total_time = time.time() - start_time
+        print(f"   ✅ JSON final armado en {final_time:.2f}s")
+        print(f"   ⏱️  TIEMPO TOTAL DE GENERACIÓN: {total_time:.2f}s")
         
         return result
     

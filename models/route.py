@@ -154,11 +154,11 @@ class RouteConfig:
             'origin_name': self.origin.name if self.origin else None,
             'origin_latitude': self.origin.latitude if self.origin else None,
             'origin_longitude': self.origin.longitude if self.origin else None,
-            'origin_departure_time': self.origin.timestamp.time() if self.origin and self.origin.timestamp else None,
+            'origin_departure_date': self.origin.timestamp.date() if self.origin and self.origin.timestamp else None,
             'destination_name': self.destination.name if self.destination else None,
             'destination_latitude': self.destination.latitude if self.destination else None,
             'destination_longitude': self.destination.longitude if self.destination else None,
-            'destination_arrival_time': self.destination.timestamp.time() if self.destination and self.destination.timestamp else None,
+            'destination_arrival_date': self.destination.timestamp.date() if self.destination and self.destination.timestamp else None,
             'waypoints_json': json.dumps([wp.to_dict() for wp in self.waypoints]) if self.waypoints else None,
             'segments_json': json.dumps([s.to_dict() for s in self.segments]) if self.segments else None,
             'sensors_json': None,  # Sensors are now managed in simulation tab
@@ -180,11 +180,11 @@ class RouteConfig:
                 latitude=float(data['origin_latitude']),
                 longitude=float(data['origin_longitude']),
                 point_type='origin',
-                timestamp=None  # Will set time separately
+                timestamp=None  # Will set date separately
             )
-            if data.get('origin_departure_time'):
-                # Combine with a dummy date (time only)
-                origin.timestamp = datetime.combine(datetime.today().date(), data['origin_departure_time'])
+            if data.get('origin_departure_date'):
+                # Use the date from DB with default time (8:00 AM)
+                origin.timestamp = datetime.combine(data['origin_departure_date'], datetime.min.time().replace(hour=8))
         
         # Parse destination
         destination = None
@@ -196,8 +196,9 @@ class RouteConfig:
                 point_type='destination',
                 timestamp=None
             )
-            if data.get('destination_arrival_time'):
-                destination.timestamp = datetime.combine(datetime.today().date(), data['destination_arrival_time'])
+            if data.get('destination_arrival_date'):
+                # Use the date from DB with default time (18:00 / 6 PM)
+                destination.timestamp = datetime.combine(data['destination_arrival_date'], datetime.min.time().replace(hour=18))
         
         # Parse waypoints
         waypoints = []

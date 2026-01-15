@@ -29,13 +29,13 @@ CREATE TABLE IF NOT EXISTS routes (
     origin_name VARCHAR(255),
     origin_latitude DECIMAL(10, 6),
     origin_longitude DECIMAL(10, 6),
-    origin_departure_time TIME,
+    origin_departure_date DATE,  -- Solo fecha (día/mes/año)
     
     -- Punto de destino
     destination_name VARCHAR(255),
     destination_latitude DECIMAL(10, 6),
     destination_longitude DECIMAL(10, 6),
-    destination_arrival_time TIME,
+    destination_arrival_date DATE,  -- Solo fecha (día/mes/año)
     
     -- Waypoints (guardados como JSON)
     waypoints_json TEXT, -- Array de waypoints en formato JSON
@@ -267,11 +267,11 @@ SELECT
     r.origin_name,
     r.origin_latitude,
     r.origin_longitude,
-    r.origin_departure_time,
+    r.origin_departure_date,
     r.destination_name,
     r.destination_latitude,
     r.destination_longitude,
-    r.destination_arrival_time,
+    r.destination_arrival_date,
     r.transport_mode as route_transport_mode,
     r.use_real_routes as route_use_real_routes,
     r.log_interval_seconds as route_log_interval,

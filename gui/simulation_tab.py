@@ -413,6 +413,17 @@ Descripción: {route.route_description}
             messagebox.showerror("Error", f"Fecha inválida: {e}")
             return
         
+        # 💾 GUARDAR la fecha de salida en la base de datos
+        try:
+            db = DatabaseManager()
+            db.connect()
+            route_dict = self.selected_route.to_dict()
+            db.update_route(self.selected_route.id, route_dict)
+            db.disconnect()
+            print(f"✓ Fecha de salida guardada: {departure_datetime.date()}")
+        except Exception as e:
+            print(f"⚠️ Error guardando fecha de salida: {e}")
+        
         # Set real routes option on route config
         self.selected_route.use_real_routes = use_real
         
