@@ -46,6 +46,7 @@ class LogGeneratorInput:
     use_real_route: bool = False
     route_name: str = "Custom Route"
     # Database references
+    company_id: Optional[int] = None
     route_id: Optional[int] = None
     # Per-segment temperature/distribution profiles. One entry per leg between waypoints.
     # If provided, overrides global lower/upper/distribution for the corresponding samples.
@@ -97,7 +98,7 @@ class OpenStreetMapRouter:
         # Para producción, registrarse en https://openrouteservice.org/ para obtener una API key
         self.base_url = "https://api.openrouteservice.org/v2/directions"
         # Nota: Usar API key personal para mejor rate limit
-        self.api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjMwYWY3NzRhN2U1YjRkMWRhMDdhNDRmYzM4ZDBkMmYwIiwiaCI6Im11cm11cjY0In0="  # Usuario debe configurar su propia key
+        self.api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImQyNjE1ODc2ZmZiMDQyMzRhYjc4NDJlYTE3YzEzM2FjIiwiaCI6Im11cm11cjY0In0="  # Usuario debe configurar su propia key
         
     def get_route(self, start: Tuple[float, float], end: Tuple[float, float], 
                   mode: str = "driving-car") -> Optional[Dict[str, Any]]:
@@ -124,8 +125,7 @@ class OpenStreetMapRouter:
                 'Content-Type': 'application/json'
             }
             
-            print(f"   ⏳ Esperando respuesta de la API...")
-            response = requests.get(url, headers=headers, timeout=30)
+            response = requests.get(url, headers=headers, timeout=100)
             
             if response.status_code == 200:
                 data = response.json()
@@ -193,9 +193,8 @@ class OpenStreetMapRouter:
             
             print(f"🌐 Obteniendo ruta multi-punto (POST): {url}")
             print(f"   Puntos: {len(points)}")
-            print(f"   ⏳ Esperando respuesta (puede tardar 15-30 segundos)...")
             
-            response = requests.post(url, json=body, headers=headers, timeout=45)
+            response = requests.post(url, json=body, headers=headers, timeout=100)
             
             if response.status_code == 200:
                 data = response.json()
@@ -428,10 +427,8 @@ class OpenStreetMapRouter:
             }
             
             print(f"🌐 Solicitando ruta principal + {num_alternatives} rutas alternativas: {url}")
-            print(f"   ⏳ Calculando rutas alternativas (puede tardar 20-45 segundos)...")
-            print(f"   💡 Tip: Esto es más lento porque el API busca múltiples caminos diferentes")
             
-            response = requests.post(url, json=body, headers=headers, timeout=45)
+            response = requests.post(url, json=body, headers=headers, timeout=100)
             
             if response.status_code == 200:
                 data = response.json()
@@ -921,10 +918,8 @@ class LogSimulator:
             def nearest_index(target: Tuple[float, float]) -> int:
                 min_d = float('inf')
                 min_i = 0
-                target_lat, target_lng = target
                 for i, c in enumerate(coords):
-                    # Distancia euclidiana simple (más rápida que geodésica)
-                    d = (c[0] - target_lat) ** 2 + (c[1] - target_lng) ** 2
+                    d = geodesic((c[0], c[1]), (target[0], target[1])).meters
                     if d < min_d:
                         min_d = d
                         min_i = i
@@ -968,8 +963,6 @@ class LogSimulator:
         Devuelve dict con:
         - 'wp_indices': lista de índices de muestra más cercanos a cada waypoint
         - 'sample_to_segment': lista de tamaño num_samples con índice de segmento por muestra
-        
-        OPTIMIZADO: Usa distancia euclidiana simple en lugar de geodésica para mejor performance.
         """
         if not (self.config.waypoints and len(self.config.waypoints) >= 2 and self.coordinates):
             return None
@@ -978,15 +971,12 @@ class LogSimulator:
         coords = self.coordinates
         num_segments = len(waypoints) - 1
 
-        # OPTIMIZACIÓN: Usar distancia euclidiana simple (mucho más rápida)
-        # Para encontrar el punto más cercano, la distancia euclidiana es suficiente
+        # Encontrar índices aproximados de cada waypoint 
         def nearest_index(target: Tuple[float, float]) -> int:
             min_d = float('inf')
             min_i = 0
-            target_lat, target_lng = target
             for i, c in enumerate(coords):
-                # Distancia euclidiana simple (lat² + lng²)
-                d = (c[0] - target_lat) ** 2 + (c[1] - target_lng) ** 2
+                d = geodesic((c[0], c[1]), (target[0], target[1])).meters
                 if d < min_d:
                     min_d = d
                     min_i = i
@@ -1018,18 +1008,9 @@ class LogSimulator:
         # Interpola coordenadas para N muestras usando ruta real o simple
         # Si hay waypoints definidos, se priorizan
         if self.config.waypoints and len(self.config.waypoints) >= 2:
-            # OPTIMIZATION: Si use_real_route está activado, los waypoints YA CONTIENEN
-            # las coordenadas de la ruta real calculada por el adapter.
-            # NO necesitamos hacer otra llamada al API aquí.
             if self.config.use_real_route:
-                # Los waypoints ya son la ruta completa del API, usarlos directamente
-                route = {
-                    'coordinates': self.config.waypoints,
-                    'distance_km': 0,  # Metadata opcional
-                    'duration_hours': 0
-                }
+                route = self.osm_router.get_route_multi(self.config.waypoints, mode=self.config.transport_mode)
             else:
-                # Solo para rutas simples sin API
                 route = self.osm_router._get_simple_route_multi(self.config.waypoints)
 
             if route:
@@ -1077,17 +1058,6 @@ class LogSimulator:
         # Interpola puntos de una ruta para obtener el número deseado de muestras
         if len(route_points) == num_samples:
             return route_points
-        
-        # OPTIMIZACIÓN: Si hay muchas muestras y muchos puntos, submuestrear primero
-        if len(route_points) > 1000 and num_samples > 1000:
-            print(f"   ⚡ Optimizando interpolación ({len(route_points)} puntos → {num_samples} muestras)...")
-            # Submuestrear route_points a un número manejable
-            max_route_points = 500
-            step = max(1, len(route_points) // max_route_points)
-            route_points = route_points[::step]
-            if route_points[-1] != route_points[-1]:  # Asegurar que el último punto esté incluido
-                route_points.append(route_points[-1])
-            print(f"   ✓ Optimizado a {len(route_points)} puntos de referencia")
         
         # Calcular distancias acumuladas
         distances = [0]
@@ -1264,11 +1234,8 @@ class LogSimulator:
         # Genera el JSON completo de simulación
         start_dt = self._parse_timestamp(self.config.start_timestamp)
         # Primero calcular coordenadas, luego temperaturas (algunas configuraciones dependen de segmentos)
-        print(f"   📍 Interpolando {self.config.number_of_samples} coordenadas...")
         self.coordinates = self._interpolate_coordinates()
-        print(f"   🌡️  Generando {self.config.number_of_samples} muestras de temperatura...")
         self.temperatures = self._generate_temperatures()
-        print(f"   ✓ Datos generados, construyendo JSON...")
         
         # Usar nombres de ubicaciones proporcionados (ya obtenidos del buscador)
         location_names_cache = {}
@@ -1284,16 +1251,7 @@ class LogSimulator:
         logged_data = []
         self.timestamps = []
         
-        # Mostrar progreso para rutas largas
-        show_progress = self.config.number_of_samples > 500
-        progress_interval = max(100, self.config.number_of_samples // 5)  # 5 actualizaciones
-        
         for i in range(self.config.number_of_samples):
-            # Mostrar progreso cada N muestras
-            if show_progress and i > 0 and i % progress_interval == 0:
-                percent = int((i / self.config.number_of_samples) * 100)
-                print(f"   ⏳ Construyendo loggedData: {percent}% ({i}/{self.config.number_of_samples})")
-            
             timestamp = start_dt + timedelta(seconds=i * self.config.log_interval_in_seconds)
             self.timestamps.append(timestamp)
             temp_val = self.temperatures[i]
@@ -1401,6 +1359,7 @@ class LogSimulator:
             "transport_mode": self.config.transport_mode,
             "distribution_type": self.config.distribution_type,
             "total_distance_km": self.route_info.get('total_distance_km', 0.0) if self.route_info else 0.0,
+            "company_id": self.config.company_id,
             "route_id": self.config.route_id
         }
         

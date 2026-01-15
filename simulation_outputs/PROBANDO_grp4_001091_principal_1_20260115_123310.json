@@ -1,0 +1,199 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030001091",
+  "TID": "E2C245002000056680001091",
+  "inventories": [
+    {
+      "readerTimestamp": "2026-01-20T08:00:00.000Z",
+      "readerHost": "FX96007BCCC",
+      "readerMAC": "03:00:11:F0:64:5E",
+      "readerLatitude": 20.67,
+      "readerLongitude": -103.35,
+      "readerAccuracyInMeters": 17.2,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -59.7,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 3.2,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.17,
+      "tagSensorCode": 109,
+      "tagOnChipRSSI": 18,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-20T07:59:50Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2026-01-20T08:55:00.000Z",
+      "readerHost": "FX96003B9BB",
+      "readerMAC": "FC:24:BD:BF:B7:33",
+      "readerLatitude": 19.41,
+      "readerLongitude": -99.2,
+      "readerAccuracyInMeters": 19.8,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -55.5,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 8.0,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.1,
+      "tagSensorCode": 105,
+      "tagOnChipRSSI": 16,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-20T07:59:42Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 12,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2026-01-20T08:00:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": false,
+    "alarmTemperature": false,
+    "alarmLowTemperature": false,
+    "alarmHighTemperature": false,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": null,
+    "alarmTemperatureValue": null,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2026-01-20T08:00:00Z",
+      "tempInC": 2.6,
+      "tamper": false,
+      "latitude": 20.673618,
+      "longitude": -103.351266
+    },
+    {
+      "timestamp": "2026-01-20T08:05:00Z",
+      "tempInC": 4.0,
+      "tamper": false,
+      "latitude": 20.558287,
+      "longitude": -102.972444
+    },
+    {
+      "timestamp": "2026-01-20T08:10:00Z",
+      "tempInC": 6.0,
+      "tamper": false,
+      "latitude": 20.443032,
+      "longitude": -102.593872
+    },
+    {
+      "timestamp": "2026-01-20T08:15:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 20.327853,
+      "longitude": -102.215549
+    },
+    {
+      "timestamp": "2026-01-20T08:20:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 20.212751,
+      "longitude": -101.837479
+    },
+    {
+      "timestamp": "2026-01-20T08:25:00Z",
+      "tempInC": 7.0,
+      "tamper": false,
+      "latitude": 20.097728,
+      "longitude": -101.45967
+    },
+    {
+      "timestamp": "2026-01-20T08:30:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 19.98278,
+      "longitude": -101.082105
+    },
+    {
+      "timestamp": "2026-01-20T08:35:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 19.867905,
+      "longitude": -100.704781
+    },
+    {
+      "timestamp": "2026-01-20T08:40:00Z",
+      "tempInC": 5.7,
+      "tamper": false,
+      "latitude": 19.753107,
+      "longitude": -100.32771
+    },
+    {
+      "timestamp": "2026-01-20T08:45:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 19.638384,
+      "longitude": -99.950885
+    },
+    {
+      "timestamp": "2026-01-20T08:50:00Z",
+      "tempInC": 7.0,
+      "tamper": false,
+      "latitude": 19.523733,
+      "longitude": -99.574297
+    },
+    {
+      "timestamp": "2026-01-20T08:55:00Z",
+      "tempInC": 3.1,
+      "tamper": false,
+      "latitude": 19.409153,
+      "longitude": -99.197942
+    }
+  ],
+  "metadata": {
+    "route_name": "PROBANDO",
+    "use_real_route": false,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0,
+    "company_id": null,
+    "route_id": 7
+  }
+}

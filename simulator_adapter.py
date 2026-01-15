@@ -5,14 +5,15 @@ This module converts the new data structures (RouteConfig, SegmentMetadata, Dist
 into the format expected by the existing LogSimulator class.
 """
 
-from typing import List, Optional
+from math import ceil
+from typing import List
 from datetime import datetime, timedelta
 import os
 import json
 
 from models.route import RouteConfig
 from models.segment import SegmentMetadata
-from models.distribution import Distribution, DistributionBlender
+from models.distribution import Distribution
 from models.sensor import SensorConfig
 from simulator import LogSimulator, LogGeneratorInput, TempProfile, OpenStreetMapRouter
 
@@ -27,7 +28,8 @@ class SimulatorAdapter:
                             use_secondary_routes: bool = False,
                             secondary_routes_count: int = 0,
                             output_dir: str = "simulation_outputs",
-                            include_location_names: bool = False) -> List[str]:
+                            include_location_names: bool = False,
+                            simulate_every_n_sensors: int = 1) -> List[str]:
         """Generate simulation JSONs from RouteConfig.
         
         Args:
@@ -38,6 +40,7 @@ class SimulatorAdapter:
             secondary_routes_count: Number of secondary routes to generate (1-3)
             output_dir: Directory to save outputs
             include_location_names: Whether to include location names via reverse geocoding
+            simulate_every_n_sensors: Number of sensors per simulation group (default: 1)
             
         Returns:
             List of generated file paths
@@ -255,26 +258,51 @@ class SimulatorAdapter:
         # ═══════════════════════════════════════════════════════════════════
         # MAIN GENERATION LOOP: Iterate sensors → routes → samples
         # Routes are already pre-calculated, so we're just reusing them
-        # Each sensor will use the SAME route coordinates but DIFFERENT temperature distributions
+        # Each sensor GROUP will use the SAME route coordinates AND SAME temperature distributions
+        # Only EPC and TID will differ within the group
         # ═══════════════════════════════════════════════════════════════════
-        for sensor_idx, sensor in enumerate(route_config.sensors):
+        # Validate and ensure simulate_every_n_sensors is at least 1
+        simulate_every_n_sensors = max(1, simulate_every_n_sensors)
+
+        total_sensors = len(route_config.sensors)
+        group_size = simulate_every_n_sensors
+        num_groups = ceil(total_sensors / group_size)
+
+        print(f"   🔢 Sensores totales: {total_sensors}")
+        print(f"   📦 Sensores por simulación: {group_size}")
+        print(f"   🧪 Grupos de simulaciones: {num_groups}")
+        print(f"   ✅ Sensores en cada grupo compartirán la misma loggedData")
+        
+        # Debug: Mostrar cálculo de grupos
+        print(f"\n🔍 DEBUG:")
+        print(f"   ceil({total_sensors} / {group_size}) = {num_groups}")
+        for g in range(num_groups):
+            start = g * group_size
+            end = min(start + group_size, total_sensors)
+            print(f"   Grupo {g+1}: sensores {start+1}-{end} ({end-start} sensores)")
+
+        for group_idx in range(num_groups):
+            start_idx = group_idx * group_size
+            end_idx = min(start_idx + group_size, total_sensors)
+            sensor_group = route_config.sensors[start_idx:end_idx]
+
+            print(f"\n📦 Grupo {group_idx+1}/{num_groups}")
+            print(f"   Sensores {start_idx+1} → {end_idx} (Total: {len(sensor_group)})")
+
             for route_idx, route_info in enumerate(routes_to_generate):
                 route_type = route_info.get('route_type', 'principal')
                 route_coords = route_info.get('coordinates', coordinates)
-                
-                print(f"\n📦 Generando JSONs - Sensor {sensor_idx+1}/{len(route_config.sensors)}, Ruta: {route_type}")
-                print(f"   🔄 Reutilizando coordenadas de ruta (ya calculadas)")
-                print(f"   🌡️  Aplicando distribuciones de temperatura individuales del sensor")
-                
-                # Si la ruta no tiene coordenadas (geometría codificada), usar coordenadas originales
-                if not route_coords:
-                    route_coords = coordinates
-                
+
                 for sample_idx in range(num_samples):
-                    # Create LogGeneratorInput
+                    # ═══════════════════════════════════════════════════════════
+                    # GENERAR UNA SOLA VEZ los datos de simulación por grupo
+                    # Usamos el primer sensor del grupo solo como referencia
+                    # ═══════════════════════════════════════════════════════════
+                    reference_sensor = sensor_group[0]
+
                     config = LogGeneratorInput(
-                        epc=sensor.epc,
-                        tid=sensor.tid,
+                        epc=reference_sensor.epc,
+                        tid=reference_sensor.tid,
                         log_interval_in_seconds=log_interval,
                         number_of_samples=num_temp_samples,
                         start_timestamp=start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -294,34 +322,56 @@ class SimulatorAdapter:
                         route_id=route_config.id,
                         segment_profiles=segment_profiles,
                     )
-                    
-                    # Create simulator
+
                     simulator = LogSimulator(config)
-                    
-                    # Generate simulation data with location names
-                    data = simulator.generate(
+
+                    # ✅ GENERAR UNA SOLA VEZ la simulación completa
+                    print(f"   🎲 Generando loggedData para grupo {group_idx+1}, ruta {route_type}, muestra {sample_idx+1}...")
+                    shared_data = simulator.generate(
                         include_location_names=include_location_names,
                         location_names=location_names_map if include_location_names else None
                     )
-                    
-                    # Save to file with appropriate naming
-                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    
-                    if route_type == 'principal':
-                        filename = f"{route_config.route_name.replace(' ', '_')}_{sensor.epc[-6:]}_{sample_idx+1}_{timestamp}.json"
-                    else:
-                        # Secondary route naming: Dgo-secondary-1, Dgo-secondary-2, etc.
-                        secondary_num = route_type.split('-')[-1] if '-' in route_type else route_idx
-                        filename = f"{route_config.route_name.replace(' ', '_')}-secondary-{secondary_num}_{sensor.epc[-6:]}_{sample_idx+1}_{timestamp}.json"
-                    
-                    filepath = os.path.join(output_dir, filename)
-                    
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, indent=2)
-                    
-                    generated_files.append(filepath)
-                    print(f"✓ Generated: {filename}")
-        
+
+                    # ═══════════════════════════════════════════════════════════
+                    # APLICAR LOS MISMOS DATOS (loggedData) a todos los sensores del grupo
+                    # Solo cambiamos EPC y TID por sensor
+                    # ═══════════════════════════════════════════════════════════
+                    print(f"   📋 Aplicando la misma loggedData a {len(sensor_group)} sensores...")
+                    for sensor_idx, sensor in enumerate(sensor_group):
+                        # Hacer una copia profunda de los datos compartidos
+                        import copy
+                        data_copy = copy.deepcopy(shared_data)
+                        
+                        # Actualizar solo EPC y TID para este sensor
+                        data_copy["EPC"] = sensor.epc
+                        data_copy["TID"] = sensor.tid
+
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+                        filename = (
+                            f"{route_config.route_name.replace(' ', '_')}"
+                            f"_grp{group_idx+1}"
+                            f"_{sensor.epc[-6:]}"
+                            f"_{route_type}"
+                            f"_{sample_idx+1}_{timestamp}.json"
+                        )
+
+                        filepath = os.path.join(output_dir, filename)
+
+                        with open(filepath, 'w', encoding='utf-8') as f:
+                            json.dump(data_copy, f, indent=2)
+
+                        generated_files.append(filepath)
+                        print(f"      ✓ Sensor {sensor_idx+1}/{len(sensor_group)}: {filename}")
+
+        print(f"\n{'='*60}")
+        print(f"✅ GENERACIÓN COMPLETADA")
+        print(f"{'='*60}")
+        print(f"   📊 Total de archivos generados: {len(generated_files)}")
+        print(f"   📦 Grupos procesados: {num_groups}")
+        print(f"   🎯 Sensores por grupo: {group_size}")
+        print(f"{'='*60}\n")
+
         return generated_files
     
     @staticmethod

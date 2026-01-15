@@ -179,6 +179,28 @@ class SimulationTab(tk.Frame):
                   width=10, font=("Arial", 9)).pack(side=tk.LEFT)
         tk.Label(sensor_frame, text="sensores (se generarán automáticamente)", 
                 font=("Arial", 8), fg="gray").pack(side=tk.LEFT, padx=5)
+
+        tk.Label(params_grid, text="Division de EPCS/TIDS secuenciales desde la base de datos", 
+                font=("Arial", 9)).grid(row=6, column=0, columnspan=2, sticky=tk.W, pady=(0, 5))
+        
+        divider_frame  = tk.Frame(params_grid)
+        divider_frame .grid(row=6, column=1, sticky=tk.W, pady=5)
+        
+        self.analysis_divider_var = tk.IntVar(value=10)
+
+        tk.Spinbox(divider_frame ,
+                  from_=1, to=1000, 
+                  textvariable=self.analysis_divider_var,
+                  width=10, 
+                  font=("Arial", 9)).pack(side=tk.LEFT)
+        
+        tk.Label(
+            divider_frame,
+            text="sensores por análisis",
+            font=("Arial", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT, padx=5)
+
         
         # Action buttons
         action_frame = tk.Frame(main_container)
@@ -481,7 +503,8 @@ Descripción: {route.route_description}
                 use_secondary_routes=use_secondary_routes,
                 secondary_routes_count=secondary_routes_count,
                 output_dir=output_dir,
-                include_location_names=include_location_names
+                include_location_names=include_location_names,
+                simulate_every_n_sensors=self.analysis_divider_var.get()
             )
             
             # Update UI on main thread

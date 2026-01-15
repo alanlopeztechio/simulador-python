@@ -1,0 +1,350 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030001407",
+  "TID": "E2C245002000056680001407",
+  "inventories": [
+    {
+      "readerTimestamp": "2026-01-14T08:00:00.000Z",
+      "readerHost": "FX9600186B3",
+      "readerMAC": "5D:64:39:59:26:91",
+      "readerLatitude": 24.03,
+      "readerLongitude": -104.65,
+      "readerAccuracyInMeters": 15.6,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Durango, Mexico",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -59.3,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 3.5,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.09,
+      "tagSensorCode": 113,
+      "tagOnChipRSSI": 20,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-14T07:59:43Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2026-01-14T10:30:00.000Z",
+      "readerHost": "FX96003636D",
+      "readerMAC": "70:E0:3E:53:E7:A0",
+      "readerLatitude": 25.54,
+      "readerLongitude": -103.41,
+      "readerAccuracyInMeters": 15.1,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "Torre\u00f3n, COA, Mexico",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 915250,
+      "readerRSSI": -58.1,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 4.9,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.08,
+      "tagSensorCode": 117,
+      "tagOnChipRSSI": 13,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-14T07:59:50Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 31,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2026-01-14T08:00:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": true,
+    "alarmTemperature": true,
+    "alarmLowTemperature": true,
+    "alarmHighTemperature": true,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": "2026-01-14T08:05:00.000Z",
+    "alarmTemperatureValue": -0.6,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2026-01-14T08:00:00Z",
+      "tempInC": 7.7,
+      "tamper": false,
+      "latitude": 24.026904,
+      "longitude": -104.650346,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:05:00Z",
+      "tempInC": -0.6,
+      "tamper": true,
+      "latitude": 24.073925,
+      "longitude": -104.629691,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:10:00Z",
+      "tempInC": 11.0,
+      "tamper": true,
+      "latitude": 24.108627,
+      "longitude": -104.555652,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:15:00Z",
+      "tempInC": 13.5,
+      "tamper": true,
+      "latitude": 24.16827,
+      "longitude": -104.502533,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:20:00Z",
+      "tempInC": 0.4,
+      "tamper": false,
+      "latitude": 24.230789,
+      "longitude": -104.455467,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:25:00Z",
+      "tempInC": 18.4,
+      "tamper": true,
+      "latitude": 24.284575,
+      "longitude": -104.395348,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:30:00Z",
+      "tempInC": 0.9,
+      "tamper": false,
+      "latitude": 24.337114,
+      "longitude": -104.333649,
+      "locationName": "Durango, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T08:35:00Z",
+      "tempInC": 4.3,
+      "tamper": false,
+      "latitude": 24.379697,
+      "longitude": -104.274681
+    },
+    {
+      "timestamp": "2026-01-14T08:40:00Z",
+      "tempInC": 6.7,
+      "tamper": false,
+      "latitude": 24.431726,
+      "longitude": -104.212646
+    },
+    {
+      "timestamp": "2026-01-14T08:45:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 24.483363,
+      "longitude": -104.150007
+    },
+    {
+      "timestamp": "2026-01-14T08:50:00Z",
+      "tempInC": 5.0,
+      "tamper": false,
+      "latitude": 24.527571,
+      "longitude": -104.081159
+    },
+    {
+      "timestamp": "2026-01-14T08:55:00Z",
+      "tempInC": -2.6,
+      "tamper": true,
+      "latitude": 24.578436,
+      "longitude": -104.018029
+    },
+    {
+      "timestamp": "2026-01-14T09:00:00Z",
+      "tempInC": 3.5,
+      "tamper": false,
+      "latitude": 24.635656,
+      "longitude": -103.961396
+    },
+    {
+      "timestamp": "2026-01-14T09:05:00Z",
+      "tempInC": 1.4,
+      "tamper": false,
+      "latitude": 24.692182,
+      "longitude": -103.90389
+    },
+    {
+      "timestamp": "2026-01-14T09:10:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 24.746139,
+      "longitude": -103.843584
+    },
+    {
+      "timestamp": "2026-01-14T09:15:00Z",
+      "tempInC": 0.3,
+      "tamper": false,
+      "latitude": 24.81909,
+      "longitude": -103.816445
+    },
+    {
+      "timestamp": "2026-01-14T09:20:00Z",
+      "tempInC": 11.9,
+      "tamper": true,
+      "latitude": 24.888712,
+      "longitude": -103.781033
+    },
+    {
+      "timestamp": "2026-01-14T09:25:00Z",
+      "tempInC": 6.4,
+      "tamper": false,
+      "latitude": 24.957257,
+      "longitude": -103.74222
+    },
+    {
+      "timestamp": "2026-01-14T09:30:00Z",
+      "tempInC": 4.3,
+      "tamper": false,
+      "latitude": 25.032294,
+      "longitude": -103.722806
+    },
+    {
+      "timestamp": "2026-01-14T09:35:00Z",
+      "tempInC": -2.9,
+      "tamper": true,
+      "latitude": 25.105429,
+      "longitude": -103.744226
+    },
+    {
+      "timestamp": "2026-01-14T09:40:00Z",
+      "tempInC": 8.6,
+      "tamper": false,
+      "latitude": 25.167175,
+      "longitude": -103.726373,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T09:45:00Z",
+      "tempInC": 3.7,
+      "tamper": false,
+      "latitude": 25.207717,
+      "longitude": -103.662524,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T09:50:00Z",
+      "tempInC": 3.7,
+      "tamper": false,
+      "latitude": 25.204543,
+      "longitude": -103.681579,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T09:55:00Z",
+      "tempInC": -8.1,
+      "tamper": true,
+      "latitude": 25.257164,
+      "longitude": -103.6274,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:00:00Z",
+      "tempInC": 2.4,
+      "tamper": false,
+      "latitude": 25.327377,
+      "longitude": -103.650669,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:05:00Z",
+      "tempInC": 0.5,
+      "tamper": false,
+      "latitude": 25.398429,
+      "longitude": -103.65317,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:10:00Z",
+      "tempInC": 8.5,
+      "tamper": false,
+      "latitude": 25.473058,
+      "longitude": -103.652634,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:15:00Z",
+      "tempInC": -3.6,
+      "tamper": true,
+      "latitude": 25.526475,
+      "longitude": -103.615976,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:20:00Z",
+      "tempInC": 2.1,
+      "tamper": false,
+      "latitude": 25.512058,
+      "longitude": -103.533938,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:25:00Z",
+      "tempInC": 13.9,
+      "tamper": true,
+      "latitude": 25.548852,
+      "longitude": -103.472858,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    },
+    {
+      "timestamp": "2026-01-14T10:30:00Z",
+      "tempInC": 9.5,
+      "tamper": false,
+      "latitude": 25.539833,
+      "longitude": -103.407894,
+      "locationName": "Torre\u00f3n, COA, Mexico"
+    }
+  ],
+  "metadata": {
+    "route_name": "Probando",
+    "use_real_route": true,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0,
+    "company_id": null,
+    "route_id": 5
+  }
+}

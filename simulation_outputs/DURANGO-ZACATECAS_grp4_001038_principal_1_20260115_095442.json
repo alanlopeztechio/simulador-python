@@ -1,0 +1,325 @@
+{
+  "version": "1.1.0",
+  "EPC": "5201F25030001038",
+  "TID": "E2C245002000056680001038",
+  "inventories": [
+    {
+      "readerTimestamp": "2026-01-15T08:00:00.000Z",
+      "readerHost": "FX9600BB79C",
+      "readerMAC": "23:92:32:F6:55:12",
+      "readerLatitude": 24.03,
+      "readerLongitude": -104.65,
+      "readerAccuracyInMeters": 17.6,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 905250,
+      "readerRSSI": -54.0,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 9.1,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.07,
+      "tagSensorCode": 129,
+      "tagOnChipRSSI": 17,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-15T07:59:40Z",
+      "loggerNextSample": 1
+    },
+    {
+      "readerTimestamp": "2026-01-15T10:25:00.000Z",
+      "readerHost": "FX96001E8DB",
+      "readerMAC": "28:4B:1A:DE:B3:CD",
+      "readerLatitude": 25.54,
+      "readerLongitude": -103.41,
+      "readerAccuracyInMeters": 15.5,
+      "adminArea": "",
+      "countryCode": "US",
+      "countryName": "United States",
+      "featureName": "",
+      "locality": "",
+      "postalCode": "",
+      "subAdminArea": "",
+      "subLocality": "",
+      "subThoroughfare": "",
+      "thoroughfare": "",
+      "readerChannel": 912250,
+      "readerRSSI": -50.5,
+      "tagPacketPC": "3F00",
+      "tagXPC_W1": "0424",
+      "tagTemperatureInC": 7.2,
+      "tagBatteryPresent": true,
+      "tagBatteryVoltage": 3.17,
+      "tagSensorCode": 125,
+      "tagOnChipRSSI": 11,
+      "loggerState": "LOGGING",
+      "loggerRtc": "2026-01-15T07:59:46Z",
+      "loggerNextSample": 0
+    }
+  ],
+  "configuration": {
+    "logIntervalInSeconds": 300,
+    "logDelayedStartInSamples": 1,
+    "logNumberOfSamples": 30,
+    "temperatureLowerLimit": 0.0,
+    "temperatureLowerLimitAlarmDelay": 1,
+    "temperatureUpperLimit": 10.0,
+    "temperatureUpperLimitAlarmDelay": 1,
+    "ledEnabled": true,
+    "ledMode": "ON_DEMAND",
+    "ledOffTimeInSeconds": 2,
+    "ledOnTimeInMilliseconds": 50,
+    "fingerSpotEnabled": true,
+    "fingerSpotForLoggerArming": false,
+    "antiTamperEnabled": false,
+    "antiTamperpolarity": "DETECT_CONNECTION_OR_LIGHT"
+  },
+  "arming": {
+    "armStatus": "SUCCESSFUL",
+    "armErrorNumber": 0,
+    "armErrorMessage": null,
+    "armTimestamp": "2026-01-15T08:00:00Z",
+    "armFingerSpotTimestamp": null
+  },
+  "alarms": {
+    "alarmAny": false,
+    "alarmTemperature": false,
+    "alarmLowTemperature": false,
+    "alarmHighTemperature": false,
+    "alarmTamper": false,
+    "alarmLowBattery": false,
+    "alarmInitialBattery": false,
+    "alarmTemperatureTimestamp": null,
+    "alarmTemperatureValue": null,
+    "alarmTamperTimestamp": null,
+    "alarmBatteryTimestamp": null
+  },
+  "loggedData": [
+    {
+      "timestamp": "2026-01-15T08:00:00Z",
+      "tempInC": 5.8,
+      "tamper": false,
+      "latitude": 24.026912,
+      "longitude": -104.650288
+    },
+    {
+      "timestamp": "2026-01-15T08:05:00Z",
+      "tempInC": 6.1,
+      "tamper": false,
+      "latitude": 24.121035,
+      "longitude": -104.404229
+    },
+    {
+      "timestamp": "2026-01-15T08:10:00Z",
+      "tempInC": 4.9,
+      "tamper": false,
+      "latitude": 24.215216,
+      "longitude": -104.158017
+    },
+    {
+      "timestamp": "2026-01-15T08:15:00Z",
+      "tempInC": 5.7,
+      "tamper": false,
+      "latitude": 24.309456,
+      "longitude": -103.911652
+    },
+    {
+      "timestamp": "2026-01-15T08:20:00Z",
+      "tempInC": 6.0,
+      "tamper": false,
+      "latitude": 24.403755,
+      "longitude": -103.665133
+    },
+    {
+      "timestamp": "2026-01-15T08:25:00Z",
+      "tempInC": 3.7,
+      "tamper": false,
+      "latitude": 24.498113,
+      "longitude": -103.41846
+    },
+    {
+      "timestamp": "2026-01-15T08:30:00Z",
+      "tempInC": 5.3,
+      "tamper": false,
+      "latitude": 24.59253,
+      "longitude": -103.171631
+    },
+    {
+      "timestamp": "2026-01-15T08:35:00Z",
+      "tempInC": 8.2,
+      "tamper": false,
+      "latitude": 24.687008,
+      "longitude": -102.924646
+    },
+    {
+      "timestamp": "2026-01-15T08:40:00Z",
+      "tempInC": 4.7,
+      "tamper": false,
+      "latitude": 24.781545,
+      "longitude": -102.677504
+    },
+    {
+      "timestamp": "2026-01-15T08:45:00Z",
+      "tempInC": 2.9,
+      "tamper": false,
+      "latitude": 24.876142,
+      "longitude": -102.430204
+    },
+    {
+      "timestamp": "2026-01-15T08:50:00Z",
+      "tempInC": 5.9,
+      "tamper": false,
+      "latitude": 24.970801,
+      "longitude": -102.182745
+    },
+    {
+      "timestamp": "2026-01-15T08:55:00Z",
+      "tempInC": 3.2,
+      "tamper": false,
+      "latitude": 25.06552,
+      "longitude": -101.935127
+    },
+    {
+      "timestamp": "2026-01-15T09:00:00Z",
+      "tempInC": 5.2,
+      "tamper": false,
+      "latitude": 25.160301,
+      "longitude": -101.687348
+    },
+    {
+      "timestamp": "2026-01-15T09:05:00Z",
+      "tempInC": 6.6,
+      "tamper": false,
+      "latitude": 25.255147,
+      "longitude": -101.439398
+    },
+    {
+      "timestamp": "2026-01-15T09:10:00Z",
+      "tempInC": 4.4,
+      "tamper": false,
+      "latitude": 25.350057,
+      "longitude": -101.191283
+    },
+    {
+      "timestamp": "2026-01-15T09:15:00Z",
+      "tempInC": 3.8,
+      "tamper": false,
+      "latitude": 25.445028,
+      "longitude": -100.943006
+    },
+    {
+      "timestamp": "2026-01-15T09:20:00Z",
+      "tempInC": 7.3,
+      "tamper": false,
+      "latitude": 25.540062,
+      "longitude": -100.694565
+    },
+    {
+      "timestamp": "2026-01-15T09:25:00Z",
+      "tempInC": 6.0,
+      "tamper": false,
+      "latitude": 25.63516,
+      "longitude": -100.445958
+    },
+    {
+      "timestamp": "2026-01-15T09:30:00Z",
+      "tempInC": 4.7,
+      "tamper": false,
+      "latitude": 25.679151,
+      "longitude": -100.443162
+    },
+    {
+      "timestamp": "2026-01-15T09:35:00Z",
+      "tempInC": 5.4,
+      "tamper": false,
+      "latitude": 25.666479,
+      "longitude": -100.712806
+    },
+    {
+      "timestamp": "2026-01-15T09:40:00Z",
+      "tempInC": 3.4,
+      "tamper": false,
+      "latitude": 25.653808,
+      "longitude": -100.982423
+    },
+    {
+      "timestamp": "2026-01-15T09:45:00Z",
+      "tempInC": 7.3,
+      "tamper": false,
+      "latitude": 25.641139,
+      "longitude": -101.252011
+    },
+    {
+      "timestamp": "2026-01-15T09:50:00Z",
+      "tempInC": 4.2,
+      "tamper": false,
+      "latitude": 25.628471,
+      "longitude": -101.52157
+    },
+    {
+      "timestamp": "2026-01-15T09:55:00Z",
+      "tempInC": 4.7,
+      "tamper": false,
+      "latitude": 25.615804,
+      "longitude": -101.791102
+    },
+    {
+      "timestamp": "2026-01-15T10:00:00Z",
+      "tempInC": 4.7,
+      "tamper": false,
+      "latitude": 25.603139,
+      "longitude": -102.060604
+    },
+    {
+      "timestamp": "2026-01-15T10:05:00Z",
+      "tempInC": 3.5,
+      "tamper": false,
+      "latitude": 25.590475,
+      "longitude": -102.330079
+    },
+    {
+      "timestamp": "2026-01-15T10:10:00Z",
+      "tempInC": 5.7,
+      "tamper": false,
+      "latitude": 25.577812,
+      "longitude": -102.599526
+    },
+    {
+      "timestamp": "2026-01-15T10:15:00Z",
+      "tempInC": 5.1,
+      "tamper": false,
+      "latitude": 25.565151,
+      "longitude": -102.868943
+    },
+    {
+      "timestamp": "2026-01-15T10:20:00Z",
+      "tempInC": 2.9,
+      "tamper": false,
+      "latitude": 25.552491,
+      "longitude": -103.138332
+    },
+    {
+      "timestamp": "2026-01-15T10:25:00Z",
+      "tempInC": 2.1,
+      "tamper": false,
+      "latitude": 25.539832,
+      "longitude": -103.407695
+    }
+  ],
+  "metadata": {
+    "route_name": "DURANGO-ZACATECAS",
+    "use_real_route": false,
+    "transport_mode": "driving-car",
+    "distribution_type": "normal",
+    "total_distance_km": 0.0,
+    "company_id": null,
+    "route_id": 6
+  }
+}
