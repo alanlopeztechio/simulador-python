@@ -530,26 +530,22 @@ Descripción: {route.route_description}
         """Called when simulation completes successfully."""
         self.winfo_toplevel().config(cursor="")
         
-        # Save to database
+        # Save to database in BATCH (mucho más rápido)
         saved_to_db = False
         db_ids = []
         
         if isinstance(generated_files, list) and generated_files:
             try:
-                from db.database import save_simulation_to_neon
+                from db.database import save_simulations_batch
                 
-                for json_file in generated_files:
-                    try:
-                        sim_id = save_simulation_to_neon(json_file=json_file)
-                        db_ids.append(sim_id)
-                    except Exception as e:
-                        print(f"Failed to save {json_file}: {e}")
-                
-                if db_ids:
-                    saved_to_db = True
+                print(f"\n💾 Guardando {len(generated_files)} simulaciones en la base de datos...")
+                db_ids = save_simulations_batch(generated_files, show_progress=True)
+                saved_to_db = True
                 
             except Exception as e:
-                print(f"Auto-save to database failed: {e}")
+                import traceback
+                print(f"✗ Error guardando en base de datos: {e}")
+                print(traceback.format_exc())
         
         # Show success message
         if isinstance(generated_files, list):

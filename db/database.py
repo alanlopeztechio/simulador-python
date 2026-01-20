@@ -396,13 +396,15 @@ class DatabaseManager:
             raise
     
     def save_simulation_complete(self, simulation_data: Dict[str, Any], 
-                                 segments_data: List[Dict[str, Any]] = None) -> int:
+                                 segments_data: List[Dict[str, Any]] = None,
+                                 auto_commit: bool = True) -> int:
         """
         Guarda una simulación completa con todos sus datos relacionados
         
         Args:
             simulation_data: Datos de la simulación en formato JSON
             segments_data: Datos de segmentos (si están disponibles, sino se generan desde inventories)
+            auto_commit: Si es True, hace commit automáticamente. Si es False, no hace commit (para batch)
         
         Returns:
             ID de la simulación insertada
@@ -432,8 +434,10 @@ class DatabaseManager:
                 temp_upper_limit = config.get('temperatureUpperLimit')
                 self.insert_sensor_data(simulation_id, logged_data, temp_lower_limit, temp_upper_limit)
             
-            self.conn.commit()
-            print(f"✓ Simulación completa guardada exitosamente (ID: {simulation_id})")
+            # Solo hacer commit si auto_commit=True (modo individual)
+            if auto_commit:
+                self.conn.commit()
+                print(f"✓ Simulación completa guardada exitosamente (ID: {simulation_id})")
             
             return simulation_id
             
@@ -908,3 +912,60 @@ def save_simulation_to_neon(json_file: str = None,
     
     with DatabaseManager(connection_string) as db:
         return db.save_simulation_complete(json_data, segments_data)
+
+def save_simulations_batch(json_files: List[str], 
+                           connection_string: str = None,
+                           show_progress: bool = True) -> List[int]:
+    """
+    Guarda múltiples simulaciones en una sola transacción (BATCH).
+    Mucho más rápido que guardar una por una.
+    
+    Args:
+        json_files: Lista de rutas a archivos JSON
+        connection_string: String de conexión (opcional)
+        show_progress: Mostrar progreso de guardado
+    
+    Returns:
+        Lista de IDs de simulaciones guardadas
+    """
+    if not json_files:
+        return []
+    
+    simulation_ids = []
+    total = len(json_files)
+    
+    if show_progress:
+        print(f"\n{'='*60}")
+        print(f"💾 GUARDADO EN LOTE - {total} simulaciones")
+        print(f"{'='*60}")
+    
+    with DatabaseManager(connection_string) as db:
+        try:
+            # Procesar todas las simulaciones en UNA SOLA transacción
+            for idx, json_file in enumerate(json_files, 1):
+                if show_progress and idx % 10 == 0:
+                    progress = int((idx / total) * 100)
+                    print(f"   📊 Progreso: {progress}% ({idx}/{total})")
+                
+                # Cargar JSON
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    json_data = json.load(f)
+                
+                # Guardar SIN commit individual (auto_commit=False)
+                sim_id = db.save_simulation_complete(json_data, segments_data=None, auto_commit=False)
+                simulation_ids.append(sim_id)
+            
+            # Commit una sola vez al final
+            db.conn.commit()
+            
+            if show_progress:
+                print(f"   ✅ {total} simulaciones guardadas exitosamente")
+                print(f"   📋 IDs: {simulation_ids[0]} - {simulation_ids[-1]}")
+                print(f"{'='*60}\n")
+            
+            return simulation_ids
+            
+        except Exception as e:
+            db.conn.rollback()
+            print(f"✗ Error en guardado batch: {e}")
+            raise
