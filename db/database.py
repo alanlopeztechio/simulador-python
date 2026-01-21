@@ -143,6 +143,7 @@ class DatabaseManager:
                 INSERT INTO simulations (
                     epc, tid, version, 
                     route_id, route_name,
+                    reefer_id, section_id,
                     log_interval_seconds, log_number_of_samples,
                     temp_lower_limit, temp_upper_limit, distribution_type,
                     arm_status, arm_timestamp,
@@ -153,6 +154,7 @@ class DatabaseManager:
                     %s, %s, %s,
                     %s, %s,
                     %s, %s,
+                    %s, %s,
                     %s, %s, %s,
                     %s, %s,
                     %s, %s, %s,
@@ -161,9 +163,14 @@ class DatabaseManager:
                 ) RETURNING id
             """
             
+            # Extract reefer_id and section_id from simulation_data
+            reefer_id = simulation_data.get('reeferId')
+            section_id = simulation_data.get('sectionId')
+            
             self.cursor.execute(insert_query, (
                 epc, tid, version,
                 route_id, route_name,
+                reefer_id, section_id,
                 config.get('logIntervalInSeconds'),
                 config.get('logNumberOfSamples'),
                 config.get('temperatureLowerLimit'),

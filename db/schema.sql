@@ -75,6 +75,10 @@ CREATE TABLE IF NOT EXISTS simulations (
     route_id INTEGER REFERENCES routes(id) ON DELETE SET NULL,
     route_name VARCHAR(255), -- Nombre de la ruta en el momento de la simulación
     
+    -- Información del reefer y sección
+    reefer_id VARCHAR(100), -- Identificador único del reefer (viaje/contenedor)
+    section_id INTEGER, -- Número de sección dentro del reefer (1, 2, 3, etc.)
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     -- Configuración de la simulación
@@ -106,6 +110,8 @@ CREATE TABLE IF NOT EXISTS simulations (
 CREATE INDEX IF NOT EXISTS idx_simulations_epc ON simulations(epc);
 CREATE INDEX IF NOT EXISTS idx_simulations_created_at ON simulations(created_at);
 CREATE INDEX IF NOT EXISTS idx_simulations_route_name ON simulations(route_name);
+CREATE INDEX IF NOT EXISTS idx_simulations_reefer_id ON simulations(reefer_id);
+CREATE INDEX IF NOT EXISTS idx_simulations_section_id ON simulations(section_id);
 
 
 -- Tabla de segmentos (tramos entre waypoints)
@@ -235,6 +241,10 @@ SELECT
     s.created_at as simulation_date,
     s.arm_status,
     s.arm_timestamp,
+    
+    -- Información del reefer y sección
+    s.reefer_id,
+    s.section_id,
     
     -- Configuración de simulación
     s.log_interval_seconds,

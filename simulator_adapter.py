@@ -29,7 +29,8 @@ class SimulatorAdapter:
                             secondary_routes_count: int = 0,
                             output_dir: str = "simulation_outputs",
                             include_location_names: bool = False,
-                            simulate_every_n_sensors: int = 1) -> List[str]:
+                            reefer_id: str = None,
+                            sections_config: list = None) -> List[str]:
         """Generate simulation JSONs from RouteConfig.
         
         Args:
@@ -40,7 +41,8 @@ class SimulatorAdapter:
             secondary_routes_count: Number of secondary routes to generate (1-3)
             output_dir: Directory to save outputs
             include_location_names: Whether to include location names via reverse geocoding
-            simulate_every_n_sensors: Number of sensors per simulation group (default: 1)
+            reefer_id: Unique identifier for the reefer (voyage)
+            sections_config: List of section configurations with sensor counts
             
         Returns:
             List of generated file paths
@@ -271,33 +273,42 @@ class SimulatorAdapter:
         # Each sensor GROUP will use the SAME route coordinates AND SAME temperature distributions
         # Only EPC and TID will differ within the group
         # ═══════════════════════════════════════════════════════════════════
-        # Validate and ensure simulate_every_n_sensors is at least 1
-        simulate_every_n_sensors = max(1, simulate_every_n_sensors)
-
-        total_sensors = len(route_config.sensors)
-        group_size = simulate_every_n_sensors
-        num_groups = ceil(total_sensors / group_size)
-
-        print(f"   🔢 Sensores totales: {total_sensors}")
-        print(f"   📦 Sensores por simulación: {group_size}")
-        print(f"   🧪 Grupos de simulaciones: {num_groups}")
-        print(f"   ✅ Sensores en cada grupo compartirán la misma loggedData")
         
-        # Debug: Mostrar cálculo de grupos
-        print(f"\n🔍 DEBUG:")
-        print(f"   ceil({total_sensors} / {group_size}) = {num_groups}")
-        for g in range(num_groups):
-            start = g * group_size
-            end = min(start + group_size, total_sensors)
-            print(f"   Grupo {g+1}: sensores {start+1}-{end} ({end-start} sensores)")
+        total_sensors = len(route_config.sensors)
+        
+        # Group sensors by section_id if sections_config is provided
+        if sections_config:
+            # Group sensors by their section_id
+            sensor_groups_by_section = {}
+            for sensor in route_config.sensors:
+                section_id = getattr(sensor, 'section_id', 1)
+                if section_id not in sensor_groups_by_section:
+                    sensor_groups_by_section[section_id] = []
+                sensor_groups_by_section[section_id].append(sensor)
+            
+            # Convert to list of groups (each section is its own group)
+            sensor_groups = list(sensor_groups_by_section.values())
+            num_groups = len(sensor_groups)
+            
+            print(f"   🔢 Sensores totales: {total_sensors}")
+            print(f"   📦 Secciones del reefer: {num_groups}")
+            print(f"   ✅ Cada sección compartirá la misma loggedData")
+            
+            for section_id, sensors_in_section in sensor_groups_by_section.items():
+                print(f"   Sección {section_id}: {len(sensors_in_section)} sensores")
+        else:
+            # Fallback: treat all sensors as one group
+            sensor_groups = [route_config.sensors]
+            num_groups = 1
+            print(f"   🔢 Sensores totales: {total_sensors}")
+            print(f"   📦 Grupo único (sin secciones)")
 
-        for group_idx in range(num_groups):
-            start_idx = group_idx * group_size
-            end_idx = min(start_idx + group_size, total_sensors)
-            sensor_group = route_config.sensors[start_idx:end_idx]
-
-            print(f"\n📦 Grupo {group_idx+1}/{num_groups}")
-            print(f"   Sensores {start_idx+1} → {end_idx} (Total: {len(sensor_group)})")
+        for group_idx, sensor_group in enumerate(sensor_groups):
+            section_id = getattr(sensor_group[0], 'section_id', None) if sensor_group else None
+            section_label = f"Sección {section_id}" if section_id else f"Grupo {group_idx+1}"
+            
+            print(f"\n📦 {section_label}/{num_groups}")
+            print(f"   Sensores: {len(sensor_group)}")
 
             for route_idx, route_info in enumerate(routes_to_generate):
                 route_type = route_info.get('route_type', 'principal')
@@ -363,6 +374,12 @@ class SimulatorAdapter:
                         # Actualizar solo EPC y TID para este sensor
                         data_copy["EPC"] = sensor.epc
                         data_copy["TID"] = sensor.tid
+                        
+                        # Agregar reefer_id y section_id
+                        if reefer_id:
+                            data_copy["reeferId"] = reefer_id
+                        if hasattr(sensor, 'section_id') and sensor.section_id:
+                            data_copy["sectionId"] = sensor.section_id
 
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -387,7 +404,8 @@ class SimulatorAdapter:
         print(f"{'='*60}")
         print(f"   📊 Total de archivos generados: {len(generated_files)}")
         print(f"   📦 Grupos procesados: {num_groups}")
-        print(f"   🎯 Sensores por grupo: {group_size}")
+        if sections_config:
+            print(f"   🎯 Secciones del reefer: {num_groups}")
         print(f"{'='*60}\n")
 
         return generated_files
@@ -420,13 +438,13 @@ class SimulatorAdapter:
                     # Convert relative to absolute using ambient
                     ambient = dist.ambient_temp if dist.ambient_temp else 20.0
                     offset = ambient * (dist.relative_offset_pct / 100.0)
-                    lower_temp = (dist.lower_temp or 0.0) + offset
-                    upper_temp = (dist.upper_temp or 10.0) + offset
-                    mean_temp = (dist.mean_temp or 5.0) + offset if dist.mean_temp else None
+                    lower_temp = (dist.lower_temp if dist.lower_temp is not None else 0.0) + offset
+                    upper_temp = (dist.upper_temp if dist.upper_temp is not None else 10.0) + offset
+                    mean_temp = (dist.mean_temp + offset) if dist.mean_temp is not None else None
                 else:
                     # Absolute mode
-                    lower_temp = dist.lower_temp or 0.0
-                    upper_temp = dist.upper_temp or 10.0
+                    lower_temp = dist.lower_temp if dist.lower_temp is not None else 0.0
+                    upper_temp = dist.upper_temp if dist.upper_temp is not None else 10.0
                     mean_temp = dist.mean_temp
                 
                 profile = TempProfile(

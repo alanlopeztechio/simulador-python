@@ -20,11 +20,12 @@ from db.database import DatabaseManager
 class SimulationTab(tk.Frame):
     """Tab for selecting company/route and running simulations."""
     
-    def __init__(self, parent, companies_tab, routes_tab):
+    def __init__(self, parent, companies_tab, routes_tab, distributions_tab=None):
         super().__init__(parent)
         
         self.companies_tab = companies_tab
         self.routes_tab = routes_tab
+        self.distributions_tab = distributions_tab
         self.selected_company_id = None
         self.selected_route = None
         
@@ -103,10 +104,31 @@ class SimulationTab(tk.Frame):
         # Step 3: Simulation Parameters
         step3_frame = tk.LabelFrame(main_container, text="Paso 3: Parámetros de Simulación", 
                                    font=("Arial", 11, "bold"), padx=15, pady=15)
-        step3_frame.pack(fill=tk.X, pady=(0, 15))
+        step3_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
         
-        params_grid = tk.Frame(step3_frame)
-        params_grid.pack(fill=tk.X)
+        # Create canvas and scrollbar for parameters
+        params_canvas = tk.Canvas(step3_frame, highlightthickness=0, height=300)
+        params_scrollbar = tk.Scrollbar(step3_frame, orient="vertical", command=params_canvas.yview)
+        params_scrollable_frame = tk.Frame(params_canvas)
+        
+        params_scrollable_frame.bind(
+            "<Configure>",
+            lambda e: params_canvas.configure(scrollregion=params_canvas.bbox("all"))
+        )
+        
+        params_canvas.create_window((0, 0), window=params_scrollable_frame, anchor="nw")
+        params_canvas.configure(yscrollcommand=params_scrollbar.set)
+        
+        params_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        params_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            params_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        params_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        params_grid = tk.Frame(params_scrollable_frame)
+        params_grid.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # Departure date
         tk.Label(params_grid, text="Fecha de Salida:", 
@@ -167,39 +189,27 @@ class SimulationTab(tk.Frame):
         tk.Label(params_grid, text="(Puede ralentizar la generación - requiere llamadas API)", 
                 font=("Arial", 8), fg="gray").grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=(0, 5))
         
-        # Number of sensors
-        tk.Label(params_grid, text="Cantidad de Sensores:", 
-                font=("Arial", 9)).grid(row=5, column=0, sticky=tk.W, pady=5, padx=(0, 10))
+        # Reefer Sections Configuration
+        tk.Label(params_grid, text="Configuración del Reefer:", 
+                font=("Arial", 9, "bold")).grid(row=5, column=0, columnspan=2, sticky=tk.W, pady=(10, 5))
         
-        sensor_frame = tk.Frame(params_grid)
-        sensor_frame.grid(row=5, column=1, sticky=tk.W, pady=5)
+        # Container for sections
+        self.sections_container = tk.Frame(params_grid)
+        self.sections_container.grid(row=6, column=0, columnspan=2, sticky=tk.W+tk.E, pady=5)
         
-        self.sensor_count_var = tk.IntVar(value=100)
-        tk.Spinbox(sensor_frame, from_=1, to=10000, textvariable=self.sensor_count_var, 
-                  width=10, font=("Arial", 9)).pack(side=tk.LEFT)
-        tk.Label(sensor_frame, text="sensores (se generarán automáticamente)", 
-                font=("Arial", 8), fg="gray").pack(side=tk.LEFT, padx=5)
-
-        tk.Label(params_grid, text="Division de EPCS/TIDS secuenciales desde la base de datos", 
-                font=("Arial", 9)).grid(row=6, column=0, columnspan=2, sticky=tk.W, pady=(0, 5))
+        # Track sections
+        self.section_widgets = []
         
-        divider_frame  = tk.Frame(params_grid)
-        divider_frame .grid(row=6, column=1, sticky=tk.W, pady=5)
+        # Add first section by default
+        self._add_section()
         
-        self.analysis_divider_var = tk.IntVar(value=10)
-
-        tk.Spinbox(divider_frame ,
-                  from_=1, to=1000, 
-                  textvariable=self.analysis_divider_var,
-                  width=10, 
-                  font=("Arial", 9)).pack(side=tk.LEFT)
+        # Add section button
+        add_section_btn_frame = tk.Frame(params_grid)
+        add_section_btn_frame.grid(row=7, column=0, columnspan=2, sticky=tk.W, pady=5)
         
-        tk.Label(
-            divider_frame,
-            text="sensores por análisis",
-            font=("Arial", 8),
-            fg="gray"
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Button(add_section_btn_frame, text="➕ Agregar Sección", 
+                 command=self._add_section,
+                 font=("Arial", 9), bg="#2196F3", fg="white").pack(side=tk.LEFT)
 
         
         # Action buttons
@@ -370,6 +380,86 @@ Descripción: {route.route_description}
         else:
             self.secondary_routes_dropdown.config(state="disabled")
     
+    def _add_section(self):
+        """Add a new section input for EPCs/TIDs."""
+        section_num = len(self.section_widgets) + 1
+        
+        # Create section frame
+        section_frame = tk.Frame(self.sections_container, relief=tk.RIDGE, borderwidth=1, bg="#f0f0f0")
+        section_frame.pack(fill=tk.X, pady=2, padx=5)
+        
+        # Section header
+        header_frame = tk.Frame(section_frame, bg="#f0f0f0")
+        header_frame.pack(fill=tk.X, padx=5, pady=2)
+        
+        tk.Label(header_frame, text=f"Sección {section_num}:", 
+                font=("Arial", 9, "bold"), bg="#f0f0f0").pack(side=tk.LEFT)
+        
+        # Delete button (only show if more than 1 section)
+        delete_btn = tk.Button(header_frame, text="🗑️ Eliminar", 
+                              command=lambda: self._remove_section(section_frame),
+                              font=("Arial", 8), fg="red", bg="#f0f0f0")
+        if section_num > 1:
+            delete_btn.pack(side=tk.RIGHT)
+        
+        # Input frame
+        input_frame = tk.Frame(section_frame, bg="#f0f0f0")
+        input_frame.pack(fill=tk.X, padx=5, pady=2)
+        
+        tk.Label(input_frame, text="Cantidad de Sensores:", 
+                font=("Arial", 9), bg="#f0f0f0").pack(side=tk.LEFT, padx=(0, 5))
+        
+        sensor_count_var = tk.IntVar(value=100)
+        spinbox = tk.Spinbox(input_frame, from_=1, to=10000, 
+                            textvariable=sensor_count_var,
+                            width=10, font=("Arial", 9))
+        spinbox.pack(side=tk.LEFT)
+        
+        tk.Label(input_frame, text="EPCs/TIDs", 
+                font=("Arial", 8), fg="gray", bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
+        
+        # Store section data
+        section_data = {
+            'frame': section_frame,
+            'section_num': section_num,
+            'sensor_count_var': sensor_count_var,
+            'delete_btn': delete_btn
+        }
+        self.section_widgets.append(section_data)
+        
+        # Update section numbers
+        self._update_section_numbers()
+    
+    def _remove_section(self, section_frame):
+        """Remove a section."""
+        # Find and remove the section
+        for i, section_data in enumerate(self.section_widgets):
+            if section_data['frame'] == section_frame:
+                section_frame.destroy()
+                self.section_widgets.pop(i)
+                break
+        
+        # Update section numbers
+        self._update_section_numbers()
+    
+    def _update_section_numbers(self):
+        """Update section numbers after add/remove."""
+        for i, section_data in enumerate(self.section_widgets):
+            section_num = i + 1
+            section_data['section_num'] = section_num
+            
+            # Update header label
+            header_frame = section_data['frame'].winfo_children()[0]
+            header_label = header_frame.winfo_children()[0]
+            header_label.config(text=f"Sección {section_num}:")
+            
+            # Show/hide delete button based on count
+            if len(self.section_widgets) > 1:
+                section_data['delete_btn'].pack(side=tk.RIGHT)
+            else:
+                section_data['delete_btn'].pack_forget()
+
+    
     def _run_simulation(self):
         """Run simulation with selected company and route."""
         if not self.selected_company_id:
@@ -380,15 +470,29 @@ Descripción: {route.route_description}
             messagebox.showwarning("Validación", "Por favor selecciona una ruta.")
             return
         
-        # Get sensor count from UI
-        sensor_count = self.sensor_count_var.get()
-        if sensor_count <= 0:
-            messagebox.showwarning("Validación", "La cantidad de sensores debe ser mayor a 0.")
+        # Validate sections
+        if not self.section_widgets:
+            messagebox.showwarning("Validación", "Debe haber al menos una sección.")
             return
         
-        # Generate sensors automatically with incremental EPCs/TIDs
+        # Get section configurations
+        sections_config = []
+        total_sensors = 0
+        for section_data in self.section_widgets:
+            sensor_count = section_data['sensor_count_var'].get()
+            if sensor_count <= 0:
+                messagebox.showwarning("Validación", 
+                                      f"La cantidad de sensores en Sección {section_data['section_num']} debe ser mayor a 0.")
+                return
+            sections_config.append({
+                'section_id': section_data['section_num'],
+                'sensor_count': sensor_count
+            })
+            total_sensors += sensor_count
+        
+        # Generate sensors for all sections
         try:
-            self._generate_sensors_for_simulation(sensor_count)
+            self._generate_sensors_for_sections(sections_config)
         except Exception as e:
             messagebox.showerror("Error", f"Error generando sensores: {e}")
             return
@@ -435,10 +539,13 @@ Descripción: {route.route_description}
         
         # Confirm generation
         departure_str = departure_datetime.strftime("%d/%m/%Y %H:%M")
+        sections_info = "\n".join([f"  • Sección {s['section_id']}: {s['sensor_count']} sensores" 
+                                   for s in sections_config])
         msg = (f"Generar simulación con:\n\n"
                f"Ruta: {self.selected_route.route_name}\n"
                f"Segmentos: {len(self.selected_route.segments)}\n"
-               f"Sensores: {num_sensors}\n"
+               f"Secciones del Reefer: {len(sections_config)}\n{sections_info}\n"
+               f"Total Sensores: {total_sensors}\n"
                f"Fecha Salida: {departure_str}\n"
                f"Rutas Reales: {'Sí' if use_real else 'No'}\n"
                f"Rutas Secundarias: {secondary_count if use_secondary else 'No'}\n"
@@ -451,16 +558,77 @@ Descripción: {route.route_description}
         # Disable button and show progress
         self.winfo_toplevel().config(cursor="wait")
         
+        # Apply distributions from distributions tab if available
+        if self.distributions_tab and hasattr(self.distributions_tab, 'apply_distributions_to_route'):
+            print("📊 Aplicando distribuciones configuradas...")
+            try:
+                if not self.distributions_tab.apply_distributions_to_route(self.selected_route):
+                    messagebox.showwarning("Distribuciones", 
+                                          "No se pudieron aplicar las distribuciones. "
+                                          "Se usarán valores por defecto.")
+            except Exception as e:
+                print(f"⚠️ Error aplicando distribuciones: {e}")
+                messagebox.showwarning("Distribuciones", 
+                                      f"Error aplicando distribuciones: {e}\n"
+                                      "Se usarán valores por defecto.")
+        
         # Run generation in background thread
         thread = threading.Thread(
             target=self._execute_simulation,
-            args=(use_real, use_secondary, secondary_count, include_location_names),
+            args=(use_real, use_secondary, secondary_count, include_location_names, sections_config),
             daemon=True
         )
         thread.start()
     
+    def _generate_sensors_for_sections(self, sections_config: list):
+        """Generate sensors with section IDs.
+        
+        Args:
+            sections_config: List of dicts with 'section_id' and 'sensor_count'
+        """
+        from models.sensor import SensorConfig
+        from db.database import DatabaseManager
+        
+        # Clear existing sensors
+        self.selected_route.sensors = []
+        
+        # Get next available EPC and TID from database
+        db = DatabaseManager()
+        db.connect()
+        
+        try:
+            base_epc = db.get_next_sensor_epc()
+            base_tid = db.get_next_sensor_tid()
+            
+            # Extract numeric parts
+            epc_prefix = base_epc[:9]  # "5201F2503"
+            tid_prefix = base_tid[:17]  # "E2C24500200005668"
+            
+            epc_num = int(base_epc[9:])
+            tid_num = int(base_tid[17:])
+            
+            # Generate sensors for each section
+            sensor_offset = 0
+            for section in sections_config:
+                section_id = section['section_id']
+                sensor_count = section['sensor_count']
+                
+                for i in range(sensor_count):
+                    epc = f"{epc_prefix}{epc_num + sensor_offset:07d}"
+                    tid = f"{tid_prefix}{tid_num + sensor_offset:07d}"
+                    
+                    sensor = SensorConfig(epc=epc, tid=tid)
+                    sensor.section_id = section_id  # Add section ID to sensor
+                    self.selected_route.sensors.append(sensor)
+                    sensor_offset += 1
+            
+            print(f"✓ Generados {len(self.selected_route.sensors)} sensores en {len(sections_config)} secciones")
+            
+        finally:
+            db.disconnect()
+    
     def _generate_sensors_for_simulation(self, count: int):
-        """Generate sensors with incremental EPCs/TIDs from database.
+        """DEPRECATED: Use _generate_sensors_for_sections instead.
         
         Args:
             count: Number of sensors to generate
@@ -499,12 +667,17 @@ Descripción: {route.route_description}
         finally:
             db.disconnect()
     
-    def _execute_simulation(self, use_real_routes, use_secondary_routes, secondary_routes_count, include_location_names):
+    def _execute_simulation(self, use_real_routes, use_secondary_routes, secondary_routes_count, 
+                          include_location_names, sections_config):
         """Execute simulation in background thread."""
         try:
             from simulator_adapter import SimulatorAdapter
+            import uuid
             
             output_dir = "simulation_outputs"
+            
+            # Generate unique reefer ID for this simulation (voyage)
+            reefer_id = str(uuid.uuid4())
             
             # Generate simulations using the adapter
             generated_files = SimulatorAdapter.generate_simulations(
@@ -515,7 +688,8 @@ Descripción: {route.route_description}
                 secondary_routes_count=secondary_routes_count,
                 output_dir=output_dir,
                 include_location_names=include_location_names,
-                simulate_every_n_sensors=self.analysis_divider_var.get()
+                reefer_id=reefer_id,
+                sections_config=sections_config
             )
             
             # Update UI on main thread

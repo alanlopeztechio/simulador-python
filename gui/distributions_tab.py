@@ -232,18 +232,32 @@ class DistributionsTab(tk.Frame):
         Returns:
             True if successful, False otherwise
         """
-        if len(self.segment_distribution_widgets) != len(route_config.segments):
-            messagebox.showerror("Configuration Error", 
-                               f"Distribution count mismatch: {len(self.segment_distribution_widgets)} distributions "
-                               f"vs {len(route_config.segments)} segments")
-            return False
+        if not self.segment_distribution_widgets:
+            # No distributions configured, use defaults
+            print("⚠️ No hay distribuciones configuradas, usando valores por defecto")
+            return True
         
-        for widget_data in self.segment_distribution_widgets:
-            seg_index = widget_data["segment_index"]
-            if seg_index >= len(route_config.segments):
-                continue
+        # Ensure segments exist
+        route_config.ensure_segments()
+        
+        if len(self.segment_distribution_widgets) != len(route_config.segments):
+            print(f"⚠️ Distribuciones ({len(self.segment_distribution_widgets)}) != Segmentos ({len(route_config.segments)})")
             
-            segment = route_config.segments[seg_index]
+            # Si hay más distribuciones que segmentos, usar solo las primeras
+            if len(self.segment_distribution_widgets) > len(route_config.segments):
+                print(f"   Usando solo las primeras {len(route_config.segments)} distribuciones")
+                widgets_to_use = self.segment_distribution_widgets[:len(route_config.segments)]
+            # Si hay menos distribuciones que segmentos, reutilizar la última
+            else:
+                print(f"   Reutilizando la última distribución para los segmentos faltantes")
+                widgets_to_use = self.segment_distribution_widgets
+        else:
+            widgets_to_use = self.segment_distribution_widgets
+        
+        for i, segment in enumerate(route_config.segments):
+            # Usar la distribución correspondiente o la última disponible
+            widget_idx = min(i, len(widgets_to_use) - 1)
+            widget_data = widgets_to_use[widget_idx]
             
             # Build Distribution object
             dist_type = widget_data["dist_type_var"].get().lower()

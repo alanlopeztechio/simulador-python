@@ -15,6 +15,9 @@ class SensorConfig:
     epc: str  # Electronic Product Code
     tid: str  # Tag Identifier
     
+    # Reefer section information
+    section_id: Optional[int] = None  # Section within the reefer (1, 2, 3, etc.)
+    
     # Sensor parameters
     name: Optional[str] = None
     logger_mode: str = "LOGGING"

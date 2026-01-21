@@ -40,8 +40,8 @@ class SimulatorGUI:
         # 3. Distributions configuration (needs routes_tab for segment info)
         self.distributions_tab = DistributionsTab(self.notebook, self.routes_tab)
         
-        # 4. Simulation configuration (needs companies and routes tabs)
-        self.simulation_tab = SimulationTab(self.notebook, self.companies_tab, self.routes_tab)
+        # 4. Simulation configuration (needs companies, routes, and distributions tabs)
+        self.simulation_tab = SimulationTab(self.notebook, self.companies_tab, self.routes_tab, self.distributions_tab)
         
         # 5. Results viewer
         self.results_tab = ResultsTab(self.notebook, output_dir="simulation_outputs")
