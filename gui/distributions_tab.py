@@ -150,6 +150,24 @@ class DistributionsTab(tk.Frame):
         tk.Radiobutton(type_frame, text="Relative Mode", variable=mode_var, 
                       value="relative").pack(side=tk.LEFT, padx=5)
         
+        # Temperature Presets row
+        preset_frame = tk.Frame(seg_frame)
+        preset_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(preset_frame, text="Temperature Presets:", font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+        preset_var = tk.StringVar(value="Select preset...")
+        preset_combo = ttk.Combobox(preset_frame, textvariable=preset_var,
+                                    values=["Refrigerated (-1°C to 2°C)", 
+                                           "Frozen (-2°C to 0°C)", 
+                                           "Ultra-Frozen (-60°C to -35°C)",
+                                           "Custom"],
+                                    state="readonly", width=30)
+        preset_combo.pack(side=tk.LEFT, padx=5)
+        
+        # Info label for preset description
+        preset_info_label = tk.Label(preset_frame, text="", font=("Arial", 8), fg="green")
+        preset_info_label.pack(side=tk.LEFT, padx=10)
+        
         # Parameters frame (changes based on distribution type)
         params_frame = tk.Frame(seg_frame, relief=tk.SUNKEN, borderwidth=1, padx=10, pady=10)
         params_frame.pack(fill=tk.X, pady=5)
@@ -158,11 +176,37 @@ class DistributionsTab(tk.Frame):
         param_vars = {
             "min_range": tk.DoubleVar(value=0.0),
             "max_range": tk.DoubleVar(value=10.0),
-            "std_dev": tk.DoubleVar(value=2.0),
+            "std_dev": tk.DoubleVar(value=0.2),
             "beta_alpha": tk.DoubleVar(value=2.0),
             "beta_beta": tk.DoubleVar(value=5.0),
             "mean_temp": tk.DoubleVar(value=5.0),
         }
+        
+        def apply_preset(*args):
+            """Apply temperature preset values."""
+            preset = preset_var.get()
+            if preset == "Refrigerated (-1°C to 2°C)":
+                param_vars["min_range"].set(-1.0)
+                param_vars["max_range"].set(2.0)
+                param_vars["mean_temp"].set(0.5)
+                param_vars["std_dev"].set(0.5)
+                preset_info_label.config(text="✓ Applied: Vaccines, biologics", fg="green")
+            elif preset == "Frozen (-2°C to 0°C)":
+                param_vars["min_range"].set(-2.0)
+                param_vars["max_range"].set(0.0)
+                param_vars["mean_temp"].set(-1.0)
+                param_vars["std_dev"].set(0.2)
+                preset_info_label.config(text="✓ Applied: Fresh products", fg="green")
+            elif preset == "Ultra-Frozen (-60°C to -35°C)":
+                param_vars["min_range"].set(-60.0)
+                param_vars["max_range"].set(-35.0)
+                param_vars["mean_temp"].set(-47.5)
+                param_vars["std_dev"].set(3.0)
+                preset_info_label.config(text="✓ Applied: mRNA vaccines, biosamples", fg="green")
+            elif preset == "Custom":
+                preset_info_label.config(text="Configure manually", fg="blue")
+            else:
+                preset_info_label.config(text="", fg="black")
         
         def update_params_ui(*args):
             """Update parameter fields based on selected distribution type."""
@@ -195,6 +239,7 @@ class DistributionsTab(tk.Frame):
         
         # Bind distribution type change
         dist_type_combo.bind("<<ComboboxSelected>>", update_params_ui)
+        preset_combo.bind("<<ComboboxSelected>>", apply_preset)
         update_params_ui()  # Initial setup
         
         # Action buttons

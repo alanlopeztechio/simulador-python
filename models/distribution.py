@@ -66,18 +66,19 @@ class Distribution:
         if self.type == "normal":
             mean = self.mean_temp if self.mean_temp is not None else 0.0
             samples = np.random.normal(mean, self.std_dev, size=n)
-            # Apply soft bounds if provided
+            # Apply soft bounds: allow natural variations up to 2.5 std deviations beyond range
             if self.lower_temp is not None and self.upper_temp is not None:
-                samples = np.clip(samples, self.lower_temp - 10, self.upper_temp + 10)
+                soft_margin = 2.5 * self.std_dev
+                samples = np.clip(samples, self.lower_temp - soft_margin, self.upper_temp + soft_margin)
             return samples
         
         elif self.type == "beta":
-            # Beta distribution generates values in [0, 1]
+            # Beta distribution generates values in [0, 1] - always stays within range
             beta_values = np.random.beta(self.beta_alpha, self.beta_beta, size=n)
-            # Scale to temperature range
+            # Scale to exact temperature range (mathematical design of beta)
             if self.lower_temp is not None and self.upper_temp is not None:
-                temp_range = self.upper_temp - self.lower_temp + 20
-                return self.lower_temp - 10 + (beta_values * temp_range)
+                temp_range = self.upper_temp - self.lower_temp
+                return self.lower_temp + (beta_values * temp_range)
             else:
                 # Default range if not specified
                 return beta_values * 50 - 10

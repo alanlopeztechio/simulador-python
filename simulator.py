@@ -764,24 +764,29 @@ class LogSimulator:
             self.config.lower_temp + self.config.upper_temp) / 2
         
         temps = []
+        # Permitir variaciones naturales: límites suaves basados en 2.5 desviaciones estándar
+        soft_margin = 2.5 * self.config.std_dev
+        soft_lower = self.config.lower_temp - soft_margin
+        soft_upper = self.config.upper_temp + soft_margin
+        
         for _ in range(self.config.number_of_samples):
             temp = np.random.normal(mean, self.config.std_dev)
-            # Aplicar límites suaves
-            temp = np.clip(temp, self.config.lower_temp - 10, self.config.upper_temp + 10)
+            # Aplicar límites suaves para evitar valores extremos absurdos
+            temp = np.clip(temp, soft_lower, soft_upper)
             temps.append(round(float(temp), 1))
         
         return temps
     
     def _generate_temperatures_beta(self) -> List[float]:
-        """Genera temperaturas usando distribución beta"""
+        """Genera temperaturas usando distribución beta (siempre dentro del rango)"""
         temps = []
-        temp_range = self.config.upper_temp - self.config.lower_temp + 20  # +20 para permitir exceder límites
+        temp_range = self.config.upper_temp - self.config.lower_temp
         
         for _ in range(self.config.number_of_samples):
-            # Beta distribution genera valores entre 0 y 1
+            # Beta distribution genera valores entre 0 y 1, perfecta para rangos fijos
             beta_value = np.random.beta(self.config.beta_alpha, self.config.beta_beta)
-            # Escalar al rango de temperaturas
-            temp = self.config.lower_temp - 10 + (beta_value * temp_range)
+            # Escalar al rango de temperaturas exacto (naturaleza de beta)
+            temp = self.config.lower_temp + (beta_value * temp_range)
             temps.append(round(float(temp), 1))
         
         return temps
@@ -885,13 +890,16 @@ class LogSimulator:
             if prof.distribution_type == "normal":
                 mean = prof.mean_temp if prof.mean_temp is not None else (prof.lower_temp + prof.upper_temp) / 2
                 vals = np.random.normal(mean, prof.std_dev, size=n)
-                vals = np.clip(vals, prof.lower_temp - 10, prof.upper_temp + 10)
+                # Límites suaves: permitir variaciones naturales de hasta 2.5 desviaciones estándar
+                soft_margin = 2.5 * prof.std_dev
+                vals = np.clip(vals, prof.lower_temp - soft_margin, prof.upper_temp + soft_margin)
                 out = [round(float(v), 1) for v in vals]
                 return _smooth(out) if prof.apply_ar1 else out
             elif prof.distribution_type == "beta":
-                temp_range = prof.upper_temp - prof.lower_temp + 20
+                # Beta siempre dentro del rango (diseño matemático)
+                temp_range = prof.upper_temp - prof.lower_temp
                 beta_vals = np.random.beta(prof.beta_alpha, prof.beta_beta, size=n)
-                vals = prof.lower_temp - 10 + (beta_vals * temp_range)
+                vals = prof.lower_temp + (beta_vals * temp_range)
                 out = [round(float(v), 1) for v in vals]
                 return _smooth(out) if prof.apply_ar1 else out
             elif prof.distribution_type == "truncnorm":
