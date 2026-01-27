@@ -72,6 +72,18 @@ class DistributionsTab(tk.Frame):
                  command=self._add_manual_distribution,
                  bg="#4CAF50", fg="white", font=("Arial", 10, "bold")).pack(side=tk.RIGHT, padx=5)
         
+        # Selected route info label
+        route_info_frame = tk.Frame(container, bg="#E3F2FD", pady=8, padx=10)
+        route_info_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+        tk.Label(route_info_frame, text="🗺️ Ruta Seleccionada:", 
+                font=("Arial", 9, "bold"), bg="#E3F2FD").pack(side=tk.LEFT, padx=(0, 5))
+        
+        self.selected_route_label = tk.Label(route_info_frame, 
+                text="Ninguna (selecciona en el tab de Rutas)",
+                font=("Arial", 9), bg="#E3F2FD", fg="#666")
+        self.selected_route_label.pack(side=tk.LEFT)
+        
         # Container for segments
         self.segments_dist_container = tk.Frame(container)
         self.segments_dist_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -86,7 +98,14 @@ class DistributionsTab(tk.Frame):
         route_config = self.routes_tab.get_route_config()
         if not route_config:
             messagebox.showinfo("Info", "Selecciona una ruta en la pestaña de Rutas primero.")
+            self.selected_route_label.config(text="Ninguna (selecciona en el tab de Rutas)")
             return
+        
+        # Update route label
+        transport_icon = "✈️" if route_config.transport_mode == "flight" else "🚗"
+        self.selected_route_label.config(
+            text=f"{route_config.route_name} ({transport_icon} {route_config.transport_mode})"
+        )
         
         # Clear existing
         for widget in self.segments_dist_container.winfo_children():
@@ -159,7 +178,7 @@ class DistributionsTab(tk.Frame):
         preset_combo = ttk.Combobox(preset_frame, textvariable=preset_var,
                                     values=["Refrigerated (-1°C to 2°C)", 
                                            "Frozen (-2°C to 0°C)", 
-                                           "Ultra-Frozen (-60°C to -35°C)",
+                                           "Ultra-Frozen (-35°C to -30°C)",
                                            "Custom"],
                                     state="readonly", width=30)
         preset_combo.pack(side=tk.LEFT, padx=5)
@@ -197,11 +216,11 @@ class DistributionsTab(tk.Frame):
                 param_vars["mean_temp"].set(-1.0)
                 param_vars["std_dev"].set(0.2)
                 preset_info_label.config(text="✓ Applied: Fresh products", fg="green")
-            elif preset == "Ultra-Frozen (-60°C to -35°C)":
-                param_vars["min_range"].set(-60.0)
-                param_vars["max_range"].set(-35.0)
-                param_vars["mean_temp"].set(-47.5)
-                param_vars["std_dev"].set(3.0)
+            elif preset == "Ultra-Frozen (-35°C to -30°C)":
+                param_vars["min_range"].set(-35.0)
+                param_vars["max_range"].set(-30.0)
+                param_vars["mean_temp"].set(-32.5)
+                param_vars["std_dev"].set(1.5)
                 preset_info_label.config(text="✓ Applied: mRNA vaccines, biosamples", fg="green")
             elif preset == "Custom":
                 preset_info_label.config(text="Configure manually", fg="blue")

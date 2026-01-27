@@ -20,7 +20,7 @@ class Distribution:
     
     # Parameters for normal/truncnorm
     mean_temp: Optional[float] = None
-    std_dev: float = 5.0
+    std_dev: float = 0.5
     
     # Parameters for beta
     beta_alpha: float = 2.0
@@ -66,9 +66,9 @@ class Distribution:
         if self.type == "normal":
             mean = self.mean_temp if self.mean_temp is not None else 0.0
             samples = np.random.normal(mean, self.std_dev, size=n)
-            # Apply soft bounds: allow natural variations up to 2.5 std deviations beyond range
+            # Apply soft bounds: allow natural variations up to 1.5 std deviations beyond range
             if self.lower_temp is not None and self.upper_temp is not None:
-                soft_margin = 2.5 * self.std_dev
+                soft_margin = 1.5 * self.std_dev
                 samples = np.clip(samples, self.lower_temp - soft_margin, self.upper_temp + soft_margin)
             return samples
         

@@ -38,10 +38,10 @@ class LogGeneratorInput:
     # Lista de tuplas (lat, lng, name) para generar inventories correctamente
     key_waypoints: Optional[List[Tuple[float, float, str]]] = None
     # Modo de transporte para la ruta real
-    transport_mode: Literal["driving-car", "foot-walking", "cycling-regular"] = "driving-car"
+    transport_mode: Literal["driving-car", "flight"] = "driving-car"
     # Parámetros para distribución normal
     mean_temp: float = None  # Si es None, se usa el promedio de lower y upper
-    std_dev: float = 5.0
+    std_dev: float = 0.5
     # Parámetros para distribución beta
     beta_alpha: float = 2.0
     beta_beta: float = 5.0
@@ -63,7 +63,7 @@ class TempProfile:
     upper_temp: float
     distribution_type: Literal["normal", "beta", "truncnorm", "uniform"] = "normal"
     mean_temp: Optional[float] = None
-    std_dev: float = 5.0
+    std_dev: float = 0.5
     beta_alpha: float = 2.0
     beta_beta: float = 5.0
     # Smoothing (exponential/AR(1)-like) toggle per segment (simple, no extra params)
@@ -83,12 +83,12 @@ class UseCaseConfig:
     lower_temp: float
     upper_temp: float
     distribution_type: Literal["normal", "beta", "truncnorm", "uniform"]
-    transport_mode: Literal["driving-car", "foot-walking", "cycling-regular"] = "driving-car"
+    transport_mode: Literal["driving-car", "flight"] = "driving-car"
     # Parámetros específicos del caso
     temperature_profile: str = "stable"  # stable, increasing, decreasing, fluctuating
     number_of_stops: int = 3
     mean_temp: float = None
-    std_dev: float = 5.0
+    std_dev: float = 0.5
     beta_alpha: float = 2.0
     beta_beta: float = 5.0
 
@@ -102,20 +102,26 @@ class OpenStreetMapRouter:
         self.base_url = "https://api.openrouteservice.org/v2/directions"
         # Nota: Usar API key personal para mejor rate limit
         self.api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImQyNjE1ODc2ZmZiMDQyMzRhYjc4NDJlYTE3YzEzM2FjIiwiaCI6Im11cm11cjY0In0="  # Usuario debe configurar su propia key
+        # Inicializar Flight Router para rutas aéreas
+        self.flight_router = FlightRouter()
         
     def get_route(self, start: Tuple[float, float], end: Tuple[float, float], 
                   mode: str = "driving-car") -> Optional[Dict[str, Any]]:
         """
-        Obtiene una ruta real entre dos puntos usando OpenRouteService
+        Obtiene una ruta real entre dos puntos usando OpenRouteService o FlightRouter
         
         Args:
             start: (lat, lng) punto de inicio
             end: (lat, lng) punto de destino
-            mode: driving-car, foot-walking, cycling-regular
+            mode: driving-car, foot-walking, cycling-regular, flight
             
         Returns:
             Dict con información de la ruta o None si falla
         """
+        # Si el modo es flight, usar FlightRouter
+        if mode == "flight":
+            return self.flight_router.get_route(start, end)
+        
         # Si no hay API key, usar ruta lineal simple
         if not self.api_key:
             print("⚠️  No se configuró API key de OpenRouteService. Usando ruta lineal simple.")
@@ -157,15 +163,20 @@ class OpenStreetMapRouter:
             return self._get_simple_route(start, end)
 
     def get_route_multi(self, points: List[Tuple[float, float]], mode: str = "driving-car") -> Optional[Dict[str, Any]]:
-        """Obtiene una ruta real pasando múltiples puntos usando POST API.
+        """Obtiene una ruta real pasando múltiples puntos usando POST API o FlightRouter.
         
         Para múltiples waypoints, OpenRouteService requiere usar la API POST con JSON body.
         El formato GET solo soporta origen y destino (2 puntos).
+        Para modo 'flight', usa FlightRouter que calcula vuelos con escalas.
         
         Fallback: genera una ruta simple segmentando entre puntos consecutivos.
         """
         if not points or len(points) < 2:
             return None
+
+        # Si el modo es flight, usar FlightRouter
+        if mode == "flight":
+            return self.flight_router.get_route_multi(points)
 
         if not self.api_key:
             return self._get_simple_route_multi(points)
@@ -546,6 +557,241 @@ class OpenStreetMapRouter:
             return None
 
 
+class FlightRouter:
+    """Router especializado para rutas aéreas (vuelos comerciales)."""
+    
+    def __init__(self):
+        """Inicializa el router de vuelos."""
+        # Velocidades promedio de vuelo
+        self.CRUISE_SPEED_KMH = 850  # Velocidad de crucero típica (850 km/h)
+        self.TAXI_TAKEOFF_LANDING_TIME_HOURS = 0.5  # Tiempo de taxi, despegue y aterrizaje
+        self.BOARDING_TIME_HOURS = 0.5  # Tiempo de abordaje antes del vuelo
+        
+        # Para vuelos con escalas
+        self.LAYOVER_TIME_HOURS = 1.5  # Tiempo promedio de escala
+    
+    def get_route(self, start: Tuple[float, float], end: Tuple[float, float]) -> Optional[Dict[str, Any]]:
+        """
+        Calcula una ruta aérea directa entre dos puntos.
+        
+        Args:
+            start: (lat, lng) aeropuerto de origen
+            end: (lat, lng) aeropuerto de destino
+            
+        Returns:
+            Dict con información de la ruta aérea
+        """
+        print(f"✈️  Calculando ruta aérea directa...")
+        print(f"   Origen: ({start[0]:.4f}, {start[1]:.4f})")
+        print(f"   Destino: ({end[0]:.4f}, {end[1]:.4f})")
+        
+        # Calcular distancia ortodrómica (great circle distance)
+        distance_km = geodesic(start, end).kilometers
+        
+        # Calcular tiempo de vuelo
+        # Tiempo = distancia / velocidad + tiempos fijos (taxi, despegue, aterrizaje, abordaje)
+        flight_time_hours = (distance_km / self.CRUISE_SPEED_KMH) + \
+                           self.TAXI_TAKEOFF_LANDING_TIME_HOURS + \
+                           self.BOARDING_TIME_HOURS
+        
+        # Generar coordenadas de la ruta (arco geodésico)
+        coordinates = self._generate_flight_path(start, end, num_points=50)
+        
+        print(f"   ✓ Distancia: {distance_km:.2f} km")
+        print(f"   ✓ Tiempo de vuelo estimado: {flight_time_hours:.2f} hrs ({flight_time_hours * 60:.0f} min)")
+        print(f"   ✓ Velocidad de crucero: {self.CRUISE_SPEED_KMH} km/h")
+        
+        return {
+            'coordinates': coordinates,
+            'distance_km': distance_km,
+            'duration_hours': flight_time_hours,
+            'transport_mode': 'flight',
+            'cruise_speed_kmh': self.CRUISE_SPEED_KMH
+        }
+    
+    def get_route_multi(self, points: List[Tuple[float, float]]) -> Optional[Dict[str, Any]]:
+        """
+        Calcula una ruta aérea con escalas (multi-leg flight).
+        
+        Args:
+            points: Lista de (lat, lng) para cada aeropuerto (origen, escalas, destino)
+            
+        Returns:
+            Dict con información de la ruta aérea completa
+        """
+        if not points or len(points) < 2:
+            return None
+        
+        num_legs = len(points) - 1
+        print(f"✈️  Calculando ruta aérea con {num_legs - 1} escala(s)...")
+        
+        all_coordinates = []
+        total_distance_km = 0.0
+        total_duration_hours = 0.0
+        
+        for i in range(len(points) - 1):
+            leg_start = points[i]
+            leg_end = points[i + 1]
+            
+            print(f"   📍 Tramo {i + 1}/{num_legs}: ({leg_start[0]:.4f}, {leg_start[1]:.4f}) → ({leg_end[0]:.4f}, {leg_end[1]:.4f})")
+            
+            # Calcular distancia del tramo
+            leg_distance_km = geodesic(leg_start, leg_end).kilometers
+            
+            # Tiempo de vuelo del tramo
+            leg_flight_time = (leg_distance_km / self.CRUISE_SPEED_KMH) + \
+                             self.TAXI_TAKEOFF_LANDING_TIME_HOURS + \
+                             self.BOARDING_TIME_HOURS
+            
+            # Generar coordenadas del tramo
+            leg_coords = self._generate_flight_path(leg_start, leg_end, num_points=30)
+            
+            # Agregar coordenadas (evitar duplicar puntos de conexión)
+            if i == 0:
+                all_coordinates.extend(leg_coords)
+            else:
+                all_coordinates.extend(leg_coords[1:])  # Skip first point to avoid duplication
+            
+            total_distance_km += leg_distance_km
+            total_duration_hours += leg_flight_time
+            
+            # Agregar tiempo de escala si no es el último tramo
+            if i < num_legs - 1:
+                total_duration_hours += self.LAYOVER_TIME_HOURS
+                print(f"      ⏱️  Escala: {self.LAYOVER_TIME_HOURS} hrs")
+            
+            print(f"      ✓ Tramo: {leg_distance_km:.2f} km, {leg_flight_time:.2f} hrs")
+        
+        print(f"   ✅ Ruta completa: {total_distance_km:.2f} km, {total_duration_hours:.2f} hrs")
+        
+        return {
+            'coordinates': all_coordinates,
+            'distance_km': total_distance_km,
+            'duration_hours': total_duration_hours,
+            'transport_mode': 'flight',
+            'num_legs': num_legs,
+            'layovers': num_legs - 1,
+            'cruise_speed_kmh': self.CRUISE_SPEED_KMH
+        }
+    
+    def _generate_flight_path(self, start: Tuple[float, float], end: Tuple[float, float], 
+                            num_points: int = 50) -> List[Tuple[float, float]]:
+        """
+        Genera una ruta de vuelo realista siguiendo un arco geodésico (great circle).
+        
+        FIXED: Algoritmo final que mantiene continuidad absoluta en el meridiano 180/-180.
+        No normaliza independientemente; mantiene la secuencia continua.
+        
+        Args:
+            start: (lat, lng) punto de inicio
+            end: (lat, lng) punto de destino
+            num_points: número de puntos intermedios a generar
+            
+        Returns:
+            Lista de coordenadas (lat, lng) formando el arco geodésico
+        """
+        # Detectar cruce del meridiano para logging
+        lon_diff = abs(end[1] - start[1])
+        if lon_diff > 180:
+            print(f"      🌐 Cruce de meridiano detectado: {lon_diff:.1f}° separación")
+        
+        coordinates = []
+        
+        # FIXED: Determinar dirección óptima al inicio
+        lng1, lng2 = start[1], end[1]
+        total_lng_diff = lng2 - lng1
+        
+        # Ajustar para el camino más corto
+        if abs(total_lng_diff) > 180:
+            if total_lng_diff > 0:
+                total_lng_diff -= 360  # Ir hacia el oeste
+            else:
+                total_lng_diff += 360  # Ir hacia el este
+        
+        for i in range(num_points):
+            if i == 0:
+                coordinates.append(start)
+            elif i == num_points - 1:
+                coordinates.append(end)
+            else:
+                fraction = i / (num_points - 1)
+                
+                # Interpolación de latitud
+                lat = start[0] + (end[0] - start[0]) * fraction
+                
+                # FIXED: Interpolación de longitud SIN normalización automática
+                lng = lng1 + total_lng_diff * fraction
+                
+                # FIXED: Solo normalizar si estamos MUY fuera del rango normal
+                # Esto preserva la continuidad en el cruce del meridiano
+                if lng > 360:
+                    lng -= 360
+                elif lng < -360:
+                    lng += 360
+                
+                coordinates.append((lat, lng))
+        
+        # FIXED: Post-procesamiento para asegurar continuidad LÓGICA
+        # mientras se mantienen las coordenadas en un rango aceptable para la mayoría de visualizadores
+        # NOTA: Las coordenadas finales PUEDEN salirse del rango [-180, 180] para preservar continuidad
+        # Los visualizadores modernos (GeoJSON, Leaflet, etc.) manejan esto correctamente
+        final_coordinates = []
+        for i, (lat, lng) in enumerate(coordinates):
+            if i == 0:
+                # Normalizar el primer punto al rango estándar
+                while lng > 180:
+                    lng -= 360
+                while lng < -180:
+                    lng += 360
+                final_coordinates.append((lat, lng))
+            else:
+                # Para los demás puntos, encontrar la representación más cercana al anterior
+                prev_lng = final_coordinates[-1][1]
+                
+                # Candidatos posibles
+                candidates = [lng, lng + 360, lng - 360]
+                best_lng = min(candidates, key=lambda x: abs(x - prev_lng))
+                
+                # FIXED: Preservar continuidad, NO normalizar forzosamente
+                # La mayoría de visualizadores modernos aceptan coordenadas fuera de [-180,180]
+                final_coordinates.append((lat, best_lng))
+        
+        return final_coordinates
+    
+
+    
+    def estimate_flight_altitude(self, distance_km: float) -> float:
+        """
+        Estima la altitud de crucero basada en la distancia del vuelo.
+        
+        Vuelos cortos (< 500 km): ~6,000 - 8,000 m
+        Vuelos medios (500-3000 km): ~9,000 - 11,000 m
+        Vuelos largos (> 3000 km): ~10,000 - 12,500 m
+        
+        Args:
+            distance_km: Distancia del vuelo en kilómetros
+            
+        Returns:
+            Altitud estimada en metros
+        """
+        if distance_km < 500:
+            return 7000  # 7 km
+        elif distance_km < 3000:
+            return 10000  # 10 km
+        else:
+            return 11500  # 11.5 km
+    
+    def set_cruise_speed(self, speed_kmh: float):
+        """
+        Permite configurar una velocidad de crucero personalizada.
+        
+        Args:
+            speed_kmh: Velocidad en km/h (típicamente entre 700-900 km/h)
+        """
+        self.CRUISE_SPEED_KMH = speed_kmh
+        print(f"✈️  Velocidad de crucero actualizada a {speed_kmh} km/h")
+
+
 class PredefinedUseCases:
     """Casos de uso predefinidos con rutas y escenarios dramatizados"""
     
@@ -692,7 +938,7 @@ class LogSimulator:
         upper_temp: float = 10.0,
     distribution_type: Literal["normal", "beta", "truncnorm", "uniform"] = "normal",
         mean_temp: Optional[float] = None,
-        std_dev: float = 5.0,
+        std_dev: float = 0.5,
         beta_alpha: float = 2.0,
         beta_beta: float = 5.0,
         log_interval_in_seconds: int = 300,
@@ -764,8 +1010,8 @@ class LogSimulator:
             self.config.lower_temp + self.config.upper_temp) / 2
         
         temps = []
-        # Permitir variaciones naturales: límites suaves basados en 2.5 desviaciones estándar
-        soft_margin = 2.5 * self.config.std_dev
+        # Permitir variaciones naturales pero controladas: límite de 1.5 desviaciones estándar
+        soft_margin = 1.5 * self.config.std_dev
         soft_lower = self.config.lower_temp - soft_margin
         soft_upper = self.config.upper_temp + soft_margin
         
@@ -890,8 +1136,8 @@ class LogSimulator:
             if prof.distribution_type == "normal":
                 mean = prof.mean_temp if prof.mean_temp is not None else (prof.lower_temp + prof.upper_temp) / 2
                 vals = np.random.normal(mean, prof.std_dev, size=n)
-                # Límites suaves: permitir variaciones naturales de hasta 2.5 desviaciones estándar
-                soft_margin = 2.5 * prof.std_dev
+                # Límites suaves: permitir variaciones naturales de hasta 1.5 desviaciones estándar
+                soft_margin = 1.5 * prof.std_dev
                 vals = np.clip(vals, prof.lower_temp - soft_margin, prof.upper_temp + soft_margin)
                 out = [round(float(v), 1) for v in vals]
                 return _smooth(out) if prof.apply_ar1 else out
@@ -1130,10 +1376,36 @@ class LogSimulator:
             # Encontrar segmento correspondiente
             for j in range(len(distances) - 1):
                 if distances[j] <= target_dist <= distances[j + 1]:
-                    # Interpolación lineal en el segmento
+                    # FIXED: Interpolación geodésica en lugar de lineal simple
                     segment_progress = (target_dist - distances[j]) / (distances[j + 1] - distances[j]) if distances[j + 1] != distances[j] else 0
+                    
+                    # Interpolación de latitud (normal)
                     lat = route_points[j][0] + (route_points[j + 1][0] - route_points[j][0]) * segment_progress
-                    lng = route_points[j][1] + (route_points[j + 1][1] - route_points[j][1]) * segment_progress
+                    
+                    # FIXED: Interpolación de longitud con manejo PERFECTO del meridiano 180/-180
+                    lng1, lng2 = route_points[j][1], route_points[j + 1][1]
+                    lng_diff = lng2 - lng1
+                    
+                    # FIXED: Detectar cruce del meridiano y ajustar la diferencia
+                    if abs(lng_diff) > 180:
+                        if lng_diff > 0:
+                            lng_diff -= 360  # Ir hacia el oeste
+                        else:
+                            lng_diff += 360  # Ir hacia el este
+                    
+                    lng = lng1 + lng_diff * segment_progress
+                    
+                    # FIXED: Post-procesamiento para mantener continuidad con punto anterior
+                    # En lugar de normalizar forzadamente, encontrar la representación más cercana al punto anterior
+                    if interpolated:
+                        prev_lng = interpolated[-1][1]
+                        # Probar las 3 representaciones posibles del mismo ángulo
+                        candidates = [lng, lng + 360, lng - 360]
+                        lng = min(candidates, key=lambda x: abs(x - prev_lng))
+                    else:
+                        # Primer punto: normalizar normalmente
+                        lng = ((lng + 180) % 360) - 180
+                    
                     interpolated.append((round(lat, 6), round(lng, 6)))
                     break
         

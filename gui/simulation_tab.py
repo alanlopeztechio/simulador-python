@@ -155,10 +155,11 @@ class SimulationTab(tk.Frame):
         tk.Label(date_frame, text="(DD/MM/AAAA)", font=("Arial", 8), fg="gray").pack(side=tk.LEFT, padx=5)
         
         # Use real routes checkbox
-        self.use_real_routes_var = tk.BooleanVar(value=False)
-        tk.Checkbutton(params_grid, text="Usar Rutas Reales (OSM)", 
+        self.use_real_routes_var = tk.BooleanVar(value=True)
+        self.use_real_routes_checkbox = tk.Checkbutton(params_grid, text="Usar Rutas Reales (OSM/Flight)", 
                       variable=self.use_real_routes_var,
-                      font=("Arial", 9)).grid(row=1, column=0, columnspan=2, sticky=tk.W, pady=5)
+                      font=("Arial", 9))
+        self.use_real_routes_checkbox.grid(row=1, column=0, columnspan=2, sticky=tk.W, pady=5)
         
         # Secondary routes checkbox and count
         secondary_frame = tk.Frame(params_grid)
@@ -314,6 +315,13 @@ class SimulationTab(tk.Frame):
             
             if self.selected_route:
                 self._display_route_preview()
+                
+                # Auto-activar "Usar Rutas Reales" si el modo es flight
+                if self.selected_route.transport_mode == "flight":
+                    self.use_real_routes_var.set(True)
+                    self.use_real_routes_checkbox.config(state=tk.DISABLED)
+                else:
+                    self.use_real_routes_checkbox.config(state=tk.NORMAL)
         except Exception as e:
             messagebox.showerror("Error", f"Error cargando ruta: {e}")
     
@@ -360,6 +368,18 @@ Descripción: {route.route_description}
   ⏱️  Intervalo de log: {route.log_interval_seconds} seg
   🗺️  Rutas reales: {'Sí' if route.use_real_routes else 'No'}
   🚗 Transporte: {route.transport_mode}
+"""
+        
+        # Agregar nota si es modo flight
+        if route.transport_mode == "flight":
+            preview += f"""
+┌─────────────────────────────────────────────────────────────┐
+│ ✈️  MODO VUELO ACTIVADO                                     │
+└─────────────────────────────────────────────────────────────┘
+  • "Usar Rutas Reales" se activa automáticamente
+  • Cálculo de ruta geodésica (arco de gran círculo)
+  • Velocidad: 850 km/h (configurable)
+  • Sin dependencia de API externa
 """
         
         self.route_preview_text.config(state=tk.NORMAL)

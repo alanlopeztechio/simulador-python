@@ -292,6 +292,17 @@ class RoutesTab(tk.Frame):
         tk.Entry(metadata_frame, textvariable=self.route_desc_var, width=40,
                 font=("Arial", 9)).grid(row=1, column=1, sticky=tk.W, padx=5, pady=2)
         
+        tk.Label(metadata_frame, text="Modo de Transporte:*", font=("Arial", 9)).grid(row=2, column=0, sticky=tk.W, pady=2)
+        self.transport_mode_var = tk.StringVar(value="driving-car")
+        transport_combo = ttk.Combobox(metadata_frame, textvariable=self.transport_mode_var,
+                                      values=["driving-car", "flight"],
+                                      state="readonly", width=20, font=("Arial", 9))
+        transport_combo.grid(row=2, column=1, sticky=tk.W, padx=5, pady=2)
+        
+        # Help text for transport modes
+        tk.Label(metadata_frame, text="🚗 Terrestre | ✈️ Aéreo", 
+                font=("Arial", 8), fg="gray").grid(row=3, column=1, sticky=tk.W, padx=5)
+        
         # Origin
         origin_frame = tk.LabelFrame(container, text="Origen",
                                     font=("Arial", 10, "bold"), padx=10, pady=10)
@@ -611,7 +622,8 @@ class RoutesTab(tk.Frame):
                 destination=destination,
                 waypoints=waypoints,
                 segments=segments,
-                sensors=[]  # Sensors are now managed in simulation tab
+                sensors=[],  # Sensors are now managed in simulation tab
+                transport_mode=self.transport_mode_var.get()
             )
             
             route_dict = route.to_dict()
@@ -635,6 +647,7 @@ class RoutesTab(tk.Frame):
         """Clear editor fields."""
         self.route_name_var.set("")
         self.route_desc_var.set("")
+        self.transport_mode_var.set("driving-car")
         self.origin_name_var.set("Origen")
         self.origin_lat_var.set(34.0522)
         self.origin_lng_var.set(-118.2437)
@@ -654,6 +667,7 @@ class RoutesTab(tk.Frame):
         
         self.route_name_var.set(route.route_name)
         self.route_desc_var.set(route.route_description)
+        self.transport_mode_var.set(route.transport_mode or "driving-car")
         
         if route.origin:
             self.origin_name_var.set(route.origin.name)

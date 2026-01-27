@@ -210,16 +210,33 @@ class SimulatorAdapter:
             
             if route_info and 'duration_hours' in route_info:
                 api_duration_hours = route_info['duration_hours']
+                
+                # ⚠️ CRITICAL: Ensure we actually got real route coordinates from API
+                if 'coordinates' in route_info and len(route_info['coordinates']) > 2:
+                    print(f"   ✅ API retornó {len(route_info['coordinates'])} coordenadas reales")
+                    api_coordinates = route_info['coordinates']
+                else:
+                    print(f"   ❌ PROBLEMA: API no retornó coordenadas válidas")
+                    print(f"   🔍 route_info keys: {list(route_info.keys())}")
+                    print(f"   ⚠️  Usando coordenadas lineales como fallback")
+                    api_coordinates = coordinates
+                
                 routes_to_generate = [{
                     'route_type': 'principal',
-                    'coordinates': route_info.get('coordinates', coordinates),
+                    'coordinates': api_coordinates,
                     'distance_km': route_info.get('distance_km', 0),
                     'duration_hours': api_duration_hours
                 }]
-                print(f"   ✓ Ruta obtenida exitosamente")
+                print(f"   ✓ Ruta configurada exitosamente")
                 print(f"   💡 Esta ruta se reutilizará para todos los sensores\n")
             else:
-                # Fallback if API fails
+                # Fallback if API fails completely
+                print(f"   ❌ API de rutas falló completamente")
+                print(f"   ⚠️  ADVERTENCIA: Usando ruta lineal directa (no es una ruta real)")
+                print(f"   💡 Para obtener rutas reales, verifica:")
+                print(f"      - Conexión a Internet")
+                print(f"      - API key de OpenRouteService")
+                print(f"      - Coordenadas válidas y enrutables")
                 routes_to_generate = [{
                     'route_type': 'principal',
                     'coordinates': coordinates,
@@ -228,6 +245,9 @@ class SimulatorAdapter:
                 }]
         else:
             # Only generate main route without real routes
+            print(f"\n🗺️  USANDO RUTA LINEAL DIRECTA")
+            print(f"   ℹ️  Opción 'Usar rutas reales' está deshabilitada")
+            print(f"   📍 La ruta será una línea recta entre puntos\n")
             routes_to_generate = [{
                 'route_type': 'principal',
                 'coordinates': coordinates,
@@ -238,6 +258,14 @@ class SimulatorAdapter:
         print(f"   📊 Rutas totales obtenidas: {len(routes_to_generate)}")
         print(f"   📦 Sensores a procesar: {len(route_config.sensors)}")
         print(f"   🎯 Archivos JSON a generar: {len(routes_to_generate) * len(route_config.sensors) * num_samples}")
+        
+        # Log route type summary
+        for route in routes_to_generate:
+            route_coords = route.get('coordinates', [])
+            if len(route_coords) > 100:
+                print(f"   ✅ Ruta {route.get('route_type', 'principal')}: {len(route_coords)} puntos (RUTA REAL)")
+            else:
+                print(f"   ⚠️  Ruta {route.get('route_type', 'principal')}: {len(route_coords)} puntos (RUTA LINEAL)")
         print(f"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
         
         # Update destination timestamp with real API duration if available
@@ -427,7 +455,7 @@ class SimulatorAdapter:
                     upper_temp=10.0,
                     distribution_type="normal",
                     mean_temp=5.0,
-                    std_dev=2.0,
+                    std_dev=0.5,
                 )
             else:
                 # Use first distribution (multi-distribution blending will be implemented later)
@@ -530,7 +558,7 @@ if __name__ == "__main__":
         lower_temp=0.0,
         upper_temp=10.0,
         mean_temp=5.0,
-        std_dev=2.0,
+        std_dev=0.5,
     )
     segment.distributions.append(dist)
     config.segments.append(segment)
